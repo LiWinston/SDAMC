@@ -1,0 +1,63 @@
+classDiagram
+    Student "1" --> "0..*" StudentClub : belongs to
+    StudentClub "1" -- "0..*" Student : has administrator
+    StudentClub "1" --> "0..*" Event : organizes
+    Event "1" -- "0..*" RSVP : has
+    Student "1" --> "0..*" RSVP : submits
+    StudentClub "1" --> "0..*" FundingApplication : submits
+    FacultyAdministrator "1" --> "0..*" FundingApplication : reviews
+
+    class Student {
+        +int id
+        +String name
+        +String email
+        +viewEvents()
+        +rsvpEvent(eventId)
+        +cancelRSVP(eventId)
+    }
+
+    class StudentClub {
+        +int id
+        +String name
+        +String description
+        +createEvent(title, description, venue, capacity)
+        +editEvent(eventId, title, description, venue, capacity)
+        +cancelEvent(eventId)
+        +manageAdministrators(studentId, action)
+    }
+
+    class Event {
+        +int id
+        +String title
+        +String description
+        +int capacity
+        +String venue
+        +Date date
+        +createRSVP(studentId)
+        +editRSVP(rsvpId, newDetails)
+        +cancelRSVP(rsvpId)
+    }
+
+    class RSVP {
+        +int id
+        +Date date
+        +String status
+    }
+
+    class FundingApplication {
+        +int id
+        +String description
+        +float amountRequested
+        +String status
+        +createApplication(description, amountRequested)
+        +editApplication(applicationId, newDetails)
+        +cancelApplication(applicationId)
+    }
+
+    class FacultyAdministrator {
+        +int id
+        +String name
+        +String email
+        +approveApplication(applicationId)
+        +rejectApplication(applicationId)
+    }
