@@ -24,6 +24,7 @@ classDiagram
         +editEvent(eventId, title, description, venue, capacity)
         +cancelEvent(eventId)
         +manageAdministrators(studentId, action)
+        +viewFundingApplications()
     }
 
     class Event {
@@ -33,9 +34,11 @@ classDiagram
         +int capacity
         +String venue
         +Date date
+        +String status
         +createRSVP(studentId)
         +editRSVP(rsvpId, newDetails)
         +cancelRSVP(rsvpId)
+        +cancelEvent()
     }
 
     class RSVP {
@@ -52,6 +55,7 @@ classDiagram
         +createApplication(description, amountRequested)
         +editApplication(applicationId, newDetails)
         +cancelApplication(applicationId)
+        +viewApplicationStatus()
     }
 
     class FacultyAdministrator {
@@ -60,4 +64,5 @@ classDiagram
         +String email
         +approveApplication(applicationId)
         +rejectApplication(applicationId)
+        +viewAllApplications()
     }
