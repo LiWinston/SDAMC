@@ -8,61 +8,42 @@ classDiagram
     FacultyAdministrator "1" --> "0..*" FundingApplication : reviews
 
     class Student {
-        +int id
-        +String name
-        +String email
-        +viewEvents()
-        +rsvpEvent(eventId)
-        +cancelRSVP(eventId)
+        id
+        name
+        email
     }
 
     class StudentClub {
-        +int id
-        +String name
-        +String description
-        +createEvent(title, description, venue, capacity)
-        +editEvent(eventId, title, description, venue, capacity)
-        +cancelEvent(eventId)
-        +manageAdministrators(studentId, action)
-        +viewFundingApplications()
+        id
+        name
+        description
     }
 
     class Event {
-        +int id
-        +String title
-        +String description
-        +int capacity
-        +String venue
-        +Date date
-        +String status
-        +createRSVP(studentId)
-        +editRSVP(rsvpId, newDetails)
-        +cancelRSVP(rsvpId)
-        +cancelEvent()
+        id
+        title
+        description
+        capacity
+        venue
+        date
+        status
     }
 
     class RSVP {
-        +int id
-        +Date date
-        +String status
+        id
+        date
+        status
     }
 
     class FundingApplication {
-        +int id
-        +String description
-        +float amountRequested
-        +String status
-        +createApplication(description, amountRequested)
-        +editApplication(applicationId, newDetails)
-        +cancelApplication(applicationId)
-        +viewApplicationStatus()
+        id
+        description
+        amountRequested
+        status
     }
 
     class FacultyAdministrator {
-        +int id
-        +String name
-        +String email
-        +approveApplication(applicationId)
-        +rejectApplication(applicationId)
-        +viewAllApplications()
+        id
+        name
+        email
     }
