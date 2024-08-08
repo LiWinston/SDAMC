@@ -9,4 +9,4 @@ RUN mvn clean install
 # run stage
 FROM tomcat:10.0.27-jre17
 
-COPY --from=build /app/target/jsp-demo-1.0-SNAPSHOT.war $CATALINA_HOME/webapps/jsp-demo.war
+COPY --from=build /app/target/SDAMC-1.0-SNAPSHOT.war $CATALINA_HOME/webapps/SDAMC.war
