@@ -1,0 +1,2 @@
+```cloud pgsql connection string:
+postgresql://postgres1_owner:nt4ug9SwXZUr@ep-icy-sea-a7vt9oiq.ap-southeast-2.aws.neon.tech/postgres1?sslmode=require
