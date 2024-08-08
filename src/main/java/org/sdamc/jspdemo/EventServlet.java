@@ -20,10 +20,21 @@ import java.util.List;
 @WebServlet(name = "eventServlet", value = "/events")
 public class EventServlet extends HttpServlet {
     //driver
+//    private static final String JDBC_DRIVER = "org.postgresql.Driver";
+//    private static final String JDBC_URL = "jdbc:postgresql://localhost:5432/postgres";
+//    private static final String JDBC_USER = "postgres";
+//    private static final String JDBC_PASSWORD = "lyc980820";
+
     private static final String JDBC_DRIVER = "org.postgresql.Driver";
-    private static final String JDBC_URL = "jdbc:postgresql://localhost:5432/postgres";
-    private static final String JDBC_USER = "postgres";
-    private static final String JDBC_PASSWORD = "lyc980820";
+
+    // 新的 JDBC URL
+    private static final String JDBC_URL = "jdbc:postgresql://ep-icy-sea-a7vt9oiq.ap-southeast-2.aws.neon.tech/postgres1?user=postgres1_owner&password=nt4ug9SwXZUr&sslmode=require";
+
+    // 新的数据库用户名
+    private static final String JDBC_USER = "postgres1_owner";
+
+    // 新的数据库密码
+    private static final String JDBC_PASSWORD = "nt4ug9SwXZUr";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
