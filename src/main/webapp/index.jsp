@@ -31,6 +31,8 @@
     <a href="hello-servlet" class="btn btn-primary">Hello Servlet</a>
     <br/>
     <a href="simple-calculator-servlet" class="btn btn-primary">Simple Calculator</a>
+    <!-- 添加测试链接 -->
+    <a href="events" class="btn btn-primary">Test EventServlet</a>
 </div>
 </body>
 </html>

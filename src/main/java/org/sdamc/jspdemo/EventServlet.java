@@ -5,48 +5,89 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.sdamc.jspdemo.Pojo.Event;
+import org.sdamc.jspdemo.Utils.DatabaseUtil;
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
-@WebServlet("/clubs/*/events")
+@WebServlet(name = "eventServlet", value = "/events")
 public class EventServlet extends HttpServlet {
-    private static final String JDBC_URL = "jdbc:postgresql://localhost:5432/yourdb";
-    private static final String JDBC_USER = "youruser";
-    private static final String JDBC_PASSWORD = "yourpassword";
+    //driver
+    private static final String JDBC_DRIVER = "org.postgresql.Driver";
+    private static final String JDBC_URL = "jdbc:postgresql://localhost:5432/postgres";
+    private static final String JDBC_USER = "postgres";
+    private static final String JDBC_PASSWORD = "lyc980820";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // 获取社团ID和事件ID
-        String clubId = request.getPathInfo().split("/")[1];
-        String eventId = request.getParameter("id");
-
-        // 根据是否有事件ID决定是查看单个事件还是所有事件
-        String query = eventId != null
-                ? "SELECT * FROM events WHERE id = ? AND club_id = ?"
-                : "SELECT * FROM events WHERE club_id = ?";
-
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-
-            if (eventId != null) {
-                stmt.setInt(1, Integer.parseInt(eventId));
-                stmt.setInt(2, Integer.parseInt(clubId));
-            } else {
-                stmt.setInt(1, Integer.parseInt(clubId));
-            }
-
-            ResultSet rs = stmt.executeQuery();
-            request.setAttribute("events", rs);
-            request.getRequestDispatcher("/WEB-INF/jsp/events.jsp").forward(request, response);
-
-        } catch (SQLException e) {
+        //driver
+        try {
+            Class.forName(JDBC_DRIVER);
+        } catch (ClassNotFoundException e) {
             throw new ServletException(e);
         }
+        List<Event> events = new ArrayList<>();
+        try (Connection connection = DatabaseUtil.getConnection()) {
+            String sql = "SELECT e.id, e.title, e.description, e.venue, e.capacity, c.id AS clubId, c.name AS clubName " +
+                    "FROM events e INNER JOIN clubs c ON e.club_id = c.id";
+            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                try (ResultSet resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) {
+                        Event event = new Event();
+                        event.setId(resultSet.getInt("id"));
+                        event.setTitle(resultSet.getString("title"));
+                        event.setDescription(resultSet.getString("description"));
+                        event.setVenue(resultSet.getString("venue"));
+                        event.setCapacity(resultSet.getInt("capacity"));
+                        event.setClubId(resultSet.getInt("clubId"));
+                        event.setClubName(resultSet.getString("clubName"));
+                        events.add(event);
+                        System.out.println(event);
+                        System.out.println("events"+ event);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new ServletException("Error retrieving events", e);
+        }
+
+        request.setAttribute("events", events);
+        request.getRequestDispatcher("/events.jsp").forward(request, response);
+//
+//        // 获取社团ID和事件ID
+//        String clubId = request.getPathInfo().split("/")[1];
+//        String eventId = request.getParameter("id");
+//
+//        // 根据是否有事件ID决定是查看单个事件还是所有事件
+//        String query = eventId != null
+//                ? "SELECT * FROM events WHERE id = ? AND club_id = ?"
+//                : "SELECT * FROM events WHERE club_id = ?";
+//
+//        try (Connection conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
+//             PreparedStatement stmt = conn.prepareStatement(query)) {
+//
+//            if (eventId != null) {
+//                stmt.setInt(1, Integer.parseInt(eventId));
+//                stmt.setInt(2, Integer.parseInt(clubId));
+//            } else {
+//                stmt.setInt(1, Integer.parseInt(clubId));
+//            }
+//
+//            ResultSet rs = stmt.executeQuery();
+//            request.setAttribute("events", rs);
+//            request.getRequestDispatcher("/WEB-INF/jsp/events.jsp").forward(request, response);
+//
+//        } catch (SQLException e) {
+//            throw new ServletException(e);
+//        }
     }
 
     @Override
