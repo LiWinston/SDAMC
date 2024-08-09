@@ -10,20 +10,20 @@ classDiagram
         int id
         String name
         String email
-        viewEvents()
-        rsvpEvent(eventId)
-        cancelRSVP(eventId)
+%%        viewEvents()
+%%        rsvpEvent(eventId)
+%%        cancelRSVP(eventId)
     }
 
     class StudentClub {
         int id
         String name
         String description
-        createEvent(title, description, venue, capacity)
-        editEvent(eventId, title, description, venue, capacity)
-        cancelEvent(eventId)
-        manageAdministrators(studentId, action)
-        viewFundingApplications()
+%%        createEvent(title, description, venue, capacity)
+%%        editEvent(eventId, title, description, venue, capacity)
+%%        cancelEvent(eventId)
+%%        manageAdministrators(studentId, action)
+%%        viewFundingApplications()
     }
 
     class Event {
@@ -34,10 +34,10 @@ classDiagram
         String venue
         Date date
         String status
-        createRSVP(studentId)
-        editRSVP(rsvpId, newDetails)
-        cancelRSVP(rsvpId)
-        cancelEvent()
+%%        createRSVP(studentId)
+%%        editRSVP(rsvpId, newDetails)
+%%        cancelRSVP(rsvpId)
+%%        cancelEvent()
     }
 
     class RSVP {
@@ -51,17 +51,17 @@ classDiagram
         String description
         float amountRequested
         String status
-        createApplication(description, amountRequested)
-        editApplication(applicationId, newDetails)
-        cancelApplication(applicationId)
-        viewApplicationStatus()
+%%        createApplication(description, amountRequested)
+%%        editApplication(applicationId, newDetails)
+%%        cancelApplication(applicationId)
+%%        viewApplicationStatus()
     }
 
     class FacultyAdministrator {
         int id
         String name
         String email
-        approveApplication(applicationId)
-        rejectApplication(applicationId)
-        viewAllApplications()
+%%        approveApplication(applicationId)
+%%        rejectApplication(applicationId)
+%%        viewAllApplications()
     }
