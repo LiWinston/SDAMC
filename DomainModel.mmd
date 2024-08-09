@@ -1,5 +1,6 @@
 classDiagram
-    Student "1" <--> "0..*" StudentClub : belongs to / has administrator
+    Student "1" <--> "0..*" ClubMembership : has membership
+    ClubMembership "0..*" --> "1" StudentClub : associatedWith
     StudentClub "1" --> "0..*" Event : organizes
     Event "1" -- "0..*" RSVP : has
     Student "1" --> "0..*" RSVP : submits
@@ -7,23 +8,30 @@ classDiagram
     FacultyAdministrator "1" --> "0..*" FundingApplication : reviews
 
     class Student {
-        int id
+        int stuId
         String name
         String email
-%%        viewEvents()
-%%        rsvpEvent(eventId)
-%%        cancelRSVP(eventId)
+    %%        viewEvents()
+    %%        rsvpEvent(eventId)
+    %%        cancelRSVP(eventId)
+    }
+
+    class ClubMembership {
+        int stuId
+        int clubId
+        boolean isAdministrator
+        Date joinDate
     }
 
     class StudentClub {
-        int id
+        int clubId
         String name
         String description
-%%        createEvent(title, description, venue, capacity)
-%%        editEvent(eventId, title, description, venue, capacity)
-%%        cancelEvent(eventId)
-%%        manageAdministrators(studentId, action)
-%%        viewFundingApplications()
+    %%        createEvent(title, description, venue, capacity)
+    %%        editEvent(eventId, title, description, venue, capacity)
+    %%        cancelEvent(eventId)
+    %%        manageAdministrators(studentId, action)
+    %%        viewFundingApplications()
     }
 
     class Event {
@@ -34,10 +42,10 @@ classDiagram
         String venue
         Date date
         String status
-%%        createRSVP(studentId)
-%%        editRSVP(rsvpId, newDetails)
-%%        cancelRSVP(rsvpId)
-%%        cancelEvent()
+    %%        createRSVP(studentId)
+    %%        editRSVP(rsvpId, newDetails)
+    %%        cancelRSVP(rsvpId)
+    %%        cancelEvent()
     }
 
     class RSVP {
@@ -51,17 +59,17 @@ classDiagram
         String description
         float amountRequested
         String status
-%%        createApplication(description, amountRequested)
-%%        editApplication(applicationId, newDetails)
-%%        cancelApplication(applicationId)
-%%        viewApplicationStatus()
+    %%        createApplication(description, amountRequested)
+    %%        editApplication(applicationId, newDetails)
+    %%        cancelApplication(applicationId)
+    %%        viewApplicationStatus()
     }
 
     class FacultyAdministrator {
         int id
         String name
         String email
-%%        approveApplication(applicationId)
-%%        rejectApplication(applicationId)
-%%        viewAllApplications()
+    %%        approveApplication(applicationId)
+    %%        rejectApplication(applicationId)
+    %%        viewAllApplications()
     }
