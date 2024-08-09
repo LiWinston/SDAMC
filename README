@@ -6,3 +6,5 @@
 | Yongchun Li | 1378156     | yongchunl        | LiWinston       | 1378156    | yongchunl@student.unimelb.edu.au |
 | Xiang Wang  | 1373795     | XIANWANG6        | wangxiang13     | 1373795    | xianwang6@student.unimelb.edu.au |
 | Rong Wang   | 1373126     | RONGWANG         | nanlour         | 1373126    | rongwang@student.unimelb.edu.au  |
+```cloud pgsql connection string:
+postgresql://postgres1_owner:nt4ug9SwXZUr@ep-icy-sea-a7vt9oiq.ap-southeast-2.aws.neon.tech/postgres1?sslmode=require
