@@ -1,6 +1,5 @@
 classDiagram
-    Student "1" --> "0..*" StudentClub : belongs to
-    StudentClub "1" -- "0..*" Student : has administrator
+    Student "1" <--> "0..*" StudentClub : belongs to / has administrator
     StudentClub "1" --> "0..*" Event : organizes
     Event "1" -- "0..*" RSVP : has
     Student "1" --> "0..*" RSVP : submits
