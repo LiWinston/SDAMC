@@ -1,5 +1,5 @@
 classDiagram
-    Student "1" <--> "0..*" ClubMembership : holds
+    Student "1" --> "0..*" ClubMembership : holds
     ClubMembership "0..*" --> "1" StudentClub : belongsTo
     StudentClub "1" --> "0..*" Event : organizes
     Event "1" -- "0..*" RSVP : has
