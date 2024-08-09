@@ -8,7 +8,7 @@ classDiagram
     FacultyAdministrator "1" --> "0..*" FundingApplication : reviews
 
     class Student {
-        id
+        stuId
         name
         email
     %%        int id
@@ -20,19 +20,14 @@ classDiagram
     }
 
     class ClubMembership {
-        id
+        stuId
+        clubId
         isAdministrator
         joinDate
-    %%        int id
-    %%        boolean isAdministrator
-    %%        Date joinDate
-    %%        inviteStudent(studentId)
-    %%        revokeAdministrator(studentId)
-    %%        viewUpcomingEvents()
     }
 
     class StudentClub {
-        id
+        clubId
         name
         description
     %%        int id
