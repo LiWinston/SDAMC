@@ -7,6 +7,9 @@ classDiagram
     StudentClub "1" --> "0..*" FundingApplication : submits
     FacultyAdministrator "1" --> "0..*" FundingApplication : reviews
 
+%% Self-referential relationship for management
+    ClubMembership "1" --> "1..*" ClubMembership : manages/promotes
+
     class Student {
         stuId
         name
