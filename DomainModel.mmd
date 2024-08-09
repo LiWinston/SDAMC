@@ -1,6 +1,6 @@
 classDiagram
-    Student "1" <--> "0..*" ClubMembership : has membership
-    ClubMembership "0..*" --> "1" StudentClub : associatedWith
+    Student "1" <--> "0..*" ClubMembership : holds
+    ClubMembership "0..*" --> "1" StudentClub : belongsTo
     StudentClub "1" --> "0..*" Event : organizes
     Event "1" -- "0..*" RSVP : has
     Student "1" --> "0..*" RSVP : submits
@@ -8,25 +8,36 @@ classDiagram
     FacultyAdministrator "1" --> "0..*" FundingApplication : reviews
 
     class Student {
-        int stuId
-        String name
-        String email
+        id
+        name
+        email
+    %%        int id
+    %%        String name
+    %%        String email
     %%        viewEvents()
     %%        rsvpEvent(eventId)
     %%        cancelRSVP(eventId)
     }
 
     class ClubMembership {
-        int stuId
-        int clubId
-        boolean isAdministrator
-        Date joinDate
+        id
+        isAdministrator
+        joinDate
+    %%        int id
+    %%        boolean isAdministrator
+    %%        Date joinDate
+    %%        inviteStudent(studentId)
+    %%        revokeAdministrator(studentId)
+    %%        viewUpcomingEvents()
     }
 
     class StudentClub {
-        int clubId
-        String name
-        String description
+        id
+        name
+        description
+    %%        int id
+    %%        String name
+    %%        String description
     %%        createEvent(title, description, venue, capacity)
     %%        editEvent(eventId, title, description, venue, capacity)
     %%        cancelEvent(eventId)
@@ -35,13 +46,20 @@ classDiagram
     }
 
     class Event {
-        int id
-        String title
-        String description
-        int capacity
-        String venue
-        Date date
-        String status
+        id
+        title
+        description
+        capacity
+        venue
+        date
+        status
+    %%        int id
+    %%        String title
+    %%        String description
+    %%        int capacity
+    %%        String venue
+    %%        Date date
+    %%        String status
     %%        createRSVP(studentId)
     %%        editRSVP(rsvpId, newDetails)
     %%        cancelRSVP(rsvpId)
@@ -49,16 +67,23 @@ classDiagram
     }
 
     class RSVP {
-        int id
-        Date date
-        String status
+        id
+        date
+        status
+    %%        int id
+    %%        Date date
+    %%        String status
     }
 
     class FundingApplication {
-        int id
-        String description
-        float amountRequested
-        String status
+        id
+        description
+        amountRequested
+        status
+    %%        int id
+    %%        String description
+    %%        float amountRequested
+    %%        String status
     %%        createApplication(description, amountRequested)
     %%        editApplication(applicationId, newDetails)
     %%        cancelApplication(applicationId)
@@ -66,9 +91,12 @@ classDiagram
     }
 
     class FacultyAdministrator {
-        int id
-        String name
-        String email
+        id
+        name
+        email
+    %%        int id
+    %%        String name
+    %%        String email
     %%        approveApplication(applicationId)
     %%        rejectApplication(applicationId)
     %%        viewAllApplications()
