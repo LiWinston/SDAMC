@@ -1,12 +1,12 @@
-package org.sdamc.jspdemo;
+package org.sdamc;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.sdamc.jspdemo.Pojo.Event;
-import org.sdamc.jspdemo.Utils.DatabaseUtil;
+import org.sdamc.Pojo.Event;
+import org.sdamc.Utils.DatabaseUtil;
 
 import java.io.IOException;
 import java.sql.Connection;

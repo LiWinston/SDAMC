@@ -1,4 +1,4 @@
-package org.sdamc.jspdemo.Pojo;
+package org.sdamc.Pojo;
 
 public class Event {
     public int getId() {

@@ -1,4 +1,4 @@
-package org.sdamc.jspdemo.Utils;
+package org.sdamc.Utils;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

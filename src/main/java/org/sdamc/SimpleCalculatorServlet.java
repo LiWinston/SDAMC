@@ -1,4 +1,4 @@
-    package org.sdamc.jspdemo;
+    package org.sdamc;
     import java.io.*;
 
     import jakarta.servlet.RequestDispatcher;
