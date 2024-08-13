@@ -8,3 +8,9 @@
 | Rong Wang   | 1373126     | RONGWANG         | nanlour         | 1373126    | rongwang@student.unimelb.edu.au  |
 ```cloud pgsql connection string:
 postgresql://postgres1_owner:nt4ug9SwXZUr@ep-icy-sea-a7vt9oiq.ap-southeast-2.aws.neon.tech/postgres1?sslmode=require
+
+
+
+##docker command for local img build and run
+docker build -t sda-mouse-clubhouse .
+docker run -p 8090:8080 sda-mouse-clubhouse
