@@ -27,12 +27,8 @@
 <body>
 <div class="container">
     <h1><%= request.getAttribute("message") %></h1>
-    <br/>
-    <a href="hello-servlet" class="btn btn-primary">Hello Servlet</a>
-    <br/>
-    <a href="simple-calculator-servlet" class="btn btn-primary">Simple Calculator</a>
-    <!-- 添加测试链接 -->
-    <a href="events" class="btn btn-primary">Test EventServlet</a>
+    <%--    event display--%>
+    <a href="events" class="btn btn-primary">Show events</a>
 </div>
 </body>
 </html>
