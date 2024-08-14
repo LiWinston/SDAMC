@@ -19,22 +19,9 @@ import java.util.List;
 
 @WebServlet(name = "eventServlet", value = "/events")
 public class EventServlet extends HttpServlet {
-    //driver
-//    private static final String JDBC_DRIVER = "org.postgresql.Driver";
-//    private static final String JDBC_URL = "jdbc:postgresql://localhost:5432/postgres";
-//    private static final String JDBC_USER = "postgres";
-//    private static final String JDBC_PASSWORD = "lyc980820";
 
     private static final String JDBC_DRIVER = "org.postgresql.Driver";
 
-    // 新的 JDBC URL
-    private static final String JDBC_URL = "jdbc:postgresql://ep-icy-sea-a7vt9oiq.ap-southeast-2.aws.neon.tech/postgres1?user=postgres1_owner&password=nt4ug9SwXZUr&sslmode=require";
-
-    // 新的数据库用户名
-    private static final String JDBC_USER = "postgres1_owner";
-
-    // 新的数据库密码
-    private static final String JDBC_PASSWORD = "nt4ug9SwXZUr";
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -72,33 +59,6 @@ public class EventServlet extends HttpServlet {
 
         request.setAttribute("events", events);
         request.getRequestDispatcher("/events.jsp").forward(request, response);
-//
-//        // 获取社团ID和事件ID
-//        String clubId = request.getPathInfo().split("/")[1];
-//        String eventId = request.getParameter("id");
-//
-//        // 根据是否有事件ID决定是查看单个事件还是所有事件
-//        String query = eventId != null
-//                ? "SELECT * FROM events WHERE id = ? AND club_id = ?"
-//                : "SELECT * FROM events WHERE club_id = ?";
-//
-//        try (Connection conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
-//             PreparedStatement stmt = conn.prepareStatement(query)) {
-//
-//            if (eventId != null) {
-//                stmt.setInt(1, Integer.parseInt(eventId));
-//                stmt.setInt(2, Integer.parseInt(clubId));
-//            } else {
-//                stmt.setInt(1, Integer.parseInt(clubId));
-//            }
-//
-//            ResultSet rs = stmt.executeQuery();
-//            request.setAttribute("events", rs);
-//            request.getRequestDispatcher("/WEB-INF/jsp/events.jsp").forward(request, response);
-//
-//        } catch (SQLException e) {
-//            throw new ServletException(e);
-//        }
     }
 
     @Override
@@ -116,7 +76,7 @@ public class EventServlet extends HttpServlet {
                 ? "UPDATE events SET title = ?, description = ?, venue = ?, capacity = ? WHERE id = ? AND club_id = ?"
                 : "INSERT INTO events (title, description, venue, capacity, club_id) VALUES (?, ?, ?, ?, ?)";
 
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
+        try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, title);
@@ -148,7 +108,7 @@ public class EventServlet extends HttpServlet {
 
         String query = "DELETE FROM events WHERE id = ? AND club_id = ?";
 
-        try (Connection conn = DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
+        try (Connection conn = DatabaseUtil.getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setInt(1, Integer.parseInt(eventId));
