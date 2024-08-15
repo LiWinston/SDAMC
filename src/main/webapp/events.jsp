@@ -29,7 +29,9 @@
         <td><a href="<%= request.getContextPath() %>/clubDetails?id=<%= event.getClubId() %>"><%= event.getClubName() %></a></td>
         <td>
             <a href="<%= request.getContextPath() %>/editEvent?id=<%= event.getId() %>">Edit</a>
-            <form action="<%= request.getContextPath() %>/deleteEvent?id=<%= event.getId() %>" method="post" style="display:inline;">
+            <form action="<%= request.getContextPath() %>/deleteEvent" method="post" style="display:inline;">
+                <input type="hidden" name="id" value="<%= event.getId() %>"/>
+                <input type="hidden" name="clubId" value="<%= event.getClubId() %>"/>
                 <input type="submit" value="Delete"/>
             </form>
         </td>
