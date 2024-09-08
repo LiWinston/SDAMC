@@ -31,13 +31,12 @@ public class CreateEventServlet extends HttpServlet {
         String description = request.getParameter("description");
         String venue = request.getParameter("venue");
         String capacity = request.getParameter("capacity");
-        //String clubId = request.getPathInfo().split("/")[1];
+        // String clubId = request.getPathInfo().split("/")[1];
         String clubId = "1";
 
         String query = "INSERT INTO events (title, description, venue, capacity, club_id) VALUES (?, ?, ?, ?, ?)";
 
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+        try (Connection conn = DatabaseUtil.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, title);
             stmt.setString(2, description);
@@ -47,15 +46,18 @@ public class CreateEventServlet extends HttpServlet {
             if (eventId != null) {
                 stmt.setInt(5, Integer.parseInt(eventId));
                 stmt.setInt(6, Integer.parseInt(clubId));
-            } else {
+            }
+            else {
                 stmt.setInt(5, Integer.parseInt(clubId));
             }
 
             stmt.executeUpdate();
             response.sendRedirect(request.getContextPath() + "/events");
 
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             throw new ServletException(e);
         }
     }
+
 }

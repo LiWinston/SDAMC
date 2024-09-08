@@ -22,20 +22,20 @@ public class EventServlet extends HttpServlet {
 
     private static final String JDBC_DRIVER = "org.postgresql.Driver";
 
-
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        //driver
+        // driver
         try {
             Class.forName(JDBC_DRIVER);
-        } catch (ClassNotFoundException e) {
+        }
+        catch (ClassNotFoundException e) {
             throw new ServletException(e);
         }
         List<Event> events = new ArrayList<>();
         try (Connection connection = DatabaseUtil.getConnection()) {
-            String sql = "SELECT e.id, e.title, e.description, e.venue, e.capacity, c.id AS clubId, c.name AS clubName " +
-                    "FROM events e INNER JOIN clubs c ON e.club_id = c.id";
+            String sql = "SELECT e.id, e.title, e.description, e.venue, e.capacity, c.id AS clubId, c.name AS clubName "
+                    + "FROM events e INNER JOIN clubs c ON e.club_id = c.id";
             try (PreparedStatement statement = connection.prepareStatement(sql)) {
                 try (ResultSet resultSet = statement.executeQuery()) {
                     while (resultSet.next()) {
@@ -49,11 +49,12 @@ public class EventServlet extends HttpServlet {
                         event.setClubName(resultSet.getString("clubName"));
                         events.add(event);
                         System.out.println(event);
-                        System.out.println("events"+ event);
+                        System.out.println("events" + event);
                     }
                 }
             }
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             throw new ServletException("Error retrieving events", e);
         }
 
@@ -76,8 +77,7 @@ public class EventServlet extends HttpServlet {
                 ? "UPDATE events SET title = ?, description = ?, venue = ?, capacity = ? WHERE id = ? AND club_id = ?"
                 : "INSERT INTO events (title, description, venue, capacity, club_id) VALUES (?, ?, ?, ?, ?)";
 
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+        try (Connection conn = DatabaseUtil.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, title);
             stmt.setString(2, description);
@@ -87,14 +87,16 @@ public class EventServlet extends HttpServlet {
             if (eventId != null) {
                 stmt.setInt(5, Integer.parseInt(eventId));
                 stmt.setInt(6, Integer.parseInt(clubId));
-            } else {
+            }
+            else {
                 stmt.setInt(5, Integer.parseInt(clubId));
             }
 
             stmt.executeUpdate();
             response.sendRedirect(request.getContextPath() + "/clubs/" + clubId + "/events");
 
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             throw new ServletException(e);
         }
     }
@@ -108,8 +110,7 @@ public class EventServlet extends HttpServlet {
 
         String query = "DELETE FROM events WHERE id = ? AND club_id = ?";
 
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+        try (Connection conn = DatabaseUtil.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setInt(1, Integer.parseInt(eventId));
             stmt.setInt(2, Integer.parseInt(clubId));
@@ -117,8 +118,10 @@ public class EventServlet extends HttpServlet {
 
             response.sendRedirect(request.getContextPath() + "/clubs/" + clubId + "/events");
 
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             throw new ServletException(e);
         }
     }
+
 }

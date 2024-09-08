@@ -30,8 +30,7 @@ public class DeleteEventServlet extends HttpServlet {
 
         String query = "DELETE FROM events WHERE id = ? AND club_id = ?";
 
-        try (Connection conn = DatabaseUtil.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+        try (Connection conn = DatabaseUtil.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setInt(1, Integer.parseInt(eventId));
             stmt.setInt(2, Integer.parseInt(clubId));
@@ -39,8 +38,10 @@ public class DeleteEventServlet extends HttpServlet {
 
             response.sendRedirect(request.getContextPath() + "/events");
 
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             throw new ServletException(e);
         }
     }
+
 }

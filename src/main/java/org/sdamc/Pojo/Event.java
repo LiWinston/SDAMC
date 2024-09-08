@@ -1,6 +1,7 @@
 package org.sdamc.Pojo;
 
 public class Event {
+
     public int getId() {
         return id;
     }
@@ -58,12 +59,19 @@ public class Event {
     }
 
     private int id;
+
     private String title;
+
     private String description;
+
     private String venue;
+
     private int capacity;
+
     private int clubId;
+
     private String clubName;
 
     // Getters and Setters for all fields
+
 }

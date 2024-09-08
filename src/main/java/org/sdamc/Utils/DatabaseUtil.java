@@ -3,15 +3,18 @@ package org.sdamc.Utils;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+
 /*
 * This is a utility class that provides an ORM interface for interacting with the database,
 * Aimed for abstract some of the boilerplate code.
 * */
 public class DatabaseUtil {
+
     DatabaseUtil() throws ClassNotFoundException {
-        //empty constructor
+        // empty constructor
         Class.forName(JDBC_DRIVER);
     }
+
     private static final String JDBC_DRIVER = "org.postgresql.Driver";
 
     // 新的 JDBC URL
