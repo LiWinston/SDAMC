@@ -1,0 +1,158 @@
+package org.sdamc.DomainObject;
+
+import java.sql.Timestamp;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import org.sdamc.DataMapper.DataMapper;
+
+public class Events extends DomainObject {
+
+	private static final String tableName = "events";
+
+	private final int id;
+
+	private String title;
+
+	private String description;
+
+	private String venue;
+
+	private int capacity;
+
+	private int clubId;
+
+	private Timestamp beginTime;
+
+	private Timestamp endTime;
+
+	Events(int id) {
+		this.id = id;
+	}
+
+	private void load() {
+		ResultSet result = DataMapper.GetMapper(tableName).getRecord(id);
+		try {
+			if (result.next()) {
+				title = result.getString("title");
+				description = result.getString("description");
+				venue = result.getString("venue");
+				capacity = result.getInt("capacity");
+				clubId = result.getInt("club_id");
+				beginTime = result.getTimestamp("begin_time");
+				endTime = result.getTimestamp("end_time");
+				initialed = true;
+			}
+		}
+		catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public String getTitle() {
+		if (!initialed) {
+			load();
+		}
+		return title;
+	}
+
+	public void setTitle(String title) {
+		if (!initialed) {
+			load();
+		}
+		this.title = title;
+	}
+
+	public String getDescription() {
+		if (!initialed) {
+			load();
+		}
+		return description;
+	}
+
+	public void setDescription(String description) {
+		if (!initialed) {
+			load();
+		}
+		this.description = description;
+	}
+
+	public String getVenue() {
+		if (!initialed) {
+			load();
+		}
+		return venue;
+	}
+
+	public void setVenue(String venue) {
+		if (!initialed) {
+			load();
+		}
+		this.venue = venue;
+	}
+
+	public Integer getCapacity() {
+		if (!initialed) {
+			load();
+		}
+		return capacity;
+	}
+
+	public void setCapacity(Integer capacity) {
+		if (!initialed) {
+			load();
+		}
+		this.capacity = capacity;
+	}
+
+	public int getClubId() {
+		if (!initialed) {
+			load();
+		}
+		return clubId;
+	}
+
+	public void setClubId(int clubId) {
+		if (!initialed) {
+			load();
+		}
+		this.clubId = clubId;
+	}
+
+	public Timestamp getBeginTime() {
+		if (!initialed) {
+			load();
+		}
+		return beginTime;
+	}
+
+	public void setBeginTime(Timestamp beginTime) {
+		if (!initialed) {
+			load();
+		}
+		this.beginTime = beginTime;
+	}
+
+	public Timestamp getEndTime() {
+		if (!initialed) {
+			load();
+		}
+		return endTime;
+	}
+
+	public void setEndTime(Timestamp endTime) {
+		if (!initialed) {
+			load();
+		}
+		this.endTime = endTime;
+	}
+
+	@Override
+	public String getTableName() {
+		return tableName;
+	}
+
+}
