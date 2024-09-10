@@ -3,6 +3,7 @@ package org.sdamc.DomainObject;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import org.sdamc.UnitofWork;
 import org.sdamc.DataMapper.DataMapper;
 
 public class ClubMemberships extends DomainObject {
@@ -63,6 +64,7 @@ public class ClubMemberships extends DomainObject {
 		if (!initialed) {
 			load();
 		}
+		UnitofWork.getCurrent().registerDirty(this);
 		this.role = role;
 	}
 

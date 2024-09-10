@@ -1,5 +1,6 @@
 package org.sdamc.DomainObject;
 
+import org.sdamc.UnitofWork;
 import org.sdamc.DataMapper.DataMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -51,6 +52,7 @@ public class Rsvps extends DomainObject {
 		if (!initialed) {
 			load();
 		}
+		UnitofWork.getCurrent().registerDirty(this);
 		this.studentId = studentId;
 	}
 
@@ -65,6 +67,7 @@ public class Rsvps extends DomainObject {
 		if (!initialed) {
 			load();
 		}
+		UnitofWork.getCurrent().registerDirty(this);
 		this.eventId = eventId;
 	}
 
@@ -79,6 +82,7 @@ public class Rsvps extends DomainObject {
 		if (!initialed) {
 			load();
 		}
+		UnitofWork.getCurrent().registerDirty(this);
 		this.numTickets = numTickets;
 	}
 
