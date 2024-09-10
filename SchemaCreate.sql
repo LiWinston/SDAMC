@@ -26,7 +26,15 @@ CREATE INDEX idx_events_end_time ON events (end_time);
 CREATE TABLE students (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(30) NOT NULL
+);
+
+CREATE TABLE admins (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(30) NOT NULL
 );
 
 CREATE TYPE member_role AS ENUM ('normal_member', 'admin');
@@ -54,3 +62,15 @@ CREATE TABLE rsvps (
 CREATE INDEX rsvps_sid_eid_hash ON rsvps (student_id, event_id);
 CREATE INDEX rsvps_sid_hash ON rsvps (student_id);
 CREATE INDEX rsvps_eid_hash ON rsvps (event_id);
+
+CREATE TYPE funding_status AS ENUM ('In Draft', 'Submitted', 'In Review', 'Approved', 'Rejected');
+CREATE TABLE funding_applications (
+    id SERIAL PRIMARY KEY,
+    description VARCHAR(255) NOT NULL,
+    amount FLOAT NOT NULL,
+    student_id INTEGER NOT NULL,
+    club_id INTEGER NOT NULL,
+    status funding_status NOT NULL,
+    FOREIGN KEY (student_id) REFERENCES students(id),
+    FOREIGN KEY (club_id) REFERENCES club(id)
+);
