@@ -27,7 +27,7 @@ public class Events extends DomainObject {
 
 	private Timestamp endTime;
 
-	Events(int id) {
+	public Events(int id) {
 		this.id = id;
 	}
 
@@ -65,7 +65,7 @@ public class Events extends DomainObject {
 		if (!initialed) {
 			load();
 		}
-        UnitofWork.getCurrent().registerDirty(this);
+		UnitofWork.getCurrent().registerDirty(this);
 		this.title = title;
 	}
 
@@ -80,7 +80,7 @@ public class Events extends DomainObject {
 		if (!initialed) {
 			load();
 		}
-        UnitofWork.getCurrent().registerDirty(this);
+		UnitofWork.getCurrent().registerDirty(this);
 		this.description = description;
 	}
 
@@ -95,7 +95,7 @@ public class Events extends DomainObject {
 		if (!initialed) {
 			load();
 		}
-        UnitofWork.getCurrent().registerDirty(this);
+		UnitofWork.getCurrent().registerDirty(this);
 		this.venue = venue;
 	}
 
@@ -110,7 +110,7 @@ public class Events extends DomainObject {
 		if (!initialed) {
 			load();
 		}
-        UnitofWork.getCurrent().registerDirty(this);
+		UnitofWork.getCurrent().registerDirty(this);
 		this.capacity = capacity;
 	}
 
@@ -125,7 +125,7 @@ public class Events extends DomainObject {
 		if (!initialed) {
 			load();
 		}
-        UnitofWork.getCurrent().registerDirty(this);
+		UnitofWork.getCurrent().registerDirty(this);
 		this.clubId = clubId;
 	}
 
@@ -140,7 +140,7 @@ public class Events extends DomainObject {
 		if (!initialed) {
 			load();
 		}
-        UnitofWork.getCurrent().registerDirty(this);
+		UnitofWork.getCurrent().registerDirty(this);
 		this.beginTime = beginTime;
 	}
 
@@ -155,7 +155,7 @@ public class Events extends DomainObject {
 		if (!initialed) {
 			load();
 		}
-        UnitofWork.getCurrent().registerDirty(this);
+		UnitofWork.getCurrent().registerDirty(this);
 		this.endTime = endTime;
 	}
 

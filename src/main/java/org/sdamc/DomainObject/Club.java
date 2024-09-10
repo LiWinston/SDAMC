@@ -17,7 +17,7 @@ public class Club extends DomainObject {
 
 	private String location;
 
-	Club(int id) {
+	public Club(int id) {
 		this.id = id;
 	}
 

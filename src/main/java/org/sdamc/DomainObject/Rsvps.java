@@ -17,7 +17,7 @@ public class Rsvps extends DomainObject {
 
 	private int numTickets;
 
-	Rsvps(int id) {
+	public Rsvps(int id) {
 		this.id = id;
 	}
 

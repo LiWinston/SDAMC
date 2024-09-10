@@ -19,7 +19,7 @@ public class ClubMemberships extends DomainObject {
 	private String role;
 
 	// Constructor
-	ClubMemberships(int id) {
+	public ClubMemberships(int id) {
 		this.id = id;
 	}
 

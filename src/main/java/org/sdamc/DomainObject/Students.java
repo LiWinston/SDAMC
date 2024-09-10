@@ -15,7 +15,7 @@ public class Students extends DomainObject {
 
 	private String email;
 
-	Students(int id) {
+	public Students(int id) {
 		this.id = id;
 	}
 
