@@ -31,13 +31,17 @@ CREATE TABLE students (
 
 CREATE TYPE member_role AS ENUM ('normal_member', 'admin');
 CREATE TABLE club_memberships (
+    id SERIAL PRIMARY KEY,
     student_id INTEGER NOT NULL,
     club_id INTEGER NOT NULL,
     role member_role NOT NULL DEFAULT 'normal_member',
-    PRIMARY KEY (student_id, club_id),
+    
+    CONSTRAINT unique_student_club UNIQUE (student_id, club_id),
+
     FOREIGN KEY (student_id) REFERENCES students(id),
     FOREIGN KEY (club_id) REFERENCES clubs(id)
 );
+CREATE INDEX idx_club_memberships_student_club ON club_memberships (student_id, club_id);
 
 CREATE TABLE rsvps (
     id SERIAL PRIMARY KEY,
