@@ -20,28 +20,28 @@ import java.util.List;
 @WebServlet(name = "deleteEventServlet", value = "/deleteEvent")
 public class DeleteEventServlet extends HttpServlet {
 
-	private static final String JDBC_DRIVER = "org.postgresql.Driver";
+    private static final String JDBC_DRIVER = "org.postgresql.Driver";
 
-	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		String eventId = request.getParameter("id");
-		String clubId = request.getParameter("clubId");
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String eventId = request.getParameter("id");
+        String clubId = request.getParameter("clubId");
 
-		String query = "DELETE FROM events WHERE id = ? AND club_id = ?";
+        String query = "DELETE FROM events WHERE id = ? AND club_id = ?";
 
-		try (Connection conn = DatabaseUtil.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+        try (Connection conn = DatabaseUtil.getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
 
-			stmt.setInt(1, Integer.parseInt(eventId));
-			stmt.setInt(2, Integer.parseInt(clubId));
-			stmt.executeUpdate();
+            stmt.setInt(1, Integer.parseInt(eventId));
+            stmt.setInt(2, Integer.parseInt(clubId));
+            stmt.executeUpdate();
 
-			response.sendRedirect(request.getContextPath() + "/events");
+            response.sendRedirect(request.getContextPath() + "/events");
 
-		}
-		catch (SQLException e) {
-			throw new ServletException(e);
-		}
-	}
+        }
+        catch (SQLException e) {
+            throw new ServletException(e);
+        }
+    }
 
 }
