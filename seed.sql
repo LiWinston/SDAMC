@@ -36,27 +36,27 @@ INSERT INTO events (title, description, venue, capacity, club_id, begin_time, en
     ('Robotics Competition', 'A competition to showcase and test your robotics skills.', 'Melbourne University Engineering Building', 40, 11, '2024-11-20 09:00:00', '2024-11-20 17:00:00'),
     ('Book Reading Session', 'A session to discuss and share thoughts on a selected book.', 'Melbourne University Media Lab', 30, 12, '2024-12-15 14:00:00', '2024-12-15 16:00:00');
 
-INSERT INTO students (name, email) VALUES
-    ('Alice Johnson', 'alice.johnson@student.unimelb.edu.au'),
-    ('Bob Smith', 'bob.smith@student.unimelb.edu.au'),
-    ('Charlie Brown', 'charlie.brown@student.unimelb.edu.au'),
-    ('Diana King', 'diana.king@student.unimelb.edu.au'),
-    ('Edward Lee', 'edward.lee@student.unimelb.edu.au'),
-    ('Fiona White', 'fiona.white@student.unimelb.edu.au'),
-    ('George Miller', 'george.miller@student.unimelb.edu.au'),
-    ('Hannah Scott', 'hannah.scott@student.unimelb.edu.au'),
-    ('Ivan Davis', 'ivan.davis@student.unimelb.edu.au'),
-    ('Julia Adams', 'julia.adams@student.unimelb.edu.au'),
-    ('Kevin Brown', 'kevin.brown@student.unimelb.edu.au'),
-    ('Laura Green', 'laura.green@student.unimelb.edu.au'),
-    ('Michael Harris', 'michael.harris@student.unimelb.edu.au'),
-    ('Nina Walker', 'nina.walker@student.unimelb.edu.au'),
-    ('Oliver Young', 'oliver.young@student.unimelb.edu.au'),
-    ('Paula Edwards', 'paula.edwards@student.unimelb.edu.au'),
-    ('Quincy Taylor', 'quincy.taylor@student.unimelb.edu.au'),
-    ('Rachel Lewis', 'rachel.lewis@student.unimelb.edu.au'),
-    ('Steve Anderson', 'steve.anderson@student.unimelb.edu.au'),
-    ('Tina Martinez', 'tina.martinez@student.unimelb.edu.au');
+INSERT INTO students (name, email, password) VALUES
+    ('Alice Johnson', 'alice.johnson@student.unimelb.edu.au', '1234'),
+    ('Bob Smith', 'bob.smith@student.unimelb.edu.au', '1234'),
+    ('Charlie Brown', 'charlie.brown@student.unimelb.edu.au', '1234'),
+    ('Diana King', 'diana.king@student.unimelb.edu.au', '1234'),
+    ('Edward Lee', 'edward.lee@student.unimelb.edu.au', '1234'),
+    ('Fiona White', 'fiona.white@student.unimelb.edu.au', '1234'),
+    ('George Miller', 'george.miller@student.unimelb.edu.au', '1234'),
+    ('Hannah Scott', 'hannah.scott@student.unimelb.edu.au', '1234'),
+    ('Ivan Davis', 'ivan.davis@student.unimelb.edu.au', '1234'),
+    ('Julia Adams', 'julia.adams@student.unimelb.edu.au', '1234'),
+    ('Kevin Brown', 'kevin.brown@student.unimelb.edu.au', '1234'),
+    ('Laura Green', 'laura.green@student.unimelb.edu.au', '1234'),
+    ('Michael Harris', 'michael.harris@student.unimelb.edu.au', '1234'),
+    ('Nina Walker', 'nina.walker@student.unimelb.edu.au', '1234'),
+    ('Oliver Young', 'oliver.young@student.unimelb.edu.au', '1234'),
+    ('Paula Edwards', 'paula.edwards@student.unimelb.edu.au', '1234'),
+    ('Quincy Taylor', 'quincy.taylor@student.unimelb.edu.au', '1234'),
+    ('Rachel Lewis', 'rachel.lewis@student.unimelb.edu.au', '1234'),
+    ('Steve Anderson', 'steve.anderson@student.unimelb.edu.au', '1234'),
+    ('Tina Martinez', 'tina.martinez@student.unimelb.edu.au', '1234');
 
 INSERT INTO club_memberships (student_id, club_id, role) VALUES
     (1, 1, 'admin');
@@ -102,3 +102,10 @@ INSERT INTO rsvps (student_id, event_id, num_tickets) VALUES
     (18, 10, 2), -- Rachel Lewis RSVPs for the Culinary Masterclass
     (19, 11, 1), -- Steve Anderson RSVPs for the Robotics Competition
     (20, 12, 1); -- Tina Martinez RSVPs for the Book Reading Session
+
+INSERT INTO funding_applications (description, amount, student_id, club_id, status) VALUES
+('Funding for new sports equipment', 1500.00, 1, 1, 'Submitted'),
+('Funding for science project', 500.00, 2, 2, 'In Review'),
+('Funding for art supplies', 300.00, 3, 3, 'Approved'),
+('Funding for music instruments', 1200.00, 4, 4, 'Rejected'),
+('Funding for tech club event', 800.00, 5, 5, 'In Draft');
