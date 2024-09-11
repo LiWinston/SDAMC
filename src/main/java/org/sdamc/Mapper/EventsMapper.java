@@ -1,4 +1,4 @@
-package org.sdamc.DataMapper;
+package org.sdamc.Mapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

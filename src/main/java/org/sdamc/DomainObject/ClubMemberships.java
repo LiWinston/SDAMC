@@ -4,7 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.sdamc.UnitofWork;
-import org.sdamc.DataMapper.DataMapper;
+import org.sdamc.Mapper.DataMapper;
 
 public class ClubMemberships extends DomainObject {
 

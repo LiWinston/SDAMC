@@ -1,6 +1,6 @@
 package org.sdamc;
 
-import org.sdamc.DataMapper.DataMapper;
+import org.sdamc.Mapper.DataMapper;
 import org.sdamc.DomainObject.DomainObject;
 import java.util.List;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package org.sdamc.DataMapper;
+package org.sdamc.Mapper;
 
 import org.sdamc.DomainObject.DomainObject;
 import java.util.HashMap;

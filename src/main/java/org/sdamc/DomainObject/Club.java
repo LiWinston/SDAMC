@@ -1,7 +1,7 @@
 package org.sdamc.DomainObject;
 
 import org.sdamc.UnitofWork;
-import org.sdamc.DataMapper.DataMapper;
+import org.sdamc.Mapper.DataMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
