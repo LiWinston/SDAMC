@@ -1,4 +1,5 @@
-drop TABLE IF EXISTS clubs, events, students, club_memberships, club_admins, rsvps, admins, funding_applications;
+drop TABLE IF EXISTS clubs, events, students, club_memberships, member_role, rsvps, admins, funding_applications;
+drop TYPE IF EXISTS member_role, funding_status;
 
 -- 创建 clubs 表
 CREATE TABLE clubs (
@@ -72,5 +73,5 @@ CREATE TABLE funding_applications (
     club_id INTEGER NOT NULL,
     status funding_status NOT NULL,
     FOREIGN KEY (student_id) REFERENCES students(id),
-    FOREIGN KEY (club_id) REFERENCES club(id)
+    FOREIGN KEY (club_id) REFERENCES clubs(id)
 );
