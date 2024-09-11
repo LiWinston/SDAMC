@@ -1,4 +1,4 @@
-drop TABLE IF EXISTS clubs, events, students, club_memberships, club_admins, rsvps;
+drop TABLE IF EXISTS clubs, events, students, club_memberships, club_admins, rsvps, admins, funding_applications;
 
 -- 创建 clubs 表
 CREATE TABLE clubs (
