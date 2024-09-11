@@ -1,6 +1,5 @@
 package org.sdamc.Controller;
 
-
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,6 +13,7 @@ import java.util.UUID;
 
 @WebServlet(name = "EventController", value = "/events/*")
 public class EventController extends HttpServlet {
+
     private EventsMapper eventsMapper;
 
     @Override
@@ -31,7 +31,7 @@ public class EventController extends HttpServlet {
         String venue = req.getParameter("venue");
         int capacity = Integer.parseInt(req.getParameter("capacity"));
 
-        //生成uuid 用于事件的唯一标识
+        // 生成uuid 用于事件的唯一标识
         int uuid = UUID.randomUUID().hashCode();
         Events event = new Events(uuid);
         event.setTitle(title);
@@ -39,7 +39,7 @@ public class EventController extends HttpServlet {
         event.setVenue(venue);
         event.setCapacity(capacity);
 
-        eventsMapper.insert(event);  // 使用Mapper代替JDBC操作
+        eventsMapper.insert(event); // 使用Mapper代替JDBC操作
 
         resp.getWriter().write("Event created successfully");
     }
@@ -57,7 +57,8 @@ public class EventController extends HttpServlet {
             event.setCapacity(Integer.parseInt(req.getParameter("capacity")));
             eventsMapper.update(event);
             resp.getWriter().write("Event updated successfully");
-        } else {
+        }
+        else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Event not found");
         }
     }
@@ -79,4 +80,5 @@ public class EventController extends HttpServlet {
             resp.getWriter().write(event.toString() + "\n");
         }
     }
+
 }

@@ -9,6 +9,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 public class EventsMapper extends DataMapper {
@@ -36,7 +37,8 @@ public class EventsMapper extends DataMapper {
                 event.setEndTime(rs.getTimestamp("end_time"));
                 events.add(event);
             }
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             throw new RuntimeException(e);
         }
         if (events.isEmpty()) {
@@ -76,6 +78,7 @@ public class EventsMapper extends DataMapper {
         Events event = (Events) obj;
         String sql = "INSERT INTO events (title, description, venue, capacity, club_id, begin_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
+            stmt.setInt(0, UUID.randomUUID().hashCode());
             stmt.setString(1, event.getTitle());
             stmt.setString(2, event.getDescription());
             stmt.setString(3, event.getVenue());
@@ -128,4 +131,5 @@ public class EventsMapper extends DataMapper {
             e.printStackTrace();
         }
     }
+
 }
