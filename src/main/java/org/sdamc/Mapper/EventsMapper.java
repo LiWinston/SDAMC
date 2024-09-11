@@ -1,14 +1,16 @@
 package org.sdamc.Mapper;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
+import lombok.extern.slf4j.Slf4j;
 import org.sdamc.DomainObject.DomainObject;
 import org.sdamc.DomainObject.Events;
 import org.sdamc.Utils.DatabaseUtil;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
 
+@Slf4j
 public class EventsMapper extends DataMapper {
 
     @Override
@@ -16,6 +18,31 @@ public class EventsMapper extends DataMapper {
         // TODO I do not know in lazy lord pattern, if mapper should check if given id
         // exist?
         return new Events(id);
+    }
+
+    public List<Events> findAll() {
+        List<Events> events = new java.util.ArrayList<>();
+        String sql = "SELECT * FROM events";
+        try (PreparedStatement statement = DatabaseUtil.getConnection().prepareStatement(sql)) {
+            ResultSet rs = statement.executeQuery();
+            while (rs.next()) {
+                Events event = new Events(rs.getInt("id"));
+                event.setTitle(rs.getString("title"));
+                event.setDescription(rs.getString("description"));
+                event.setVenue(rs.getString("venue"));
+                event.setCapacity(rs.getInt("capacity"));
+                event.setClubId(rs.getInt("club_id"));
+                event.setBeginTime(rs.getTimestamp("begin_time"));
+                event.setEndTime(rs.getTimestamp("end_time"));
+                events.add(event);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        if (events.isEmpty()) {
+            log.info("No events found");
+        }
+        return events;
     }
 
     @Override
@@ -91,4 +118,14 @@ public class EventsMapper extends DataMapper {
         return null;
     }
 
+    public void deleteById(int eventId) {
+        String sql = "DELETE FROM events WHERE id = ?";
+        try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
+            stmt.setInt(1, eventId);
+            stmt.executeUpdate();
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }
