@@ -1,19 +1,26 @@
 package org.sdamc.DomainObject;
 
+import lombok.Getter;
+import lombok.ToString;
 import org.sdamc.UnitofWork;
 import org.sdamc.Mapper.DataMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+@ToString
 public class Students extends DomainObject {
 
     public static final String tableName = "students";
 
+    // Getters and Setters
+    @Getter
     private final int id;
 
     private String name;
 
     private String email;
+
+    private String password;
 
     public Students(int id) {
         this.id = id;
@@ -46,11 +53,6 @@ public class Students extends DomainObject {
     public void delete() {
         UnitofWork.getCurrent().registerDeleted(this);
         deleted = true;
-    }
-
-    // Getters and Setters
-    public int getId() {
-        return id;
     }
 
     public String getName() {
@@ -89,6 +91,25 @@ public class Students extends DomainObject {
             UnitofWork.getCurrent().registerDirty(this);
         }
         this.email = email;
+    }
+
+    public String getPassword() {
+        assert (!deleted);
+        if (!initialed) {
+            load();
+        }
+        return password;
+    }
+
+    public void setPassword(String password) {
+        assert (!deleted);
+        if (!initialed) {
+            load();
+        }
+        if (!insert) {
+            UnitofWork.getCurrent().registerDirty(this);
+        }
+        this.password = password;
     }
 
     @Override

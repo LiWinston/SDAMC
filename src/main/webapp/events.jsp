@@ -161,8 +161,8 @@
                         <th>Description</th>
                         <th>Venue</th>
                         <th>Capacity</th>
-                        <th>Club</th>
-                        <th>Actions</th>
+                        <th>Begin</th>
+                        <th>End</th>
                     </tr>
                     </thead>
                     <tbody>

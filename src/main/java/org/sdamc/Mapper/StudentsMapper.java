@@ -1,19 +1,49 @@
 package org.sdamc.Mapper;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
+import lombok.extern.slf4j.Slf4j;
 import org.sdamc.DomainObject.DomainObject;
 import org.sdamc.DomainObject.Students;
 import org.sdamc.Utils.DatabaseUtil;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
+/*
+CREATE TABLE students (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+email VARCHAR(255) NOT NULL UNIQUE,
+password VARCHAR(30) NOT NULL
+);
+*/
+@Slf4j
 public class StudentsMapper extends DataMapper {
 
     @Override
     public DomainObject find(int id) {
         return new Students(id);
+    }
+
+    public Students findByEmail(String email) {
+        String sql = "SELECT id, name, email, password FROM students WHERE email = ?";
+        try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
+            stmt.setString(1, email);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                log.info("Found student {}{}{}", rs.getInt("id"), rs.getString("name"), rs.getString("email"));
+                var st = new Students(rs.getInt("id"));
+                st.setName(rs.getString("name"));
+                st.setEmail(rs.getString("email"));
+                st.setPassword(rs.getString("password"));
+                return st;
+            }
+            return null;
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
@@ -40,11 +70,12 @@ public class StudentsMapper extends DataMapper {
             throw new IllegalArgumentException("Invalid object type");
         }
         Students student = (Students) obj;
-        String sql = "INSERT INTO students (name, email) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO students (id, name, email, password) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
-            stmt.setInt(1, student.getId());
+            stmt.setInt(1, getNewId());
             stmt.setString(2, student.getName());
             stmt.setString(3, student.getEmail());
+            stmt.setString(4, student.getPassword());
             stmt.executeUpdate();
         }
         catch (SQLException e) {

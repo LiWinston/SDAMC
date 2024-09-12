@@ -24,6 +24,33 @@ public class EventController extends HttpServlet {
         this.eventsMapper = new EventsMapper();
     }
 
+    // 查找所有事件 (GET)
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+        // 获取所有事件
+        String pathInfo = req.getPathInfo();
+        switch (pathInfo) {
+            case null:
+            case "/":
+                handleGetAllEvents(req, resp);
+                break;
+            default:
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Invalid path");
+        }
+    }
+
+    private void handleGetAllEvents(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException, ServletException {
+        UnitofWork.newCurrent();
+        List<Events> eventsList = eventsMapper.findAll();
+
+        for (Events event : eventsList) {
+            resp.getWriter().write(event.toString() + "\n");
+        }
+        req.setAttribute("events", eventsList);
+        req.getRequestDispatcher("/events.jsp").forward(req, resp);
+    }
+
     // 创建事件 (POST)
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -71,20 +98,6 @@ public class EventController extends HttpServlet {
         int eventId = Integer.parseInt(req.getPathInfo().substring(1));
         eventsMapper.deleteById(eventId);
         resp.getWriter().write("Event deleted successfully");
-    }
-
-    // 查找所有事件 (GET)
-    @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-        // 获取所有事件
-        UnitofWork.newCurrent();
-        List<Events> eventsList = eventsMapper.findAll();
-
-        for (Events event : eventsList) {
-            resp.getWriter().write(event.toString() + "\n");
-        }
-        req.setAttribute("events", eventsList);
-        req.getRequestDispatcher("/events.jsp").forward(req, resp);
     }
 
 }
