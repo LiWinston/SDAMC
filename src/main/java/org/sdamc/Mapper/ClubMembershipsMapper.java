@@ -70,15 +70,10 @@ public class ClubMembershipsMapper extends DataMapper {
     }
 
     @Override
-    public ResultSet getRecord(int id) {
+    public ResultSet getRecord(int id) throws SQLException {
         String sql = "SELECT * FROM club_memberships WHERE id = " + id + ";";
-        try (PreparedStatement statement = DatabaseUtil.getConnection().prepareStatement(sql)) {
-            return statement.executeQuery();
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
+        PreparedStatement statement = DatabaseUtil.getConnection().prepareStatement(sql);
+        return statement.executeQuery();
     }
 
 }
