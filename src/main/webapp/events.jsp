@@ -1,4 +1,4 @@
-<%@ page import="org.sdamc.Pojo.Event" %>
+<%@ page import="org.sdamc.DomainObject.Events " %>
 <%@ page import="java.util.List" %>
 <%@ page contentType="text/html;charset=UTF-8" %>
 <!DOCTYPE html>
@@ -167,16 +167,18 @@
                     </thead>
                     <tbody>
                     <%
-                        List<Event> events = (List<Event>) request.getAttribute("events");
+                        List<Events> events = (List<Events>) request.getAttribute("events");
                         if (events!= null) {
-                            for (Event event : events) {
+                            for (Events event : events) {
                     %>
                     <tr>
-                        <td><a href="<%= request.getContextPath() %>/eventDetails?id=<%= event.getId() %>"><%= event.getTitle() %></a></td>
+                        <td><a href="<%= request.getContextPath() %>/events?id=<%= event.getId() %>"><%= event.getTitle() %></a></td>
                         <td><%= event.getDescription() %></td>
                         <td><%= event.getVenue() %></td>
                         <td><%= event.getCapacity() %></td>
-                        <td><a href="<%= request.getContextPath() %>/clubDetails?id=<%= event.getClubId() %>"><%= event.getClubName() %></a></td>
+                        <td><%= event.getBeginTime() %></td>
+                        <td><%= event.getEndTime() %></td>
+<%--                        <td><a href="<%= request.getContextPath() %>/clubDetails?id=<%= event.getClubId() %>"><%= event.getClubName() %></a></td>--%>
                         <td>
                             <a class="btn btn-edit btn-sm" href="<%= request.getContextPath() %>/editEvent?id=<%= event.getId() %>"><i class="fas fa-edit"></i> Edit</a>
                             <form action="<%= request.getContextPath() %>/deleteEvent" method="post" style="display:inline;">
@@ -212,9 +214,12 @@
                 <input type="text" name="description" class="form-control mb-2 mr-sm-2" placeholder="Description" required/>
                 <input type="text" name="venue" class="form-control mb-2 mr-sm-2" placeholder="Venue" required/>
                 <input type="number" name="capacity" class="form-control mb-2 mr-sm-2" placeholder="Capacity"/>
+                <input type="datetime-local" name="beginTime" class="form-control mb-2 mr-sm-2" placeholder="Begin Time" required/>
+                <input type="datetime-local" name="endTime" class="form-control mb-2 mr-sm-2" placeholder="End Time" required/>
                 <input type="hidden" name="clubId" value="<%= request.getParameter("clubId") %>"/>
                 <button type="submit" class="btn btn-custom mb-2">Create</button>
             </form>
+
         </div>
     </div>
 </div>

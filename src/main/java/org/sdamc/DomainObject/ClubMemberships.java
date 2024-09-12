@@ -29,7 +29,7 @@ public class ClubMemberships extends DomainObject {
             if (result.next()) {
                 studentId = result.getInt("student_id");
                 clubId = result.getInt("club_id");
-                role = result.getString("member_role");
+                role = result.getString("role");
                 initialed = true;
             }
         }

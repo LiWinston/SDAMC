@@ -1,5 +1,6 @@
 package org.sdamc.Controller;
 
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -73,12 +74,14 @@ public class EventController extends HttpServlet {
 
     // 查找所有事件 (GET)
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
         // 获取所有事件
         List<Events> eventsList = eventsMapper.findAll();
         for (Events event : eventsList) {
             resp.getWriter().write(event.toString() + "\n");
         }
+        req.setAttribute("events", eventsList);
+        req.getRequestDispatcher("/events.jsp").forward(req, resp);
     }
 
 }

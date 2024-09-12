@@ -46,7 +46,7 @@ public class DatabaseTest {
     }
 
     @Test
-    public void testclub() throws SQLException {
+    public void testMappers() throws SQLException {
         assertNotNull(DatabaseUtil.getConnection(), "Connection should not be null");
         UnitofWork.newCurrent();
         Clubs club = (Clubs) DataMapper.GetMapper(Clubs.tableName).find(1);
@@ -55,6 +55,30 @@ public class DatabaseTest {
         UnitofWork.getCurrent().commit();
         club = (Clubs) DataMapper.GetMapper(Clubs.tableName).find(1);
         assertEquals(club.getName(), "test name");
+
+        UnitofWork.newCurrent();
+        ClubMemberships membership = (ClubMemberships) DataMapper.GetMapper(ClubMemberships.tableName).find(1);
+        assertEquals(membership.getStudentId(), 1);
+        assertEquals(membership.getClubId(), 1);
+        assertEquals(membership.getRole(), "admin");
+        Students student = (Students) DataMapper.GetMapper(Students.tableName).find(membership.getStudentId());
+        assertEquals(student.getName(), "Alice Johnson");
+        club = (Clubs) DataMapper.GetMapper(Clubs.tableName).find(membership.getClubId());
+        assertEquals(club.getName(), "test name");
+
+        ClubMemberships membership2 = (ClubMemberships) DataMapper.GetMapper(ClubMemberships.tableName).find(2);
+
+        membership2.setRole("admin");
+        student.setEmail("testemail");
+        assertEquals(membership2.getRole(), "admin");
+        assertEquals(student.getEmail(), "testemail");
+        UnitofWork.getCurrent().commit();
+
+        membership = (ClubMemberships) DataMapper.GetMapper(ClubMemberships.tableName).find(1);
+        student = (Students) DataMapper.GetMapper(Students.tableName).find(membership.getStudentId());
+        membership2 = (ClubMemberships) DataMapper.GetMapper(ClubMemberships.tableName).find(2);
+        assertEquals(membership2.getRole(), "admin");
+        assertEquals(student.getEmail(), "testemail");
     }
 
     @AfterEach
