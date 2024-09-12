@@ -8,7 +8,7 @@ import org.sdamc.Mapper.DataMapper;
 
 public class ClubMemberships extends DomainObject {
 
-    private static final String tableName = "club_memberships";
+    public static final String tableName = "club_memberships";
 
     private final int id;
 
@@ -24,8 +24,8 @@ public class ClubMemberships extends DomainObject {
     }
 
     private void load() {
-        ResultSet result = DataMapper.GetMapper(tableName).getRecord(id);
         try {
+            ResultSet result = DataMapper.GetMapper(tableName).getRecord(id);
             if (result.next()) {
                 studentId = result.getInt("student_id");
                 clubId = result.getInt("club_id");
