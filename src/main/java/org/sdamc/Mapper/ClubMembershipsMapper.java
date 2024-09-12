@@ -22,7 +22,7 @@ public class ClubMembershipsMapper extends DataMapper {
             throw new IllegalArgumentException("Invalid object type");
         }
         ClubMemberships membership = (ClubMemberships) obj;
-        String sql = "UPDATE club_memberships SET student_id = ?, club_id = ?, role = ? WHERE id = ?";
+        String sql = "UPDATE club_memberships SET student_id = ?, club_id = ?, role = ?::member_role WHERE id = ?";
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
             stmt.setInt(1, membership.getStudentId());
             stmt.setInt(2, membership.getClubId());
