@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.sdamc.DomainObject.Events;
 import org.sdamc.Mapper.EventsMapper;
+import org.sdamc.UnitofWork;
 
 import java.io.IOException;
 import java.util.List;
@@ -76,7 +77,9 @@ public class EventController extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
         // 获取所有事件
+        UnitofWork.newCurrent();
         List<Events> eventsList = eventsMapper.findAll();
+
         for (Events event : eventsList) {
             resp.getWriter().write(event.toString() + "\n");
         }
