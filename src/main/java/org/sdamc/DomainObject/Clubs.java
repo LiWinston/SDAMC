@@ -5,9 +5,9 @@ import org.sdamc.Mapper.DataMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class Club extends DomainObject {
+public class Clubs extends DomainObject {
 
-    private static final String tableName = "club";
+    public static final String tableName = "clubs";
 
     private final int id;
 
@@ -17,13 +17,13 @@ public class Club extends DomainObject {
 
     private String location;
 
-    public Club(int id) {
+    public Clubs(int id) {
         this.id = id;
     }
 
     private void load() {
-        ResultSet result = DataMapper.GetMapper(tableName).getRecord(id);
         try {
+            ResultSet result = DataMapper.GetMapper(tableName).getRecord(id);
             if (result.next()) {
                 name = result.getString("name");
                 description = result.getString("description");

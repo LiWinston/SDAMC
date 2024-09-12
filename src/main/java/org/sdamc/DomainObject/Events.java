@@ -9,7 +9,7 @@ import org.sdamc.Mapper.DataMapper;
 
 public class Events extends DomainObject {
 
-    private static final String tableName = "events";
+    public static final String tableName = "events";
 
     private final int id;
 
@@ -32,8 +32,8 @@ public class Events extends DomainObject {
     }
 
     private void load() {
-        ResultSet result = DataMapper.GetMapper(tableName).getRecord(id);
         try {
+            ResultSet result = DataMapper.GetMapper(tableName).getRecord(id);
             if (result.next()) {
                 title = result.getString("title");
                 description = result.getString("description");

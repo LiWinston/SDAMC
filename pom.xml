@@ -106,6 +106,17 @@
             </plugin>
 
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0-M5</version> <!-- Latest version recommended -->
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include> <!-- Ensure test class naming is correct -->
+                    </includes>
+                </configuration>
+            </plugin>
+
+            <plugin>
                 <groupId>io.spring.javaformat</groupId>
                 <artifactId>spring-javaformat-maven-plugin</artifactId>
                 <version>0.0.43</version>

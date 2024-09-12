@@ -16,7 +16,7 @@ public class EventsMapper extends DataMapper {
 
     @Override
     public DomainObject find(int id) {
-        // TODO I do not know in lazy lord pattern, if mapper should check if given id
+        // TODO I do not know in lazy load pattern, if mapper should check if given id
         // exist?
         return new Events(id);
     }

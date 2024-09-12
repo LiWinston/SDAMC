@@ -7,7 +7,7 @@ import java.sql.SQLException;
 
 public class Students extends DomainObject {
 
-    private static final String tableName = "students";
+    public static final String tableName = "students";
 
     private final int id;
 
@@ -20,8 +20,8 @@ public class Students extends DomainObject {
     }
 
     private void load() {
-        ResultSet result = DataMapper.GetMapper(tableName).getRecord(id);
         try {
+            ResultSet result = DataMapper.GetMapper(tableName).getRecord(id);
             if (result.next()) {
                 name = result.getString("name");
                 email = result.getString("email");

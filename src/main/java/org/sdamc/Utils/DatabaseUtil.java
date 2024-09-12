@@ -21,19 +21,34 @@ public class DatabaseUtil {
     // 新的数据库密码
     private static final String JDBC_PASSWORD = "nt4ug9SwXZUr";
 
-    private static final ThreadLocal<Connection> connection = ThreadLocal.withInitial(() -> {
-        try {
-            Class.forName(JDBC_DRIVER);
-            return DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD);
-        }
-        catch (ClassNotFoundException | SQLException e) {
-            throw new RuntimeException("Failed to create database connection", e);
-        }
-    });
+    private static ThreadLocal<Connection> connection = ThreadLocal.withInitial(() -> null);
+
+    ;
 
     DatabaseUtil() throws ClassNotFoundException {
         // empty constructor
         Class.forName(JDBC_DRIVER);
+    }
+
+    // For test
+    public static void connectDatabase(String url, String user, String password) {
+        try {
+            Class.forName(JDBC_DRIVER);
+            connection.set(DriverManager.getConnection(url, user, password));
+        }
+        catch (ClassNotFoundException | SQLException e) {
+            throw new RuntimeException("Failed to create database connection", e);
+        }
+    }
+
+    public static void connectDatabase() {
+        try {
+            Class.forName(JDBC_DRIVER);
+            connection.set(DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD));
+        }
+        catch (ClassNotFoundException | SQLException e) {
+            throw new RuntimeException("Failed to create database connection", e);
+        }
     }
 
     public static Connection getConnection() throws SQLException {
