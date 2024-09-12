@@ -74,7 +74,7 @@
         isLogin = !isLogin;
     }
 
-    document.getElementById('authForm').addEventListener('submit', function (event) {
+    document.getElementById('authForm').addEventListener('submit', function(event) {
         event.preventDefault();
 
         const email = document.getElementById('email').value;
@@ -83,7 +83,7 @@
 
         const BaseUrl = "";
         const url = isLogin ? BaseUrl + '/user/login' : BaseUrl + '/user/register';
-        const payload = isLogin ? {email, password} : {email, username, password};
+        const payload = isLogin ? { email, password } : { email, username, password };
 
         fetch(url, {
             method: 'POST',
@@ -96,27 +96,32 @@
                 const contentType = response.headers.get('content-type');
                 if (!response.ok) {
                     if (contentType && contentType.includes('application/json')) {
-                        // 处理 JSON 格式的错误信息
                         return response.json().then(data => {
-                            throw new Error(`${response.status}: ${data.message}`);
+                            // 抛出自定义的错误消息
+                            throw new Error(data.msg || 'Unknown error');
                         });
                     } else {
-                        // 处理非 JSON 响应，显示状态码
+                        // 处理非JSON响应
                         throw new Error(`${response.status}: Unknown error (non-JSON response)`);
                     }
                 }
                 return response.json();
             })
-            .then(data => {
-                if (data.token) {
+            .then(result => {
+                if (result.code === 1) {
+                    // 成功处理，跳转页面或其他操作
                     window.location.href = 'events.jsp';
+                } else {
+                    // 处理非成功的响应
+                    throw new Error(result.msg || 'Unknown error');
                 }
             })
             .catch(error => {
-                // 显示错误信息
-                document.getElementById('errorMessage').textContent = error.message;
+                // 显示错误消息
+                document.getElementById('errorMessage').textContent = error.message; // 在页面中显示错误信息
             });
     });
+
 </script>
 </body>
 </html>
