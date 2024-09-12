@@ -41,8 +41,9 @@ public class RsvpsMapper extends DataMapper {
             throw new IllegalArgumentException("Invalid object type");
         }
         Rsvps rsvp = (Rsvps) obj;
-        String sql = "INSERT INTO rsvps (student_id, event_id, num_tickets) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO rsvps (student_id, event_id, num_tickets) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
+            stmt.setInt(0, rsvp.getId());
             stmt.setInt(1, rsvp.getStudentId());
             stmt.setInt(2, rsvp.getEventId());
             stmt.setInt(3, rsvp.getNumTickets());
@@ -74,6 +75,22 @@ public class RsvpsMapper extends DataMapper {
         String sql = "SELECT * FROM rsvps WHERE id = " + id + ";";
         PreparedStatement statement = DatabaseUtil.getConnection().prepareStatement(sql);
         return statement.executeQuery();
+    }
+
+    @Override
+    public int getNewId() {
+        String sql = "SELECT nextval('revps_id_seq');";
+        try {
+            PreparedStatement statement = DatabaseUtil.getConnection().prepareStatement(sql);
+            ResultSet result = statement.executeQuery();
+            if (result.next()) {
+                return result.getInt(1);
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 
 }

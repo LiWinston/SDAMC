@@ -36,6 +36,8 @@ public abstract class DataMapper {
 
     abstract public void delete(DomainObject obj);
 
+    abstract public int getNewId();
+
     // Function for Lazy load, should only call by Domainobject
     // TODO: may be write a seperate gateway for this job
     abstract public ResultSet getRecord(int id) throws SQLException;

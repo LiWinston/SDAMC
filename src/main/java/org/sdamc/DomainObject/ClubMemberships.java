@@ -38,8 +38,25 @@ public class ClubMemberships extends DomainObject {
         }
     }
 
+    public static ClubMemberships insert(int studentId, int clubId, String role) {
+        ClubMemberships membership = new ClubMemberships(DataMapper.GetMapper(tableName).getNewId());
+        membership.studentId = studentId;
+        membership.clubId = clubId;
+        membership.role = role;
+        membership.insert = true;
+        membership.initialed = true;
+        UnitofWork.getCurrent().registerNew(membership);
+        return membership;
+    }
+
+    public void delete() {
+        UnitofWork.getCurrent().registerDeleted(this);
+        deleted = true;
+    }
+
     // Getters and Setters
     public int getStudentId() {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
@@ -47,6 +64,7 @@ public class ClubMemberships extends DomainObject {
     }
 
     public int getClubId() {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
@@ -54,6 +72,7 @@ public class ClubMemberships extends DomainObject {
     }
 
     public String getRole() {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
@@ -61,15 +80,19 @@ public class ClubMemberships extends DomainObject {
     }
 
     public void setRole(String role) {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
-        UnitofWork.getCurrent().registerDirty(this);
+        if (!insert) {
+            UnitofWork.getCurrent().registerDirty(this);
+        }
         this.role = role;
     }
 
     @Override
     public String getTableName() {
+        assert (!deleted);
         if (!initialed) {
             load();
         }

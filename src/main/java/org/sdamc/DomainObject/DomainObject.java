@@ -9,4 +9,8 @@ public abstract class DomainObject {
     // For lazy load
     protected boolean initialed = false;
 
+    protected boolean insert = false;
+
+    protected boolean deleted = false;
+
 }

@@ -36,11 +36,28 @@ public class Clubs extends DomainObject {
         }
     }
 
+    public static Clubs insert(String name, String description, String location) {
+        Clubs club = new Clubs(DataMapper.GetMapper(tableName).getNewId());
+        club.name = name;
+        club.description = description;
+        club.location = location;
+        club.insert = true;
+        club.initialed = true;
+        UnitofWork.getCurrent().registerNew(club);
+        return club;
+    }
+
+    public void delete() {
+        UnitofWork.getCurrent().registerDeleted(this);
+        deleted = true;
+    }
+
     public int getId() {
         return id;
     }
 
     public String getName() {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
@@ -48,14 +65,18 @@ public class Clubs extends DomainObject {
     }
 
     public void setName(String name) {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
-        UnitofWork.getCurrent().registerDirty(this);
+        if (!insert) {
+            UnitofWork.getCurrent().registerDirty(this);
+        }
         this.name = name;
     }
 
     public String getDescription() {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
@@ -63,14 +84,18 @@ public class Clubs extends DomainObject {
     }
 
     public void setDescription(String description) {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
-        UnitofWork.getCurrent().registerDirty(this);
+        if (!insert) {
+            UnitofWork.getCurrent().registerDirty(this);
+        }
         this.description = description;
     }
 
     public String getLocation() {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
@@ -78,10 +103,13 @@ public class Clubs extends DomainObject {
     }
 
     public void setLocation(String location) {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
-        UnitofWork.getCurrent().registerDirty(this);
+        if (!insert) {
+            UnitofWork.getCurrent().registerDirty(this);
+        }
         this.location = location;
     }
 

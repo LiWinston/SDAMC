@@ -41,8 +41,9 @@ public class ClubsMapper extends DataMapper {
             throw new IllegalArgumentException("Invalid object type");
         }
         Clubs club = (Clubs) obj;
-        String sql = "INSERT INTO club (name, description, location) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO club (id, name, description, location) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
+            stmt.setInt(0, club.getId());
             stmt.setString(1, club.getName());
             stmt.setString(2, club.getDescription());
             stmt.setString(3, club.getLocation());
@@ -74,6 +75,22 @@ public class ClubsMapper extends DataMapper {
         String sql = "SELECT * FROM clubs WHERE id=" + id + ";";
         PreparedStatement statement = DatabaseUtil.getConnection().prepareStatement(sql);
         return statement.executeQuery();
+    }
+
+    @Override
+    public int getNewId() {
+        String sql = "SELECT nextval('clubs_id_seq');";
+        try {
+            PreparedStatement statement = DatabaseUtil.getConnection().prepareStatement(sql);
+            ResultSet result = statement.executeQuery();
+            if (result.next()) {
+                return result.getInt(1);
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 
 }

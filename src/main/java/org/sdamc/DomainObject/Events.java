@@ -50,11 +50,33 @@ public class Events extends DomainObject {
         }
     }
 
+    public static Events insert(String title, String description, String venue, int capacity, int clubId,
+            Timestamp beginTime, Timestamp endTime) {
+        Events event = new Events(DataMapper.GetMapper(tableName).getNewId());
+        event.title = title;
+        event.description = description;
+        event.venue = venue;
+        event.capacity = capacity;
+        event.clubId = clubId;
+        event.beginTime = beginTime;
+        event.endTime = endTime;
+        event.insert = true;
+        event.initialed = true;
+        UnitofWork.getCurrent().registerNew(event);
+        return event;
+    }
+
+    public void delete() {
+        UnitofWork.getCurrent().registerDeleted(this);
+        deleted = true;
+    }
+
     public int getId() {
         return id;
     }
 
     public String getTitle() {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
@@ -62,14 +84,18 @@ public class Events extends DomainObject {
     }
 
     public void setTitle(String title) {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
-        UnitofWork.getCurrent().registerDirty(this);
+        if (!insert) {
+            UnitofWork.getCurrent().registerDirty(this);
+        }
         this.title = title;
     }
 
     public String getDescription() {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
@@ -77,14 +103,18 @@ public class Events extends DomainObject {
     }
 
     public void setDescription(String description) {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
-        UnitofWork.getCurrent().registerDirty(this);
+        if (!insert) {
+            UnitofWork.getCurrent().registerDirty(this);
+        }
         this.description = description;
     }
 
     public String getVenue() {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
@@ -92,14 +122,18 @@ public class Events extends DomainObject {
     }
 
     public void setVenue(String venue) {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
-        UnitofWork.getCurrent().registerDirty(this);
+        if (!insert) {
+            UnitofWork.getCurrent().registerDirty(this);
+        }
         this.venue = venue;
     }
 
     public Integer getCapacity() {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
@@ -107,14 +141,18 @@ public class Events extends DomainObject {
     }
 
     public void setCapacity(Integer capacity) {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
-        UnitofWork.getCurrent().registerDirty(this);
+        if (!insert) {
+            UnitofWork.getCurrent().registerDirty(this);
+        }
         this.capacity = capacity;
     }
 
     public int getClubId() {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
@@ -122,14 +160,18 @@ public class Events extends DomainObject {
     }
 
     public void setClubId(int clubId) {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
-        UnitofWork.getCurrent().registerDirty(this);
+        if (!insert) {
+            UnitofWork.getCurrent().registerDirty(this);
+        }
         this.clubId = clubId;
     }
 
     public Timestamp getBeginTime() {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
@@ -137,14 +179,18 @@ public class Events extends DomainObject {
     }
 
     public void setBeginTime(Timestamp beginTime) {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
-        UnitofWork.getCurrent().registerDirty(this);
+        if (!insert) {
+            UnitofWork.getCurrent().registerDirty(this);
+        }
         this.beginTime = beginTime;
     }
 
     public Timestamp getEndTime() {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
@@ -152,10 +198,13 @@ public class Events extends DomainObject {
     }
 
     public void setEndTime(Timestamp endTime) {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
-        UnitofWork.getCurrent().registerDirty(this);
+        if (!insert) {
+            UnitofWork.getCurrent().registerDirty(this);
+        }
         this.endTime = endTime;
     }
 
