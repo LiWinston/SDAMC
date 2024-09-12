@@ -36,12 +36,29 @@ public class Rsvps extends DomainObject {
         }
     }
 
+    public static Rsvps insert(int studentId, int eventId, int numTickets) {
+        Rsvps rsvp = new Rsvps(DataMapper.GetMapper(tableName).getNewId());
+        rsvp.studentId = studentId;
+        rsvp.eventId = eventId;
+        rsvp.numTickets = numTickets;
+        rsvp.insert = true;
+        rsvp.initialed = true;
+        UnitofWork.getCurrent().registerNew(rsvp);
+        return rsvp;
+    }
+
+    public void delete() {
+        UnitofWork.getCurrent().registerDeleted(this);
+        deleted = true;
+    }
+
     // Getters and Setters
     public int getId() {
         return id;
     }
 
     public int getStudentId() {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
@@ -49,14 +66,18 @@ public class Rsvps extends DomainObject {
     }
 
     public void setStudentId(int studentId) {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
-        UnitofWork.getCurrent().registerDirty(this);
+        if (!insert) {
+            UnitofWork.getCurrent().registerDirty(this);
+        }
         this.studentId = studentId;
     }
 
     public int getEventId() {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
@@ -64,14 +85,18 @@ public class Rsvps extends DomainObject {
     }
 
     public void setEventId(int eventId) {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
-        UnitofWork.getCurrent().registerDirty(this);
+        if (!insert) {
+            UnitofWork.getCurrent().registerDirty(this);
+        }
         this.eventId = eventId;
     }
 
     public int getNumTickets() {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
@@ -79,10 +104,13 @@ public class Rsvps extends DomainObject {
     }
 
     public void setNumTickets(int numTickets) {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
-        UnitofWork.getCurrent().registerDirty(this);
+        if (!insert) {
+            UnitofWork.getCurrent().registerDirty(this);
+        }
         this.numTickets = numTickets;
     }
 

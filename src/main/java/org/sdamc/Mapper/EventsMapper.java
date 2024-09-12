@@ -76,16 +76,16 @@ public class EventsMapper extends DataMapper {
             throw new IllegalArgumentException("Invalid object type");
         }
         Events event = (Events) obj;
-        String sql = "INSERT INTO events (title, description, venue, capacity, club_id, begin_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO events (title, description, venue, capacity, club_id, begin_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
-            stmt.setInt(0, UUID.randomUUID().hashCode());
-            stmt.setString(1, event.getTitle());
-            stmt.setString(2, event.getDescription());
-            stmt.setString(3, event.getVenue());
-            stmt.setInt(4, event.getCapacity());
-            stmt.setInt(5, event.getClubId());
-            stmt.setTimestamp(6, event.getBeginTime());
-            stmt.setTimestamp(7, event.getEndTime());
+            stmt.setInt(1, event.getId());
+            stmt.setString(2, event.getTitle());
+            stmt.setString(3, event.getDescription());
+            stmt.setString(4, event.getVenue());
+            stmt.setInt(5, event.getCapacity());
+            stmt.setInt(6, event.getClubId());
+            stmt.setTimestamp(7, event.getBeginTime());
+            stmt.setTimestamp(8, event.getEndTime());
             stmt.executeUpdate();
         }
         catch (SQLException e) {
@@ -125,6 +125,22 @@ public class EventsMapper extends DataMapper {
         catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public int getNewId() {
+        String sql = "SELECT nextval('events_id_seq');";
+        try {
+            PreparedStatement statement = DatabaseUtil.getConnection().prepareStatement(sql);
+            ResultSet result = statement.executeQuery();
+            if (result.next()) {
+                return result.getInt(1);
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 
 }

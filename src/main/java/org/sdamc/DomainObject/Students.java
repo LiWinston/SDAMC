@@ -33,12 +33,28 @@ public class Students extends DomainObject {
         }
     }
 
+    public static Students insert(String name, String email) {
+        Students student = new Students(DataMapper.GetMapper(tableName).getNewId());
+        student.name = name;
+        student.email = email;
+        student.insert = true;
+        student.initialed = true;
+        UnitofWork.getCurrent().registerNew(student);
+        return student;
+    }
+
+    public void delete() {
+        UnitofWork.getCurrent().registerDeleted(this);
+        deleted = true;
+    }
+
     // Getters and Setters
     public int getId() {
         return id;
     }
 
     public String getName() {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
@@ -46,14 +62,18 @@ public class Students extends DomainObject {
     }
 
     public void setName(String name) {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
-        UnitofWork.getCurrent().registerDirty(this);
+        if (!insert) {
+            UnitofWork.getCurrent().registerDirty(this);
+        }
         this.name = name;
     }
 
     public String getEmail() {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
@@ -61,10 +81,13 @@ public class Students extends DomainObject {
     }
 
     public void setEmail(String email) {
+        assert (!deleted);
         if (!initialed) {
             load();
         }
-        UnitofWork.getCurrent().registerDirty(this);
+        if (!insert) {
+            UnitofWork.getCurrent().registerDirty(this);
+        }
         this.email = email;
     }
 
