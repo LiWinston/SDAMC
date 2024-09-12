@@ -78,14 +78,14 @@ public class EventsMapper extends DataMapper {
         Events event = (Events) obj;
         String sql = "INSERT INTO events (title, description, venue, capacity, club_id, begin_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
-            stmt.setInt(0, event.getId());
-            stmt.setString(1, event.getTitle());
-            stmt.setString(2, event.getDescription());
-            stmt.setString(3, event.getVenue());
-            stmt.setInt(4, event.getCapacity());
-            stmt.setInt(5, event.getClubId());
-            stmt.setTimestamp(6, event.getBeginTime());
-            stmt.setTimestamp(7, event.getEndTime());
+            stmt.setInt(1, event.getId());
+            stmt.setString(2, event.getTitle());
+            stmt.setString(3, event.getDescription());
+            stmt.setString(4, event.getVenue());
+            stmt.setInt(5, event.getCapacity());
+            stmt.setInt(6, event.getClubId());
+            stmt.setTimestamp(7, event.getBeginTime());
+            stmt.setTimestamp(8, event.getEndTime());
             stmt.executeUpdate();
         }
         catch (SQLException e) {

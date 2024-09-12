@@ -42,9 +42,9 @@ public class StudentsMapper extends DataMapper {
         Students student = (Students) obj;
         String sql = "INSERT INTO students (name, email) VALUES (?, ?, ?)";
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
-            stmt.setInt(0, student.getId());
-            stmt.setString(1, student.getName());
-            stmt.setString(2, student.getEmail());
+            stmt.setInt(1, student.getId());
+            stmt.setString(2, student.getName());
+            stmt.setString(3, student.getEmail());
             stmt.executeUpdate();
         }
         catch (SQLException e) {

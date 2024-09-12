@@ -43,10 +43,10 @@ public class ClubMembershipsMapper extends DataMapper {
         ClubMemberships membership = (ClubMemberships) obj;
         String sql = "INSERT INTO club_memberships (id, student_id, club_id, role) VALUES (?, ?, ?, ?)";
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
-            stmt.setInt(0, membership.getId());
-            stmt.setInt(1, membership.getStudentId());
-            stmt.setInt(2, membership.getClubId());
-            stmt.setString(3, membership.getRole());
+            stmt.setInt(1, membership.getId());
+            stmt.setInt(2, membership.getStudentId());
+            stmt.setInt(3, membership.getClubId());
+            stmt.setString(4, membership.getRole());
             stmt.executeUpdate();
         }
         catch (SQLException e) {

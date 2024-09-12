@@ -49,6 +49,7 @@ public class DatabaseTest {
     public void testMappers() throws SQLException {
         assertNotNull(DatabaseUtil.getConnection(), "Connection should not be null");
         UnitofWork.newCurrent();
+
         Clubs club = (Clubs) DataMapper.GetMapper(Clubs.tableName).find(1);
         assertEquals(club.getName(), "Photography Club");
         club.setName("test name");
@@ -79,6 +80,35 @@ public class DatabaseTest {
         membership2 = (ClubMemberships) DataMapper.GetMapper(ClubMemberships.tableName).find(2);
         assertEquals(membership2.getRole(), "admin");
         assertEquals(student.getEmail(), "testemail");
+    }
+
+    @Test
+    public void insertTest() throws SQLException {
+        assertNotNull(DatabaseUtil.getConnection(), "Connection should not be null");
+        UnitofWork.newCurrent();
+
+        Clubs club = Clubs.insert("testclub", "des", "www");
+        int id = club.getId();
+        UnitofWork.getCurrent().commit();
+
+        club = (Clubs) DataMapper.GetMapper(Clubs.tableName).find(id);
+        assertEquals(club.getName(), "testclub");
+
+        UnitofWork.newCurrent();
+        club = Clubs.insert("testclub1", "des", "www");
+        id = club.getId();
+        club.setDescription("new des");
+        UnitofWork.getCurrent().commit();
+
+        club = (Clubs) DataMapper.GetMapper(Clubs.tableName).find(id);
+        assertEquals(club.getDescription(), "new des");
+    }
+
+    @Test
+    public void deleteTest() throws SQLException {
+        assertNotNull(DatabaseUtil.getConnection(), "Connection should not be null");
+        UnitofWork.newCurrent();
+        // TODO
     }
 
     @AfterEach
