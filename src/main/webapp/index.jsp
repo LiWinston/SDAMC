@@ -49,7 +49,7 @@
 <div class="main-content">
     <div class="text-content">
         <div class="artistic-text">SDAMC Event MG</div>
-        <a href="events" class="btn btn-primary">Show events</a>
+        <a href="events.jsp" class="btn btn-primary">Show events</a>
     </div>
     <iframe
             src="https://open.spotify.com/embed/track/1ESotnG260HrjQcBZrlL2m?utm_source=generator"
