@@ -52,6 +52,15 @@ public class DatabaseUtil {
     }
 
     public static Connection getConnection() throws SQLException {
+        if (connection.get() == null) {
+            try {
+                Class.forName(JDBC_DRIVER);
+                connection.set(DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD));
+            }
+            catch (ClassNotFoundException | SQLException e) {
+                throw new RuntimeException("Failed to create database connection", e);
+            }
+        }
         return connection.get();
     }
 
