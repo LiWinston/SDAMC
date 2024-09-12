@@ -26,8 +26,7 @@ public class UserController extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        // 初始化Mapper，可以通过某种依赖注入机制，或者直接实例化
-        studentsMapper = new StudentsMapper(); // 假设你有一个 StudentsMapper 类
+        studentsMapper = new StudentsMapper();
     }
 
     @Override
