@@ -48,6 +48,7 @@ public class DatabaseTest {
     @Test
     public void testclub() throws SQLException {
         assertNotNull(DatabaseUtil.getConnection(), "Connection should not be null");
+        UnitofWork.newCurrent();
         Clubs club = (Clubs) DataMapper.GetMapper(Clubs.tableName).find(1);
         assertEquals(club.getName(), "Photography Club");
         club.setName("test name");

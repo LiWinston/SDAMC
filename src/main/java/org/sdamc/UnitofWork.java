@@ -7,15 +7,19 @@ import java.util.ArrayList;
 
 public class UnitofWork {
 
-    private static final ThreadLocal<UnitofWork> current = ThreadLocal.withInitial(() -> {
-        return new UnitofWork();
-    });
+    private static ThreadLocal<UnitofWork> current = ThreadLocal.withInitial(() -> null);
+
+    ;
 
     private List<DomainObject> newObjects = new ArrayList<DomainObject>();
 
     private List<DomainObject> dirtyObjects = new ArrayList<DomainObject>();
 
     private List<DomainObject> deletedObjects = new ArrayList<DomainObject>();
+
+    public static void newCurrent() {
+        current.set(new UnitofWork());
+    }
 
     public static UnitofWork getCurrent() {
         return current.get();
