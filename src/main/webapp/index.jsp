@@ -46,10 +46,38 @@
     </style>
 </head>
 <body>
+
+<script>
+    // 检查是否有token
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('id');
+    window.location.href = 'login.jsp';
+    <%--if (!token) {--%>
+    <%--    // 如果没有token，则重定向到登录页面--%>
+    <%--    window.location.href = 'login.jsp';--%>
+    <%--} else {--%>
+    <%--    // 使用token发起请求--%>
+    <%--    fetch('/api/protectedEndpoint', {--%>
+    <%--        method: 'GET',--%>
+    <%--        headers: {--%>
+    <%--            'Authorization': `Bearer ${token}`--%>
+    <%--        }--%>
+    <%--    })--%>
+    <%--        .then(response => response.json())--%>
+    <%--        .then(data => {--%>
+    <%--            // 处理响应数据--%>
+    <%--            document.getElementById('welcomeMessage').textContent = `Welcome, user ${userId}`;--%>
+    <%--        })--%>
+    <%--        .catch(error => {--%>
+    <%--            console.error('Error:', error);--%>
+    <%--        });--%>
+    <%--}--%>
+</script>
+
 <div class="main-content">
     <div class="text-content">
         <div class="artistic-text">SDAMC Event MG</div>
-        <a href="events" class="btn btn-primary">Show events</a>
+        <a href="/events" class="btn btn-primary">Show events</a>
     </div>
     <iframe
             src="https://open.spotify.com/embed/track/1ESotnG260HrjQcBZrlL2m?utm_source=generator"
