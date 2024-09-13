@@ -38,7 +38,7 @@ CREATE TABLE admins (
     password VARCHAR(30) NOT NULL
 );
 
-CREATE TYPE member_role AS ENUM ('normal_member', 'admin');
+CREATE TYPE member_role AS ENUM ('normal_member', 'admin', 'super_admin');
 CREATE TABLE club_memberships (
     id SERIAL PRIMARY KEY,
     student_id INTEGER NOT NULL,
