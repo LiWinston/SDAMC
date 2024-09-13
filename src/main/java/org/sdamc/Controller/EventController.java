@@ -1,11 +1,13 @@
 package org.sdamc.Controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.jetbrains.annotations.NotNull;
+import org.sdamc.DTO.Result;
 import org.sdamc.DomainObject.Events;
 import org.sdamc.Mapper.ClubMembershipsMapper;
 import org.sdamc.Mapper.EventsMapper;
@@ -13,6 +15,7 @@ import org.sdamc.UnitofWork;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet(name = "EventController", value = "/events/*")
 public class EventController extends HttpServlet {
@@ -97,8 +100,10 @@ public class EventController extends HttpServlet {
     // 创建事件 (POST /events)
     private void handleCreateEvent(@NotNull HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String token = req.getHeader("Authorization");
-        int studentId = Integer.parseInt(req.getParameter("userId"));
-        int clubId = Integer.parseInt(req.getParameter("clubId"));
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, String> requestBody = mapper.readValue(req.getInputStream(), Map.class);
+        int studentId = Integer.parseInt(requestBody.get("userId"));
+        log("studentId: " + studentId);
 
         // 验证 token 和 studentId
         if (token == null || !isValidToken(token, studentId)) {
@@ -106,28 +111,44 @@ public class EventController extends HttpServlet {
             return;
         }
 
-        // 检查用户是否为管理员
-        if (!membershipsMapper.isAdmin(studentId, clubId)) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "You are not authorized to create events");
-            return;
+        int clubId = Integer.parseInt(requestBody.get("clubId"));
+
+        try {
+            UnitofWork.newCurrent();
+            // 检查用户是否为此社团的管理员
+            if (!membershipsMapper.isAdmin(studentId, clubId)) {
+                resp.setContentType("application/json");
+                new ObjectMapper().writeValue(resp.getOutputStream(),
+                        Result.error("You are not the admin of this club"));
+                return;
+            }
+
+            // 获取事件信息
+            String title = req.getParameter("title");
+            String description = req.getParameter("description");
+            String venue = req.getParameter("venue");
+            int capacity = Integer.parseInt(req.getParameter("capacity"));
+
+            // 创建事件
+            Events event = new Events(eventsMapper.getNewId());
+            event.setTitle(title);
+            event.setDescription(description);
+            event.setVenue(venue);
+            event.setCapacity(capacity);
+
+            eventsMapper.insert(event);
+            UnitofWork.getCurrent().commit();
+
+            resp.setStatus(HttpServletResponse.SC_CREATED);
+            resp.setContentType("application/json");
+            new ObjectMapper().writeValue(resp.getOutputStream(), Result.success("Event created successfully"));
         }
-
-        // 获取事件信息
-        String title = req.getParameter("title");
-        String description = req.getParameter("description");
-        String venue = req.getParameter("venue");
-        int capacity = Integer.parseInt(req.getParameter("capacity"));
-
-        // 创建事件
-        Events event = new Events(eventsMapper.getNewId());
-        event.setTitle(title);
-        event.setDescription(description);
-        event.setVenue(venue);
-        event.setCapacity(capacity);
-
-        eventsMapper.insert(event);
-
-        resp.getWriter().write("Event created successfully");
+        catch (Exception e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.setContentType("application/json");
+            new ObjectMapper().writeValue(resp.getOutputStream(), Result.error("Database error"));
+            e.printStackTrace();
+        }
     }
 
     // 修改事件 (PUT)

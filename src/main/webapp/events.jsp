@@ -334,6 +334,9 @@
 
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
+            data['userId'] = userId;
+            let reqBodyJson = JSON.stringify(data);
+            // add local userID to request body
 
             fetch('/events', {
                 method: 'POST',
@@ -341,7 +344,7 @@
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify(data)
+                body: reqBodyJson
             })
                 .then(response => {
                     if (response.ok) {
