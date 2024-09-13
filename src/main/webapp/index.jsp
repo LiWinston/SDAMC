@@ -51,7 +51,8 @@
 <body>
 
 <script>
-    export function getToken() {
+    // 获取 token 并检查是否过期
+    function getToken() {
         const itemStr = localStorage.getItem('token');
 
         // 如果 token 不存在，返回 null
@@ -71,23 +72,36 @@
 
         return item.token;
     }
-    // 检查是否有token
-    const token = getToken();
-    const userId = localStorage.getItem('id');
-    if (!token) {
-        // 如果没有token，则重定向到登录页面
-        window.location.href = 'login.jsp';
-    } else {
-        // 使用token发起请求
-        window.location.href = "/events";
-    }
+
+    // 页面加载时检查 token，并根据 token 设置按钮跳转逻辑
+    window.onload = function() {
+        const token = getToken();
+        const userId = localStorage.getItem('id');
+        const btnShowEvents = document.getElementById('showEventsBtn');
+
+        if (!token) {
+            // 没有 token，则按钮点击跳转到登录页面
+            btnShowEvents.onclick = function() {
+                window.location.href = 'login.jsp';
+            };
+        } else {
+            // 有 token，则按钮点击跳转到 events 页面
+            btnShowEvents.onclick = function() {
+                window.location.href = '/events';
+            };
+        }
+    };
 </script>
 
+<!-- 主内容 -->
 <div class="main-content">
     <div class="text-content">
         <div class="artistic-text">SDAMC Event MG</div>
-        <a href="/events" class="btn btn-primary">Show events</a>
+        <!-- 按钮根据 token 状态跳转 -->
+        <button id="showEventsBtn" class="btn btn-primary">Show events</button>
     </div>
+
+    <!-- 嵌入的 Spotify 播放器 -->
     <iframe
             src="https://open.spotify.com/embed/track/1ESotnG260HrjQcBZrlL2m?utm_source=generator"
             class="spotify-player"
