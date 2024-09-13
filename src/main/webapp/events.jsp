@@ -103,14 +103,12 @@
                 </div>
 
                 <input type="text" name="title" class="form-control mb-2 mr-sm-2" placeholder="Title" required/>
-                <input type="text" name="description" class="form-control mb-2 mr-sm-2" placeholder="Description"
-                       required/>
+                <input type="text" name="description" class="form-control mb-2 mr-sm-2" placeholder="Description"/>
                 <input type="text" name="venue" class="form-control mb-2 mr-sm-2" placeholder="Venue" required/>
                 <input type="number" name="capacity" class="form-control mb-2 mr-sm-2" placeholder="Capacity"/>
                 <input type="datetime-local" name="beginTime" class="form-control mb-2 mr-sm-2" placeholder="Begin Time"
                        required/>
-                <input type="datetime-local" name="endTime" class="form-control mb-2 mr-sm-2" placeholder="End Time"
-                       required/>
+                <input type="datetime-local" name="endTime" class="form-control mb-2 mr-sm-2" placeholder="End Time"/>
                 <button type="submit" class="btn btn-custom mb-2">Create</button>
             </form>
         </div>
@@ -357,7 +355,7 @@
                 })
                 .catch(error => {
                     console.error('Error creating event:', error);
-                    alert('Failed to create event: ' + error.message);
+                    alert('Failed to create event: ' + error);
                 });
         };
     };

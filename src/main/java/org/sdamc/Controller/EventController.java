@@ -133,11 +133,23 @@ public class EventController extends HttpServlet {
             String title = requestBody.get("title");
             String description = requestBody.get("description");
             String venue = requestBody.get("venue");
-            int capacity = Integer.parseInt(requestBody.get("capacity"));
+            Integer capacity = null;
+            if (requestBody.get("capacity") != null && !requestBody.get("capacity").isEmpty()
+                    && !requestBody.get("capacity").isBlank()) {
+                capacity = Integer.parseInt(requestBody.get("capacity"));
+            }
+            else {
+                capacity = 0;
+            }
             String beginTimeStr = requestBody.get("beginTime").replace("T", " ") + ":00"; // 确保有秒部分
-            String endTimeStr = requestBody.get("endTime").replace("T", " ") + ":00";
             Timestamp beginTime = Timestamp.valueOf(beginTimeStr);
-            Timestamp endTime = Timestamp.valueOf(endTimeStr);
+
+            Timestamp endTime = null;
+            if (requestBody.get("endTime") != null && !requestBody.get("endTime").isEmpty()
+                    && !requestBody.get("endTime").isBlank()) {
+                String endTimeStr = requestBody.get("endTime").replace("T", " ") + ":00";
+                endTime = Timestamp.valueOf(endTimeStr);
+            }
 
             // 创建事件
             Events event = new Events(eventsMapper.getNewId());
@@ -155,7 +167,7 @@ public class EventController extends HttpServlet {
             resp.setStatus(HttpServletResponse.SC_CREATED);
             resp.setContentType("application/json");
             new ObjectMapper().writeValue(resp.getOutputStream(),
-                    Result.success("Event: " + event.getTitle() + " created successfully"));
+                    Result.success(null, "Event: " + event.getTitle() + " created successfully"));
         }
         catch (Exception e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

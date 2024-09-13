@@ -115,7 +115,7 @@ public class UserController extends HttpServlet {
             // 注册成功时返回 Result<T> 成功消息
             resp.setStatus(HttpServletResponse.SC_CREATED);
             resp.setContentType("application/json");
-            mapper.writeValue(resp.getOutputStream(), Result.success("User registered successfully"));
+            mapper.writeValue(resp.getOutputStream(), Result.success(null, "User registered successfully"));
         }
         catch (Exception e) {
             // 返回 Result<T> 错误信息
