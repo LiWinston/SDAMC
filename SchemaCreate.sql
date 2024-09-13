@@ -58,7 +58,7 @@ CREATE TABLE rsvps (
     event_id INTEGER NOT NULL,
     num_tickets INTEGER NOT NULL,
     FOREIGN KEY (student_id) REFERENCES students(id),
-    FOREIGN KEY (event_id) REFERENCES events(id)
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE  -- 添加级联删除
 );
 CREATE INDEX rsvps_sid_eid_hash ON rsvps (student_id, event_id);
 CREATE INDEX rsvps_sid_hash ON rsvps (student_id);

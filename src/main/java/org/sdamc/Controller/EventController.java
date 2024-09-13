@@ -11,6 +11,7 @@ import org.sdamc.DTO.Result;
 import org.sdamc.DomainObject.Events;
 import org.sdamc.Mapper.ClubMembershipsMapper;
 import org.sdamc.Mapper.EventsMapper;
+import org.sdamc.Services.EventCascadeOpSvc;
 import org.sdamc.UnitofWork;
 
 import java.io.IOException;
@@ -18,12 +19,16 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
+import static org.sdamc.Utils.JwtUtil.VerifyToken;
+
 @WebServlet(name = "EventController", value = "/events/*")
 public class EventController extends HttpServlet {
 
     private EventsMapper eventsMapper;
 
     private ClubMembershipsMapper membershipsMapper;
+
+    private final EventCascadeOpSvc eventCascadeOpSvc = EventCascadeOpSvc.getInstance();
 
     @Override
     public void init() {
@@ -80,23 +85,13 @@ public class EventController extends HttpServlet {
     }
 
     private void handleRSVP(@NotNull HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String token = req.getHeader("Authorization");
         int studentId = Integer.parseInt(req.getParameter("userId"));
-        int eventId = Integer.parseInt(req.getParameter("eventId"));
-
-        // 验证 token 和 studentId
-        if (token == null || !isValidToken(token, studentId)) {
-            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+        if (!VerifyToken(req, resp, studentId))
             return;
-        }
+        int eventId = Integer.parseInt(req.getParameter("eventId"));
 
         // 检查是否已 RSVP 过该事件，避免重复操作
 
-    }
-
-    private boolean isValidToken(String token, int userId) {
-        // 在这里检查 token 和 userId 的匹配关系，确保身份验证
-        return true; // 假设验证通过
     }
 
     // 创建事件 (POST /events)
@@ -112,8 +107,8 @@ public class EventController extends HttpServlet {
         log("studentId: " + studentId);
 
         // 验证 token 和 studentId
-        if (token == null || !isValidToken(token, studentId)) {
-            resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+        if (!VerifyToken(req, resp, studentId)) {
+            // resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
             return;
         }
 
@@ -180,28 +175,63 @@ public class EventController extends HttpServlet {
     // 修改事件 (PUT)
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        int eventId = Integer.parseInt(req.getPathInfo().substring(1)); // 获取路径中的ID
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, String> requestBody = mapper.readValue(req.getInputStream(), Map.class);
+
+        UnitofWork.newCurrent();
+
+        int eventId = Integer.parseInt(requestBody.get("eventId"));
         Events event = (Events) eventsMapper.find(eventId);
         if (event != null) {
             // 更新事件信息
-            event.setTitle(req.getParameter("title"));
-            event.setDescription(req.getParameter("description"));
-            event.setVenue(req.getParameter("venue"));
-            event.setCapacity(Integer.parseInt(req.getParameter("capacity")));
+            event.setTitle(requestBody.get("title"));
+            event.setDescription(requestBody.get("description"));
+            event.setVenue(requestBody.get("venue"));
+            event.setCapacity(Integer.parseInt(requestBody.get("capacity")));
+            String beginTimeStr = requestBody.get("beginTime").replace("T", " ") + ":00"; // 确保有秒部分
+            Timestamp beginTime = Timestamp.valueOf(beginTimeStr);
+
+            Timestamp endTime = null;
+            if (requestBody.get("endTime") != null && !requestBody.get("endTime").isEmpty()
+                    && !requestBody.get("endTime").isBlank()) {
+                String endTimeStr = requestBody.get("endTime").replace("T", " ") + ":00";
+                endTime = Timestamp.valueOf(endTimeStr);
+            }
+            event.setBeginTime(beginTime);
+            event.setEndTime(endTime);
             eventsMapper.update(event);
             resp.getWriter().write("Event updated successfully");
         }
+
         else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Event not found");
         }
+        UnitofWork.getCurrent().commit();
     }
 
-    // 删除事件 (DELETE)
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        int eventId = Integer.parseInt(req.getPathInfo().substring(1));
-        eventsMapper.deleteById(eventId);
-        resp.getWriter().write("Event deleted successfully");
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, String> requestBody = mapper.readValue(req.getInputStream(), Map.class);
+            int userId = Integer.parseInt(requestBody.get("userId"));
+            int eventId = Integer.parseInt(requestBody.get("eventId"));
+            int clubId = Integer.parseInt(requestBody.get("clubId"));
+
+            // 调用 deleteEvent 方法
+            Result<?> result = eventCascadeOpSvc.deleteEvent(eventId, userId, clubId);
+
+            // 返回结果
+            resp.setContentType("application/json");
+            resp.setStatus(HttpServletResponse.SC_OK); // 成功状态码
+            new ObjectMapper().writeValue(resp.getOutputStream(), result); // 返回结果
+        }
+        catch (NumberFormatException e) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid input data" + e.getMessage());
+        }
+        catch (Exception e) {
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error" + e.getMessage());
+        }
     }
 
 }

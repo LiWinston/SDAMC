@@ -17,6 +17,7 @@ import org.sdamc.DomainObject.Students;
 import org.sdamc.Mapper.ClubMembershipsMapper;
 import org.sdamc.Mapper.StudentsMapper;
 import org.sdamc.UnitofWork;
+import org.sdamc.Utils.Constants;
 
 import java.io.IOException;
 import java.util.List;
@@ -164,7 +165,7 @@ public class UserController extends HttpServlet {
 
     // JWT 生成逻辑
     private String generateJwtToken(int studentId) {
-        return JWT.create().withClaim("id", studentId).sign(Algorithm.HMAC256("secret_key")); // secret_key请换成你实际的密钥
+        return JWT.create().withClaim("id", studentId).sign(Algorithm.HMAC256(Constants.JWT_SECRET));
     }
 
 }

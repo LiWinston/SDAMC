@@ -122,6 +122,7 @@
 
                     setTokenWithExpiry(result.data.token, 240 * 1000);  // 设置4min有效期
                     localStorage.setItem('userId', result.data.id);
+                    console.log(result.data.id + " : " + localStorage.getItem('token'));
                     window.location.href = "/events";
                 } else {
                     // 处理非成功的响应

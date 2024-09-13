@@ -1,13 +1,15 @@
 package org.sdamc.Mapper;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
+import org.sdamc.DTO.Result;
 import org.sdamc.DomainObject.DomainObject;
 import org.sdamc.DomainObject.Rsvps;
 import org.sdamc.Utils.DatabaseUtil;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RsvpsMapper extends DataMapper {
 
@@ -91,6 +93,27 @@ public class RsvpsMapper extends DataMapper {
             e.printStackTrace();
         }
         return -1;
+    }
+
+    public Result<List<Rsvps>> findByEventId(int eventId) {
+        String sql = "SELECT * FROM rsvps WHERE event_id = ?";
+        try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
+            stmt.setInt(1, eventId);
+            ResultSet result = stmt.executeQuery();
+
+            List<Rsvps> res = new ArrayList<>();
+            while (result.next()) {
+                Rsvps rsvp = new Rsvps(result.getInt("id"));
+                rsvp.setStudentId(result.getInt("student_id"));
+                rsvp.setEventId(result.getInt("event_id"));
+                rsvp.setNumTickets(result.getInt("num_tickets"));
+                res.add(rsvp);
+            }
+            return Result.success(res);
+        }
+        catch (SQLException e) {
+            return Result.error("Failed to find rsvps by event id " + eventId + ": " + e.getMessage());
+        }
     }
 
 }
