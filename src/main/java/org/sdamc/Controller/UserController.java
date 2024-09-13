@@ -12,21 +12,56 @@ import lombok.extern.slf4j.Slf4j;
 import org.sdamc.DTO.LoginResponse;
 import org.sdamc.DTO.Result;
 import org.sdamc.DTO.UserDTO;
+import org.sdamc.DomainObject.Clubs;
 import org.sdamc.DomainObject.Students;
+import org.sdamc.Mapper.ClubMembershipsMapper;
 import org.sdamc.Mapper.StudentsMapper;
 import org.sdamc.UnitofWork;
 
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @WebServlet(name = "UserController", urlPatterns = { "/user/*" })
 public class UserController extends HttpServlet {
+
+    ClubMembershipsMapper clubMembershipsMapper;
 
     private StudentsMapper studentsMapper;
 
     @Override
     public void init() throws ServletException {
         studentsMapper = new StudentsMapper();
+        clubMembershipsMapper = new ClubMembershipsMapper();
+    }
+
+    @Override
+    // 获取用户管辖的club /user/{stuid}/clubs
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+        String requestURI = req.getRequestURI();
+        if (requestURI.endsWith("/clubs")) {
+            handleGetClubsAdminedByUser(req, resp);
+        }
+        else {
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+
+    private void handleGetClubsAdminedByUser(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String pathInfo = req.getPathInfo(); // "/123/clubs"
+        String[] parts = pathInfo.split("/");
+
+        UnitofWork.newCurrent();
+        if (parts.length >= 2) {
+            int stuid = Integer.parseInt(parts[1]); // parts[1] is "123"
+            List<Clubs> clubs = clubMembershipsMapper.findClubsAdminedByStudent(stuid);
+            resp.setContentType("application/json");
+            new ObjectMapper().writeValue(resp.getOutputStream(), clubs);
+        } else {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
+        }
+        UnitofWork.getCurrent().commit();
     }
 
     @Override

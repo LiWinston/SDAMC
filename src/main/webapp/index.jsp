@@ -53,25 +53,20 @@
 <script>
     // 获取 token 并检查是否过期
     function getToken() {
-        const itemStr = localStorage.getItem('token');
+        const tokenData = localStorage.getItem('token');
+        if (!tokenData) return null;
 
-        // 如果 token 不存在，返回 null
-        if (!itemStr) {
-            return null;
-        }
-
-        const item = JSON.parse(itemStr);
+        const parsedToken = JSON.parse(tokenData);
         const now = new Date().getTime();
 
-        // 检查 token 是否已过期
-        if (now > item.expiry) {
-            // Token 已过期，删除它
+        // 验证 token 是否过期
+        if (now > parsedToken.expiry) {
             localStorage.removeItem('token');
             return null;
         }
-
-        return item.token;
+        return parsedToken.token;
     }
+
 
     // 页面加载时检查 token，并根据 token 设置按钮跳转逻辑
     window.onload = function() {

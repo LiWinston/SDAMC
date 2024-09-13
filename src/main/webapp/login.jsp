@@ -121,6 +121,7 @@
                     //Result.success(new LoginResponse(token, student.getId()), "Login successful"));
 
                     setTokenWithExpiry(result.data.token, 240 * 1000);  // 设置4min有效期
+                    localStorage.setItem('userId', result.data.id);
                     window.location.href = "/events";
                 } else {
                     // 处理非成功的响应

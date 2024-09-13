@@ -1,13 +1,15 @@
 package org.sdamc.Mapper;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import org.sdamc.DomainObject.DomainObject;
 import org.sdamc.DomainObject.ClubMemberships;
+import org.sdamc.DomainObject.Clubs;
+import org.sdamc.DomainObject.DomainObject;
 import org.sdamc.Utils.DatabaseUtil;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ClubMembershipsMapper extends DataMapper {
 
@@ -91,6 +93,55 @@ public class ClubMembershipsMapper extends DataMapper {
             e.printStackTrace();
         }
         return -1;
+    }
+
+    public boolean isAdmin(int studentId, int clubId) {
+        String sql = "SELECT * FROM club_memberships WHERE student_id = ? AND club_id = ? AND role = 'admin'";
+        try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
+            stmt.setInt(1, studentId);
+            stmt.setInt(2, clubId);
+            ResultSet result = stmt.executeQuery();
+            return result.next();
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean isMember(int studentId, int clubId) {
+        String sql = "SELECT * FROM club_memberships WHERE student_id = ? AND club_id = ?";
+        try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
+            stmt.setInt(1, studentId);
+            stmt.setInt(2, clubId);
+            ResultSet result = stmt.executeQuery();
+            return result.next();
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public List<Clubs> findClubsAdminedByStudent(int studentId) {
+        String sql = "SELECT c.id, c.name FROM clubs c " + "JOIN club_memberships cm ON c.id = cm.club_id "
+                + "WHERE cm.student_id = ? AND cm.role = 'admin'";
+
+        List<Clubs> clubs = new ArrayList<>();
+        try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
+            stmt.setInt(1, studentId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Clubs club = new Clubs(rs.getInt("id"));
+                club.setName(rs.getString("name"));
+                clubs.add(club);
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return clubs;
     }
 
 }
