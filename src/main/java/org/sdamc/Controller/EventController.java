@@ -175,20 +175,38 @@ public class EventController extends HttpServlet {
     // 修改事件 (PUT)
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        int eventId = Integer.parseInt(req.getPathInfo().substring(1)); // 获取路径中的ID
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, String> requestBody = mapper.readValue(req.getInputStream(), Map.class);
+
+        UnitofWork.newCurrent();
+
+        int eventId = Integer.parseInt(requestBody.get("eventId"));
         Events event = (Events) eventsMapper.find(eventId);
         if (event != null) {
             // 更新事件信息
-            event.setTitle(req.getParameter("title"));
-            event.setDescription(req.getParameter("description"));
-            event.setVenue(req.getParameter("venue"));
-            event.setCapacity(Integer.parseInt(req.getParameter("capacity")));
+            event.setTitle(requestBody.get("title"));
+            event.setDescription(requestBody.get("description"));
+            event.setVenue(requestBody.get("venue"));
+            event.setCapacity(Integer.parseInt(requestBody.get("capacity")));
+            String beginTimeStr = requestBody.get("beginTime").replace("T", " ") + ":00"; // 确保有秒部分
+            Timestamp beginTime = Timestamp.valueOf(beginTimeStr);
+
+            Timestamp endTime = null;
+            if (requestBody.get("endTime") != null && !requestBody.get("endTime").isEmpty()
+                    && !requestBody.get("endTime").isBlank()) {
+                String endTimeStr = requestBody.get("endTime").replace("T", " ") + ":00";
+                endTime = Timestamp.valueOf(endTimeStr);
+            }
+            event.setBeginTime(beginTime);
+            event.setEndTime(endTime);
             eventsMapper.update(event);
             resp.getWriter().write("Event updated successfully");
         }
+
         else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Event not found");
         }
+        UnitofWork.getCurrent().commit();
     }
 
     @Override

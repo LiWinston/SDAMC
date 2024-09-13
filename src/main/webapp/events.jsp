@@ -58,9 +58,18 @@
                         </td>
                         <td>
                             <a class="btn btn-edit btn-sm" data-toggle="modal" data-target="#editEventModal"
-                               data-id="<%= event.getId() %>">
+                               data-id="<%= event.getId() %>" onclick="openEditEventModal({
+                                    id: '<%= event.getId() %>',
+                                    title: '<%= event.getTitle() %>',
+                                    description: '<%= event.getDescription() %>',
+                                    venue: '<%= event.getVenue() %>',
+                                    capacity: '<%= event.getCapacity() %>',
+                                    beginTime: '<%= event.getBeginTime() %>',
+                                    endTime: '<%= event.getEndTime() %>'
+                                    })">
                                 <i class="fas fa-edit"></i> Edit
                             </a>
+
                             <form id="deleteForm" style="display:inline;">
                                 <input type="hidden" name="eventId" value="<%= event.getId() %>"/>
                                 <input type="hidden" name="clubId" value="<%= event.getClubId() %>"/>
@@ -125,7 +134,7 @@
                 </div>
                 <div class="modal-body">
                     <form id="editEventForm">
-                        <input type="hidden" name="id" id="editEventId">
+                        <input type="hidden" name="eventId" id="eventId">
                         <div class="form-group">
                             <label for="editTitle">Title</label>
                             <input type="text" class="form-control" id="editTitle" name="title">
@@ -227,7 +236,7 @@
 
     function openEditEventModal(event) {
         // Populate modal fields with event data
-        document.getElementById('editEventId').value = event.id;
+        document.getElementById('eventId').value = event.id;
         document.getElementById('editTitle').value = event.title;
         document.getElementById('editDescription').value = event.description;
         document.getElementById('editVenue').value = event.venue;
@@ -240,7 +249,6 @@
 
     function submitEditEvent() {
         const form = document.getElementById('editEventForm');
-        const eventId = document.getElementById('editEventId').value;
         const formData = new FormData(form);
         const jsonData = JSON.stringify(Object.fromEntries(formData.entries()));
 
