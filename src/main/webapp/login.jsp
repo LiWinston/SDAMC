@@ -109,8 +109,19 @@
             })
             .then(result => {
                 if (result.code === 1) {
+                    function setTokenWithExpiry(token, expiryTimeInMs) {
+                        const now = new Date().getTime();
+                        const item = {
+                            token: token,
+                            expiry: now + expiryTimeInMs // 当前时间 + 设定的有效期
+                        };
+                        localStorage.setItem('token', JSON.stringify(item));
+                    }
                     // 成功处理，跳转页面或其他操作
-                    window.location.href = 'events.jsp';
+                    //Result.success(new LoginResponse(token, student.getId()), "Login successful"));
+
+                    setTokenWithExpiry(result.data.token, 240 * 1000);  // 设置4min有效期
+                    window.location.href = "/events";
                 } else {
                     // 处理非成功的响应
                     throw new Error(result.msg || 'Unknown error');
