@@ -308,6 +308,7 @@
                 return response.json();
             })
             .then(clubs => {
+                console.log('Clubs:', clubs);
                 // Populate the clubSelect dropdown
                 clubs.forEach(club => {
                     const option = document.createElement('option');
