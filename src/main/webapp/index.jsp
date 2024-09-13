@@ -16,6 +16,7 @@
             align-items: center;
             justify-content: center;
         }
+
         .main-content {
             flex: 1;
             display: flex;
@@ -27,11 +28,13 @@
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
+
         .spotify-player {
             width: 400px;
             height: 352px;
             margin-left: 20px;
         }
+
         .artistic-text {
             font-size: 2.5rem;
             font-weight: bold;
@@ -48,37 +51,57 @@
 <body>
 
 <script>
-    // 检查是否有token
-    const token = localStorage.getItem('token');
-    const userId = localStorage.getItem('id');
-    window.location.href = 'login.jsp';
-    <%--if (!token) {--%>
-    <%--    // 如果没有token，则重定向到登录页面--%>
-    <%--    window.location.href = 'login.jsp';--%>
-    <%--} else {--%>
-    <%--    // 使用token发起请求--%>
-    <%--    fetch('/api/protectedEndpoint', {--%>
-    <%--        method: 'GET',--%>
-    <%--        headers: {--%>
-    <%--            'Authorization': `Bearer ${token}`--%>
-    <%--        }--%>
-    <%--    })--%>
-    <%--        .then(response => response.json())--%>
-    <%--        .then(data => {--%>
-    <%--            // 处理响应数据--%>
-    <%--            document.getElementById('welcomeMessage').textContent = `Welcome, user ${userId}`;--%>
-    <%--        })--%>
-    <%--        .catch(error => {--%>
-    <%--            console.error('Error:', error);--%>
-    <%--        });--%>
-    <%--}--%>
+    // 获取 token 并检查是否过期
+    function getToken() {
+        const itemStr = localStorage.getItem('token');
+
+        // 如果 token 不存在，返回 null
+        if (!itemStr) {
+            return null;
+        }
+
+        const item = JSON.parse(itemStr);
+        const now = new Date().getTime();
+
+        // 检查 token 是否已过期
+        if (now > item.expiry) {
+            // Token 已过期，删除它
+            localStorage.removeItem('token');
+            return null;
+        }
+
+        return item.token;
+    }
+
+    // 页面加载时检查 token，并根据 token 设置按钮跳转逻辑
+    window.onload = function() {
+        const token = getToken();
+        const userId = localStorage.getItem('id');
+        const btnShowEvents = document.getElementById('showEventsBtn');
+
+        if (!token) {
+            // 没有 token，则按钮点击跳转到登录页面
+            btnShowEvents.onclick = function() {
+                window.location.href = 'login.jsp';
+            };
+        } else {
+            // 有 token，则按钮点击跳转到 events 页面
+            btnShowEvents.onclick = function() {
+                window.location.href = '/events';
+            };
+        }
+    };
 </script>
 
+<!-- 主内容 -->
 <div class="main-content">
     <div class="text-content">
         <div class="artistic-text">SDAMC Event MG</div>
-        <a href="/events" class="btn btn-primary">Show events</a>
+        <!-- 按钮根据 token 状态跳转 -->
+        <button id="showEventsBtn" class="btn btn-primary">Show events</button>
     </div>
+
+    <!-- 嵌入的 Spotify 播放器 -->
     <iframe
             src="https://open.spotify.com/embed/track/1ESotnG260HrjQcBZrlL2m?utm_source=generator"
             class="spotify-player"
