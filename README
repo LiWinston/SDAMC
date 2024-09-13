@@ -20,3 +20,6 @@ postgresql://postgres1_owner:nt4ug9SwXZUr@ep-icy-sea-a7vt9oiq.ap-southeast-2.aws
 ## docker command for local img build and run
 docker build -t sda .
 docker run -p 82:8080 sda
+
+#警钟长鸣：-- To be noticed
+json请求体要拿requestBody.get("key")，不能req.getParameter("key") --Get json request body by requestBody.get("key") instead of req.getParameter("key")

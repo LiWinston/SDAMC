@@ -103,14 +103,12 @@
                 </div>
 
                 <input type="text" name="title" class="form-control mb-2 mr-sm-2" placeholder="Title" required/>
-                <input type="text" name="description" class="form-control mb-2 mr-sm-2" placeholder="Description"
-                       required/>
+                <input type="text" name="description" class="form-control mb-2 mr-sm-2" placeholder="Description"/>
                 <input type="text" name="venue" class="form-control mb-2 mr-sm-2" placeholder="Venue" required/>
                 <input type="number" name="capacity" class="form-control mb-2 mr-sm-2" placeholder="Capacity"/>
                 <input type="datetime-local" name="beginTime" class="form-control mb-2 mr-sm-2" placeholder="Begin Time"
                        required/>
-                <input type="datetime-local" name="endTime" class="form-control mb-2 mr-sm-2" placeholder="End Time"
-                       required/>
+                <input type="datetime-local" name="endTime" class="form-control mb-2 mr-sm-2" placeholder="End Time"/>
                 <button type="submit" class="btn btn-custom mb-2">Create</button>
             </form>
         </div>
@@ -346,19 +344,18 @@
                 },
                 body: reqBodyJson
             })
-                .then(response => {
-                    if (response.ok) {
-                        alert('Event created successfully');
+                .then(response => response.json())  // 解析 JSON 响应
+                .then(result => {
+                    if (result.code === 1)  {
+                        alert(result.msg);  // 成功信息
                         window.location.href = '/events';
                     } else {
-                        return response.text().then(text => {
-                            throw new Error(text);
-                        });
+                        return Promise.reject(result.msg);  // 失败信息
                     }
                 })
                 .catch(error => {
                     console.error('Error creating event:', error);
-                    alert('Failed to create event: ' + error.message);
+                    alert('Failed to create event: ' + error);
                 });
         };
     };
