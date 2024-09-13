@@ -58,7 +58,8 @@ public class UserController extends HttpServlet {
             List<Clubs> clubs = clubMembershipsMapper.findClubsAdminedByStudent(stuid);
             resp.setContentType("application/json");
             new ObjectMapper().writeValue(resp.getOutputStream(), clubs);
-        } else {
+        }
+        else {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
         }
         UnitofWork.getCurrent().commit();
