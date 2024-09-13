@@ -9,7 +9,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.UUID;
 
 @Slf4j
 public class EventsMapper extends DataMapper {
@@ -76,7 +75,7 @@ public class EventsMapper extends DataMapper {
             throw new IllegalArgumentException("Invalid object type");
         }
         Events event = (Events) obj;
-        String sql = "INSERT INTO events (title, description, venue, capacity, club_id, begin_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO events (id,title, description, venue, capacity, club_id, begin_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
             stmt.setInt(1, event.getId());
             stmt.setString(2, event.getTitle());

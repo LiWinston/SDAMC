@@ -14,6 +14,7 @@ import org.sdamc.Mapper.EventsMapper;
 import org.sdamc.UnitofWork;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +29,7 @@ public class EventController extends HttpServlet {
     public void init() {
         // 初始化mapper
         this.eventsMapper = new EventsMapper();
+        this.membershipsMapper = new ClubMembershipsMapper();
     }
 
     // 查找所有事件 (GET)
@@ -98,6 +100,10 @@ public class EventController extends HttpServlet {
     }
 
     // 创建事件 (POST /events)
+    /*
+     * {"clubId":"1","title":"111","description":"11","venue":"11","capacity":"1",
+     * "beginTime":"2024-09-13T16:35","endTime":"2024-09-13T21:31","userId":"1"}
+     */
     private void handleCreateEvent(@NotNull HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String token = req.getHeader("Authorization");
         ObjectMapper mapper = new ObjectMapper();
@@ -124,10 +130,14 @@ public class EventController extends HttpServlet {
             }
 
             // 获取事件信息
-            String title = req.getParameter("title");
-            String description = req.getParameter("description");
-            String venue = req.getParameter("venue");
-            int capacity = Integer.parseInt(req.getParameter("capacity"));
+            String title = requestBody.get("title");
+            String description = requestBody.get("description");
+            String venue = requestBody.get("venue");
+            int capacity = Integer.parseInt(requestBody.get("capacity"));
+            String beginTimeStr = requestBody.get("beginTime").replace("T", " ") + ":00"; // 确保有秒部分
+            String endTimeStr = requestBody.get("endTime").replace("T", " ") + ":00";
+            Timestamp beginTime = Timestamp.valueOf(beginTimeStr);
+            Timestamp endTime = Timestamp.valueOf(endTimeStr);
 
             // 创建事件
             Events event = new Events(eventsMapper.getNewId());
@@ -135,13 +145,17 @@ public class EventController extends HttpServlet {
             event.setDescription(description);
             event.setVenue(venue);
             event.setCapacity(capacity);
+            event.setClubId(clubId);
+            event.setBeginTime(beginTime);
+            event.setEndTime(endTime);
 
             eventsMapper.insert(event);
             UnitofWork.getCurrent().commit();
 
             resp.setStatus(HttpServletResponse.SC_CREATED);
             resp.setContentType("application/json");
-            new ObjectMapper().writeValue(resp.getOutputStream(), Result.success("Event created successfully"));
+            new ObjectMapper().writeValue(resp.getOutputStream(),
+                    Result.success("Event: " + event.getTitle() + " created successfully"));
         }
         catch (Exception e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

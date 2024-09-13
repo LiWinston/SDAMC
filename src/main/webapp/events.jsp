@@ -346,14 +346,13 @@
                 },
                 body: reqBodyJson
             })
-                .then(response => {
-                    if (response.ok) {
-                        alert('Event created successfully');
+                .then(response => response.json())  // 解析 JSON 响应
+                .then(result => {
+                    if (result.code === 1)  {
+                        alert(result.msg);  // 成功信息
                         window.location.href = '/events';
                     } else {
-                        return response.text().then(text => {
-                            throw new Error(text);
-                        });
+                        return Promise.reject(result.msg);  // 失败信息
                     }
                 })
                 .catch(error => {
