@@ -64,6 +64,7 @@
             localStorage.removeItem('token');
             return null;
         }
+        console.log('Token is valid' + parsedToken.token);
         return parsedToken.token;
     }
 

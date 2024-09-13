@@ -61,12 +61,11 @@
                                data-id="<%= event.getId() %>">
                                 <i class="fas fa-edit"></i> Edit
                             </a>
-                            <form action="<%= request.getContextPath() %>/deleteEvent" method="post"
-                                  style="display:inline;">
-                                <input type="hidden" name="id" value="<%= event.getId() %>"/>
+                            <form id="deleteForm" style="display:inline;">
+                                <input type="hidden" name="eventId" value="<%= event.getId() %>"/>
                                 <input type="hidden" name="clubId" value="<%= event.getClubId() %>"/>
-                                <button type="submit" class="btn btn-delete btn-sm"><i class="fas fa-trash-alt"></i>
-                                    Delete
+                                <button type="button" class="btn btn-delete btn-sm" onclick="submitDeleteForm()">
+                                    <i class="fas fa-trash-alt"></i> Delete
                                 </button>
                             </form>
                         </td>
@@ -191,6 +190,41 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 <script>
+    function submitDeleteForm() {
+        const form = document.getElementById('deleteForm');
+        const formData = new FormData(form);
+
+        const userId = localStorage.getItem('userId');
+        const clubId = formData.get('clubId');
+        const eventId = formData.get('eventId');
+
+        const token = getToken();
+        if (!token) {
+            alert("You must be logged in to create events");
+            window.location.href = 'login.jsp';
+            return;
+        }
+
+        fetch('<%= request.getContextPath() %>/events', {
+            method: 'delete',
+            headers: {
+                'Authorization': "Bearer " + token,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({userId, eventId, clubId})
+        }).then(response => {
+            if (response.ok) {
+                alert('Event deleted successfully');
+                return response.json();
+            } else {
+                console.error(response);
+                alert('Failed to delete the event');
+            }
+        }).then(result => {
+            alert(result.code === 1 ? result.msg : "Request Denied due to " + result.msg);
+        }).catch(error => console.error('Error:', error));
+    }
+
     function openEditEventModal(event) {
         // Populate modal fields with event data
         document.getElementById('editEventId').value = event.id;
@@ -258,21 +292,6 @@
     }
 
     window.onload = function () {
-        function getToken() {
-            const tokenData = localStorage.getItem('token');
-            if (!tokenData) return null;
-
-            const parsedToken = JSON.parse(tokenData);
-            const now = new Date().getTime();
-
-            // 验证 token 是否过期
-            if (now > parsedToken.expiry) {
-                localStorage.removeItem('token');
-                return null;
-            }
-            return parsedToken.token;
-        }
-
         const token = getToken();
         const userId = localStorage.getItem('userId');
         console.log('userId:', userId);
@@ -346,7 +365,7 @@
             })
                 .then(response => response.json())  // 解析 JSON 响应
                 .then(result => {
-                    if (result.code === 1)  {
+                    if (result.code === 1) {
                         alert(result.msg);  // 成功信息
                         window.location.href = '/events';
                     } else {
@@ -359,6 +378,22 @@
                 });
         };
     };
+
+    function getToken() {
+        const tokenData = localStorage.getItem('token');
+        if (!tokenData) return null;
+
+        const parsedToken = JSON.parse(tokenData);
+        const now = new Date().getTime();
+
+        // 验证 token 是否过期
+        if (now > parsedToken.expiry) {
+            localStorage.removeItem('token');
+            return null;
+        }
+        console.log('get Token@' + now + " : " + parsedToken.token);
+        return parsedToken.token;
+    }
 </script>
 <!-- Include Bootstrap JS and jQuery for modal functionality -->
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>

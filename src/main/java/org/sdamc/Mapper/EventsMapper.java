@@ -108,6 +108,19 @@ public class EventsMapper extends DataMapper {
         }
     }
 
+    // 删除事件CascadeLy
+    public void deleteByEventId(int eventId) {
+        // 若关联表中有数据，级联删除
+        String sql = "DELETE FROM events WHERE id = ?";
+        try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
+            stmt.setInt(1, eventId);
+            stmt.executeUpdate();
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public ResultSet getRecord(int id) throws SQLException {
         String sql = "SELECT * FROM events WHERE id = " + id + ";";
