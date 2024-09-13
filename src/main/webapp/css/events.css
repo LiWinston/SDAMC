@@ -1,0 +1,180 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f7f7f7;
+    padding-top: 20px;
+}
+
+.container {
+    max-width: 1500px;
+    margin: 0 auto;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    color: #343a40;
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card {
+    border-radius: 15px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+    background-color: #ffffff;
+}
+
+.card-header {
+    background-color: #007bff;
+    color: #ffffff;
+    font-size: 1.25rem;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+    padding: 15px;
+    text-align: center;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 0;
+}
+
+.table th,
+.table td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 15px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.table thead th {
+    background-color: #343a40;
+    color: #ffffff;
+    font-weight: bold;
+    border-top: none;
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.table tbody tr:hover {
+    background-color: #e9ecef;
+    transition: background-color 0.3s ease;
+}
+
+.btn-custom {
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-custom:hover {
+    background-color: #0056b3;
+}
+
+.btn-edit {
+    background-color: #ffc107;
+    color: #212529;
+    border-radius: 5px;
+    padding: 8px 12px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-edit:hover {
+    background-color: #e0a800;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+    color: #ffffff;
+    border-radius: 5px;
+    padding: 8px 12px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-delete:hover {
+    background-color: #c82333;
+}
+
+.form-inline input {
+    margin-right: 10px;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.form-inline input:focus {
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1), 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+.form-inline button {
+    border-radius: 5px;
+    padding: 10px 15px;
+}
+
+/* 设置主内容样式 */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.text-content {
+    text-align: center;
+}
+
+.artistic-text {
+    font-size: 36px;
+    font-weight: bold;
+    color: #333;
+}
+
+.btn-primary {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background-color: #45a049;
+}
+
+/* Spotify 播放器样式 */
+.spotify-player {
+    width: 300px;
+    height: 80px;
+    margin-top: 20px;
+}
+
+/* 下拉菜单样式 */
+.club-select {
+    margin: 20px 0;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.club-select option {
+    padding: 10px;
+}
