@@ -57,9 +57,10 @@
                         <td><%= event.getEndTime() %>
                         </td>
                         <td>
-                            <a class="btn btn-edit btn-sm"
-                               href="<%= request.getContextPath() %>/editEvent?id=<%= event.getId() %>"><i
-                                    class="fas fa-edit"></i> Edit</a>
+                            <a class="btn btn-edit btn-sm" data-toggle="modal" data-target="#editEventModal"
+                               data-id="<%= event.getId() %>">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
                             <form action="<%= request.getContextPath() %>/deleteEvent" method="post"
                                   style="display:inline;">
                                 <input type="hidden" name="id" value="<%= event.getId() %>"/>
@@ -102,11 +103,14 @@
                 </div>
 
                 <input type="text" name="title" class="form-control mb-2 mr-sm-2" placeholder="Title" required/>
-                <input type="text" name="description" class="form-control mb-2 mr-sm-2" placeholder="Description" required/>
+                <input type="text" name="description" class="form-control mb-2 mr-sm-2" placeholder="Description"
+                       required/>
                 <input type="text" name="venue" class="form-control mb-2 mr-sm-2" placeholder="Venue" required/>
                 <input type="number" name="capacity" class="form-control mb-2 mr-sm-2" placeholder="Capacity"/>
-                <input type="datetime-local" name="beginTime" class="form-control mb-2 mr-sm-2" placeholder="Begin Time" required/>
-                <input type="datetime-local" name="endTime" class="form-control mb-2 mr-sm-2" placeholder="End Time" required/>
+                <input type="datetime-local" name="beginTime" class="form-control mb-2 mr-sm-2" placeholder="Begin Time"
+                       required/>
+                <input type="datetime-local" name="endTime" class="form-control mb-2 mr-sm-2" placeholder="End Time"
+                       required/>
                 <button type="submit" class="btn btn-custom mb-2">Create</button>
             </form>
         </div>
@@ -255,7 +259,7 @@
         });
     }
 
-    window.onload = function() {
+    window.onload = function () {
         function getToken() {
             const tokenData = localStorage.getItem('token');
             if (!tokenData) return null;
@@ -270,6 +274,7 @@
             }
             return parsedToken.token;
         }
+
         const token = getToken();
         const userId = localStorage.getItem('userId');
         console.log('userId:', userId);
@@ -324,7 +329,7 @@
 
         // Handle form submission
         const form = document.getElementById('createEventForm');
-        form.onsubmit = function(event) {
+        form.onsubmit = function (event) {
             event.preventDefault();
 
             const formData = new FormData(form);
@@ -343,7 +348,9 @@
                         alert('Event created successfully');
                         window.location.href = '/events';
                     } else {
-                        return response.text().then(text => { throw new Error(text); });
+                        return response.text().then(text => {
+                            throw new Error(text);
+                        });
                     }
                 })
                 .catch(error => {
