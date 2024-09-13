@@ -11,7 +11,8 @@ INSERT INTO students (name, email, password)
 VALUES
     ('Alice Johnson', 'alice.johnson@student.example.com', 'password123'),
     ('Bob Smith', 'bob.smith@student.example.com', 'password456'),
-    ('Charlie Brown', 'charlie.brown@student.example.com', 'password789');
+    ('Charlie Brown', 'charlie.brown@student.example.com', 'password789'),
+    ('Dos Santos', 'santos.dos@student.example.com', 'password000');
 
 -- Insert data into admins
 INSERT INTO admins (name, email, password)
@@ -24,7 +25,8 @@ INSERT INTO club_memberships (student_id, club_id, role)
 VALUES
     (1, 1, 'admin'),  -- Alice is admin of Photography Club
     (2, 2, 'normal_member'), -- Bob is a member of Chess Club
-    (3, 1, 'normal_member'); -- Charlie is a member of Photography Club
+    (3, 1, 'normal_member'), -- Charlie is a member of Photography Club
+    (4, 1, 'super_admin'); -- Dos is a super admin of Photography Club
 
 -- Insert data into events
 INSERT INTO events (title, description, venue, capacity, club_id, begin_time, end_time)
