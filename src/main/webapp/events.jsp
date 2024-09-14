@@ -315,7 +315,7 @@
                 });
                 setTimeout(() => {
                     window.location.reload();
-                }, 600);
+                }, 1000);
                 // location.reload();
             }else{
                 showSweetError("Failed to update event" + response.statusText);
