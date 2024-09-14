@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Login/Register</title>
     <link rel="stylesheet" href="css/login.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 <div class="auth-container">
@@ -131,9 +132,15 @@
                         window.location.href = "/events";
                     } else {
                         // 处理注册成功，仅提示成功信息
-                        alert('Registration successful');
-                        document.getElementById('errorMessage').textContent = '';
-                        toggleForm(); // 切换到登录表单
+                        Swal.fire({
+                            title: 'Registration successful',
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            document.getElementById('errorMessage').textContent = '';
+                            toggleForm(); // 切换到登录表单
+                        });
                     }
                 } else {
                     // 处理非成功的响应
