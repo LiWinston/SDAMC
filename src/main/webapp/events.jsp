@@ -11,6 +11,7 @@
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome for icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="css/events.css">
 </head>
 <body>
@@ -219,40 +220,70 @@
         const clubId = formData.get('clubId');
         const eventId = formData.get('eventId');
 
-        const confirmation = confirm("Are you sure you want to delete this event?" +
-            eventId + " from club " + clubId + "as user " + userId + "? This action cannot be undone.");
-        if (!confirmation) return;
-        const token = getToken();
-        if (!token) {
-            alert("You must be logged in to create events");
-            window.location.href = 'login.jsp';
-            return;
-        }
-
-        fetch('<%= request.getContextPath() %>/events', {
-            method: 'delete',
-            headers: {
-                'Authorization': "Bearer " + token,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({userId, eventId, clubId})
-        }).then(response => {
-            if (response.ok) {
-                alert('Event deleted successfully');
-                return response.json();
-            } else {
-                console.error(response);
-                alert('Failed to delete the event');
+        // 使用新的 showSweetChoice 替代原有的 confirmation 逻辑
+        showSweeetChoice(
+            "Are you sure you want to delete this event_" +
+            eventId + " from club_" + clubId + " as user " + userId + "? This requires admin access.",
+            {
+                title: 'Confirm Delete',
+                icon: 'warning',
+                confirmButtonText: 'Delete',
+                confirmButtonColor: '#d33',
+                cancelButtonText: 'Cancel',
+                cancelButtonColor: '#3085d6'
             }
-        }).then(result => {
-            alert(result.code === 1 ? result.msg : "Request Denied due to " + result.msg);
-        }).catch(error => console.error('Error:', error));
+        ).then((result) => {
+            if (result.isConfirmed) {
+                // 用户确认删除的逻辑
+                console.log('Event deleted');
+
+                // 检查 token 是否存在
+                const token = getToken();
+                if (!token) {
+                    showSweetAlert("You must be logged in to create events");
+                    window.location.href = 'login.jsp';
+                    return;
+                }
+
+                // 发出删除请求
+                fetch('<%= request.getContextPath() %>/events', {
+                    method: 'delete',
+                    headers: {
+                        'Authorization': "Bearer " + token,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({userId, eventId, clubId})
+                }).then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        console.error(response);
+                        showSweetAlert('Failed to delete the event, due to \r\n  ' + response.statusText);
+                    }
+                }).then(result => {
+                    showSweetAlert(result.code === 1 ? result.msg : "Request Denied due to " + result.msg, {
+                        icon: result.code === 1 ? 'success' : 'error',
+                        title: result.code === 1 ? 'Success' : 'Error',
+                        confirmButtonColor: result.code === 1 ? '#3085d6' : '#d33'
+                    });
+                }).catch(error => console.error('Error:', error));
+            } else if (result.isDismissed) {
+                // 用户取消删除的逻辑
+                console.log('Deletion cancelled');
+            }
+        });
     }
+
 
     function openEditEventModal(event) {
         if (!canEditEvent(event.clubId)) {
-            alert("Not authorized to edit this event, need to be an admin of the club " + event.clubId
-                + ". You are admin of clubs: " + (adminClubs.size > 0 ? Array.from(adminClubs.values()).join(", ") : "None"));
+            showSweetAlert("Not authorized to edit this event, need to be an admin of the club " + event.clubId
+                + ". You are admin of clubs: " + (adminClubs.size > 0 ? Array.from(adminClubs.values()).join(", ") : "None"),
+                {
+                    icon: 'error',
+                    title: 'Access Denied',
+                    confirmButtonColor: '#d33'
+                });
             return;
         }
         // Populate modal fields with event data
@@ -326,12 +357,12 @@
         const clubSelect = document.getElementById('clubSelect');
 
         if (!token) {
-            alert("You must be logged in to create events");
+            showSweetAlert("You must be logged in to create events");
             window.location.href = 'login.jsp';
             return;
         }
         if (!userId) {
-            alert("token OK, User ID not set in local storage");
+            showSweetAlert("token OK, User ID not set in local storage");
             return;
         }
 
@@ -339,7 +370,7 @@
         let number = Number(userId);
         console.log('id:', number, 'type:', typeof number);
         if (!number || isNaN(number)) {
-            alert("Invalid user ID");
+            showSweetAlert("Invalid user ID");
             return;
         }
         let url = '/user/' + number + '/clubs';
@@ -383,7 +414,7 @@
             })
             .catch(error => {
                 console.error('Error fetching clubs:', error);
-                alert('Failed to load clubs: ' + error.message);
+                showSweetAlert('Failed to load clubs: ' + error.message);
             });
 
         // Handle form submission
@@ -408,7 +439,7 @@
                 .then(response => response.json())  // 解析 JSON 响应
                 .then(result => {
                     if (result.code === 1) {
-                        alert(result.msg);  // 成功信息
+                        showSweetAlert(result.msg);  // 成功信息
                         window.location.href = '/events';
                     } else {
                         return Promise.reject(result.msg);  // 失败信息
@@ -416,7 +447,7 @@
                 })
                 .catch(error => {
                     console.error('Error creating event:', error);
-                    alert('Failed to create event: ' + error);
+                    showSweetAlert('Failed to create event: ' + error);
                 });
         };
     };
@@ -435,6 +466,59 @@
         }
         console.log('get Token@' + now + " : " + parsedToken.token);
         return parsedToken.token;
+    }
+
+
+
+
+
+    function showSweeetChoice(message, options = {}) {
+        const {
+            title = 'Notification',
+            icon = 'warning',  // 警告图标默认使用 'warning'
+            confirmButtonText = 'OK',
+            confirmButtonColor = '#3085d6',
+            cancelButtonText = 'Cancel',
+            cancelButtonColor = '#d33'
+        } = options;
+
+        return Swal.fire({
+            title: title,
+            text: message,
+            icon: icon,
+            showCancelButton: true,
+            confirmButtonText: confirmButtonText,
+            confirmButtonColor: confirmButtonColor,
+            cancelButtonText: cancelButtonText,
+            cancelButtonColor: cancelButtonColor
+        });
+    }
+
+
+    // 默认弹窗，允许传入自定义参数
+    function showSweetAlert(message, options = {}) {
+        const {
+            title = 'Notification',   // 默认标题
+            icon = 'success',         // 默认图标
+            confirmButtonText = 'OK', // 默认确认按钮文字
+            confirmButtonColor = '#3085d6'  // 默认确认按钮颜色 (蓝色)
+        } = options;
+
+        Swal.fire({
+            title: title,
+            text: message,
+            icon: icon,
+            confirmButtonText: confirmButtonText,
+            confirmButtonColor: confirmButtonColor
+        });
+    }
+
+    function showSweetError(message) {
+        showSweetAlert(message, {
+            icon: 'error',
+            title: 'Error',
+            confirmButtonColor: '#d33'
+        });
     }
 </script>
 <!-- Include Bootstrap JS and jQuery for modal functionality -->
