@@ -122,7 +122,7 @@ public class UserController extends HttpServlet {
             // 返回 Result<T> 错误信息
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.setContentType("application/json");
-            mapper.writeValue(resp.getOutputStream(), Result.error("Database error"));
+            mapper.writeValue(resp.getOutputStream(), Result.error("Database error" + e.getMessage().substring(0, 50)));
             e.printStackTrace();
         }
     }

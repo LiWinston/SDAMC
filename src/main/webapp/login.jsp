@@ -71,10 +71,12 @@
             usernameInput.removeAttribute('required');
             switchButton.textContent = 'Switch to Register';
         }
+        //清空错误消息
+        document.getElementById('errorMessage').textContent = '';
         isLogin = !isLogin;
     }
 
-    document.getElementById('authForm').addEventListener('submit', function(event) {
+    document.getElementById('authForm').addEventListener('submit', function (event) {
         event.preventDefault();
 
         const email = document.getElementById('email').value;
@@ -83,7 +85,7 @@
 
         const BaseUrl = "";
         const url = isLogin ? BaseUrl + '/user/login' : BaseUrl + '/user/register';
-        const payload = isLogin ? { email, password } : { email, username, password };
+        const payload = isLogin ? {email, password} : {email, username, password};
 
         fetch(url, {
             method: 'POST',
@@ -109,21 +111,30 @@
             })
             .then(result => {
                 if (result.code === 1) {
-                    function setTokenWithExpiry(token, expiryTimeInMs) {
-                        const now = new Date().getTime();
-                        const item = {
-                            token: token,
-                            expiry: now + expiryTimeInMs // 当前时间 + 设定的有效期
-                        };
-                        localStorage.setItem('token', JSON.stringify(item));
-                    }
-                    // 成功处理，跳转页面或其他操作
-                    //Result.success(new LoginResponse(token, student.getId()), "Login successful"));
+                    if (isLogin) {
+                        // 处理登录成功，设置 token 和本地存储
+                        function setTokenWithExpiry(token, expiryTimeInMs) {
+                            const now = new Date().getTime();
+                            const item = {
+                                token: token,
+                                expiry: now + expiryTimeInMs // 当前时间 + 设定的有效期
+                            };
+                            localStorage.setItem('token', JSON.stringify(item));
+                        }
 
-                    setTokenWithExpiry(result.data.token, 240 * 1000);  // 设置4min有效期
-                    localStorage.setItem('userId', result.data.id);
-                    console.log(result.data.id + " : " + localStorage.getItem('token'));
-                    window.location.href = "/events";
+                        // 设置 token 并保存 userId
+                        setTokenWithExpiry(result.data.token, 240 * 1000);  // 设置4分钟有效期
+                        localStorage.setItem('userId', result.data.id);
+                        console.log(result.data.id + " : " + localStorage.getItem('token'));
+
+                        // 登录成功后重定向到事件页面
+                        window.location.href = "/events";
+                    } else {
+                        // 处理注册成功，仅提示成功信息
+                        alert('Registration successful');
+                        document.getElementById('errorMessage').textContent = '';
+                        toggleForm(); // 切换到登录表单
+                    }
                 } else {
                     // 处理非成功的响应
                     throw new Error(result.msg || 'Unknown error');
