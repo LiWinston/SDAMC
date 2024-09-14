@@ -57,9 +57,10 @@
                         <td><%= event.getEndTime() %>
                         </td>
                         <td>
-                            <a class="btn btn-edit btn-sm" data-toggle="modal" data-target="#editEventModal"
+                            <a class="btn btn-edit btn-sm" data-target="#editEventModal"
                                data-id="<%= event.getId() %>" onclick="openEditEventModal({
                                     id: '<%= event.getId() %>',
+                                    clubId: '<%= event.getClubId() %>',
                                     title: '<%= event.getTitle() %>',
                                     description: '<%= event.getDescription() %>',
                                     venue: '<%= event.getVenue() %>',
@@ -70,7 +71,8 @@
                                 <i class="fas fa-edit"></i> Edit
                             </a>
 
-                            <form id="deleteForm_<%= event.getId() %>" style="display:inline;" onsubmit="event.preventDefault(); submitDeleteForm(this);">
+                            <form id="deleteForm_<%= event.getId() %>" style="display:inline;"
+                                  onsubmit="event.preventDefault(); submitDeleteForm(this);">
                                 <input type="hidden" name="eventId" value="<%= event.getId() %>"/>
                                 <input type="hidden" name="clubId" value="<%= event.getClubId() %>"/>
                                 <button type="submit" class="btn btn-delete btn-sm">
@@ -199,6 +201,14 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 <script>
+    // 全局数组存储用户管理的俱乐部 IDs
+    let adminClubs = new Map();
+
+    // 验证用户是否可以编辑事件
+    function canEditEvent(clubId) {
+        return adminClubs.has(String(clubId));
+    }
+
     function submitDeleteForm(form) {
         const formData = new FormData(form);
 
@@ -237,6 +247,11 @@
     }
 
     function openEditEventModal(event) {
+        if (!canEditEvent(event.clubId)) {
+            alert("Not authorized to edit this event, need to be an admin of the club " + event.clubId
+                + ". You are admin of clubs: " + (adminClubs.size > 0 ? Array.from(adminClubs.values()).join(", ") : "None"));
+            return;
+        }
         // Populate modal fields with event data
         document.getElementById('eventId').value = event.id;
         document.getElementById('editTitle').value = event.title;
@@ -341,13 +356,16 @@
             })
             .then(clubs => {
                 console.log('Clubs:', clubs);
+
                 // Populate the clubSelect dropdown
                 clubs.forEach(club => {
                     const option = document.createElement('option');
                     option.value = club.id;
                     option.textContent = club.name;
                     clubSelect.appendChild(option);
+                    adminClubs.set(String(club.id), club.name);
                 });
+                console.log('Admin clubs:\n', adminClubs);
             })
             .catch(error => {
                 console.error('Error fetching clubs:', error);
