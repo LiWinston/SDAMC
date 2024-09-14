@@ -308,8 +308,24 @@
             body: jsonData
         }).then(response => {
             if (response.ok) {
-                location.reload();
+                showSweetAlert('Event updated successfully', {
+                    icon: 'success',
+                    title: 'Success',
+                    showConfirmButton: false
+                });
+                setTimeout(() => {
+                    window.location.reload();
+                }, 600);
+                // location.reload();
+            }else{
+                showSweetError("Failed to update event" + response.statusText);
             }
+        }).catch(error => {
+            console.error('Error updating event:', error);
+            showSweetError('Failed to update event: ' + error);
+            setTimeout(() => {
+                window.location.reload();
+            }, 1300);
         });
     }
 
@@ -507,6 +523,20 @@
         });
     }
 
+    function showSweetAlertWithRetVal(message, options = {}) {
+        const {
+            title = 'Notification',
+            icon = 'warning',
+        } = options;
+
+        return Swal.fire({
+            title: title,
+            text: message,
+            icon: icon,
+            confirmButtonText: confirmButtonText,
+            confirmButtonColor: confirmButtonColor
+        });
+    }
 
     // 默认弹窗，允许传入自定义参数
     function showSweetAlert(message, options = {}) {
@@ -525,6 +555,7 @@
             confirmButtonColor: confirmButtonColor
         });
     }
+
 
     function showSweetError(message) {
         showSweetAlert(message, {
