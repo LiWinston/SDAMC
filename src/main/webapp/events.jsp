@@ -366,45 +366,20 @@
             return;
         }
 
-
         let number = Number(userId);
         console.log('id:', number, 'type:', typeof number);
         if (!number || isNaN(number)) {
             showSweetAlert("Invalid user ID");
             return;
         }
-        let url = '/user/' + number + '/clubs';
-        console.log('Constructed URL:', url);
-        // Fetch clubs administered by the user
-        fetch(url, {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(clubs => {
-                console.log('Clubs:', clubs);
 
-                // Populate the clubSelect dropdown
-                clubs.forEach(club => {
-                    const option = document.createElement('option');
-                    option.value = club.id;
-                    option.textContent = club.name;
-                    clubSelect.appendChild(option);
-                    adminClubs.set(String(club.id), club.name);
-                });
-                console.log('Admin clubs:\n', adminClubs);
-                if (adminClubs.size === 0) {
+        fetchAdminedClubsByUser(number, token, clubSelect)
+            .then(clubs => {
+                if (clubs.size === 0) {
                     // Hide the create event form if no clubs are administered
-                    // document.getElementById('createEventFormContainer').style.display = 'none';
                     document.getElementById('createEventFormContainer').classList.add('disabled-form');
                     document.getElementById('noAdminAccessOverlay').style.display = 'flex';  // 显示提示文字
+
                     // 禁用所有表单元素
                     const formElements = document.querySelectorAll('#createEventForm input, #createEventForm select, #createEventForm button');
                     formElements.forEach(element => {
@@ -413,8 +388,7 @@
                 }
             })
             .catch(error => {
-                console.error('Error fetching clubs:', error);
-                showSweetAlert('Failed to load clubs: ' + error.message);
+                showSweetAlert(error.message);
             });
 
         // Handle form submission
@@ -426,7 +400,6 @@
             const data = Object.fromEntries(formData.entries());
             data['userId'] = userId;
             let reqBodyJson = JSON.stringify(data);
-            // add local userID to request body
 
             fetch('/events', {
                 method: 'POST',
@@ -452,6 +425,46 @@
         };
     };
 
+
+    function fetchAdminedClubsByUser(userId, token, clubSelect) {
+        let url = '/user/' + userId + '/clubs';
+        console.log('Constructed URL:', url);
+
+        // Fetch clubs administered by the user
+        return fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(clubs => {
+                console.log('Clubs:', clubs);
+
+                adminClubs.clear();  // Clear the map before populating it
+                // Populate the clubSelect dropdown
+                clubs.forEach(club => {
+                    const option = document.createElement('option');
+                    option.value = club.id;
+                    option.textContent = club.name;
+                    clubSelect.appendChild(option);
+                    adminClubs.set(String(club.id), club.name);
+                });
+                console.log('Admin clubs:\n', adminClubs);
+                return clubs;
+            })
+            .catch(error => {
+                console.error('Error fetching clubs:', error);
+                throw new Error('Failed to load clubs: ' + error.message);
+            });
+    }
+
+
     function getToken() {
         const tokenData = localStorage.getItem('token');
         if (!tokenData) return null;
@@ -467,9 +480,6 @@
         console.log('get Token@' + now + " : " + parsedToken.token);
         return parsedToken.token;
     }
-
-
-
 
 
     function showSweeetChoice(message, options = {}) {
