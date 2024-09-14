@@ -3,6 +3,7 @@ package org.sdamc.Mapper;
 import org.sdamc.DomainObject.ClubMemberships;
 import org.sdamc.DomainObject.Clubs;
 import org.sdamc.DomainObject.DomainObject;
+import org.sdamc.DomainObject.Students;
 import org.sdamc.Utils.DatabaseUtil;
 
 import java.sql.PreparedStatement;
@@ -142,6 +143,49 @@ public class ClubMembershipsMapper extends DataMapper {
             e.printStackTrace();
         }
         return clubs;
+    }
+
+    public List<Clubs> findClubsSuperAdminedByStudent(int studentId) {
+        String sql = "SELECT c.id, c.name FROM clubs c " + "JOIN club_memberships cm ON c.id = cm.club_id "
+                + "WHERE cm.student_id = ? AND cm.role = 'super_admin'";
+
+        List<Clubs> clubs = new ArrayList<>();
+        try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
+            stmt.setInt(1, studentId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Clubs club = new Clubs(rs.getInt("id"));
+                club.setName(rs.getString("name"));
+                clubs.add(club);
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return clubs;
+    }
+
+    public List<Students> getClubMembers(int clubId) {
+        String sql = "SELECT s.id, s.name, s.email FROM students s " + "JOIN club_memberships cm ON s.id = cm.student_id "
+                + "WHERE cm.club_id = ?";
+
+        List<Students> students = new ArrayList<>();
+        try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
+            stmt.setInt(1, clubId);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Students student = new Students(rs.getInt("id"));
+                student.setName(rs.getString("name"));
+                student.setEmail(rs.getString("email"));
+                students.add(student);
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return students;
     }
 
 }

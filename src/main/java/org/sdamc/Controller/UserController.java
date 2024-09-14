@@ -37,11 +37,14 @@ public class UserController extends HttpServlet {
 
     @Override
     // 获取用户管辖的club /user/{stuid}/clubs
+    // 获取用户以超级管理员身份管辖的club /user/{stuid}/clubs_super
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         try {
             String requestURI = req.getRequestURI();
             if (requestURI.endsWith("/clubs")) {
                 handleGetClubsAdminedByUser(req, resp);
+            } else if(requestURI.endsWith("/clubs_super")){
+                handleGetClubsSuperAdminedByUser(req, resp);
             }
             else {
                 艾欧包装器.writeValue(resp, Result.error("Invalid path"));
@@ -60,6 +63,22 @@ public class UserController extends HttpServlet {
         if (parts.length >= 2) {
             int stuid = Integer.parseInt(parts[1]); // parts[1] is "123"
             List<Clubs> clubs = clubMembershipsMapper.findClubsAdminedByStudent(stuid);
+            艾欧包装器.writeValue(resp, clubs);
+        }
+        else {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
+        }
+        UnitofWork.getCurrent().commit();
+    }
+
+    private void handleGetClubsSuperAdminedByUser(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String pathInfo = req.getPathInfo(); // "/123/clubs_super"
+        String[] parts = pathInfo.split("/");
+
+        UnitofWork.newCurrent();
+        if (parts.length >= 2) {
+            int stuid = Integer.parseInt(parts[1]); // parts[1] is "123"
+            List<Clubs> clubs = clubMembershipsMapper.findClubsSuperAdminedByStudent(stuid);
             艾欧包装器.writeValue(resp, clubs);
         }
         else {

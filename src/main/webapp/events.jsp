@@ -1,4 +1,6 @@
 <%@ page import="org.sdamc.DomainObject.Events " %>
+<%@ page import="org.sdamc.DomainObject.Students " %>
+<%@ page import="org.sdamc.DomainObject.ClubMemberships " %>
 <%@ page import="java.util.List" %>
 <%@ page contentType="text/html;charset=UTF-8" %>
 <!DOCTYPE html>
@@ -123,6 +125,38 @@
         </div>
     </div>
 
+    <div class="card mt-5" id="clubManageCard">
+        <div class="card-header">
+            Manage Club Members
+        </div>
+        <div class="card-body">
+            <div id="noAdminManageAccessOverlay" class="overlay-text" style="display: none;">
+                <p>No permission to Club Admins Management</p>
+            </div>
+            <div class="table-responsive">
+                <div class="form-group">
+                    <label for="clubManageSelect">Select Club</label>
+                    <select id="clubManageSelect" name="clubId" class="club-select" required>
+                        <option value="">Select Club to Manage</option>
+                        <!-- Options will be dynamically loaded here -->
+                    </select>
+                </div>
+                <table id="memberTable" class="table">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal for editing event -->
     <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -202,6 +236,9 @@
 <script>
     // 全局数组存储用户管理的俱乐部 IDs
     let adminClubs = new Map();
+
+    // 全局数组存储用户管理的俱乐部 IDs for super admins
+    let superAdminClubs = new Map();
 
     // 验证用户是否可以编辑事件
     function canEditEvent(clubId) {
@@ -404,6 +441,19 @@
                 showSweetAlert(error.message);
             });
 
+        fetchSuperAdminedClubsByUser(number, token, clubManageSelect)
+            .then(clubs => {
+                if (clubs.length === 0) {  // 使用 clubs.length 而不是 clubs.size
+                    // Hide the create event form if no clubs are administered
+                    document.getElementById('clubManageCard').classList.add('disabled-form');
+                    document.getElementById('noAdminManageAccessOverlay').style.display = 'flex';  // 显示提示文字
+                }
+            })
+            .catch(error => {
+                showSweetAlert(error.message);
+            });
+
+
         // Handle form submission
         const form = document.getElementById('createEventForm');
         form.onsubmit = function (event) {
@@ -444,6 +494,43 @@
         };
     };
 
+    function fetchSuperAdminedClubsByUser(userId, token, clubSelect) {
+        let url = '/user/' + userId + '/clubs_super';
+        console.log('Constructed URL:', url);
+
+        // Fetch clubs administered by the user
+        return fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(clubs => {
+                console.log('Clubs:', clubs);
+
+                superAdminClubs.clear();  // Clear the map before populating it
+                // Populate the clubSelect dropdown
+                clubs.forEach(club => {
+                    const option = document.createElement('option');
+                    option.value = club.id;
+                    option.textContent = club.name;
+                    clubSelect.appendChild(option);
+                    superAdminClubs.set(String(club.id), club.name);
+                });
+                console.log('Super admin clubs:\n', superAdminClubs);
+                return clubs;
+            })
+            .catch(error => {
+                console.error('Error fetching clubs:', error);
+                throw new Error('Failed to load clubs: ' + error.message);
+            });
+    }
 
     function fetchAdminedClubsByUser(userId, token, clubSelect) {
         let url = '/user/' + userId + '/clubs';
@@ -482,6 +569,99 @@
                 throw new Error('Failed to load clubs: ' + error.message);
             });
     }
+
+
+    function fetchClubMembers(clubId, token) {
+        let url = '/club/' + clubId + '/all';
+        console.log('Constructed URL:', url);
+
+        // Fetch clubs administered by the user
+        return fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(students => {
+                console.log('Members:', students);
+                const table = document.getElementById('memberTable');
+                const tableBody = table.querySelector('tbody');
+                tableBody.innerHTML = ''; // 清空现有表格内容
+
+                students.forEach(row => {
+                    const tr = document.createElement('tr');
+
+                    const nameTd = document.createElement('td');
+                    nameTd.textContent = row.name;
+                    tr.appendChild(nameTd);
+
+                    const emailTd = document.createElement('td');
+                    emailTd.textContent = row.email;
+                    tr.appendChild(emailTd);
+
+                    const roleTd = document.createElement('td');
+                    roleTd.textContent = row.role;
+                    tr.appendChild(roleTd);
+
+                    const actionsTd = document.createElement('td');
+                    const editButton = document.createElement('button');
+                    editButton.textContent = 'Edit';
+                    editButton.addEventListener('click', () => {
+                        alert(`Editing ${row.name}`);
+                    });
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Delete';
+                    deleteButton.addEventListener('click', () => {
+                        alert(`Deleting ${row.name}`);
+                    });
+
+                    actionsTd.appendChild(editButton);
+                    actionsTd.appendChild(deleteButton);
+                    tr.appendChild(actionsTd);
+
+                    tableBody.appendChild(tr); // 添加行到表格
+                });
+                return students;
+            })
+            .catch(error => {
+                console.error('Error fetching members:', error);
+                throw new Error('Failed to load club members: ' + error.message);
+            });
+    }
+
+    document.getElementById('clubManageSelect').addEventListener('change', function() {
+        const token = getToken();
+        const userId = localStorage.getItem('userId');
+        console.log('userId:', userId);
+
+        if (!token) {
+            showSweetAlert("You must be logged in to create events");
+            window.location.href = 'login.jsp';
+            return;
+        }
+        if (!userId) {
+            showSweetAlert("token OK, User ID not set in local storage");
+            return;
+        }
+
+        let number = Number(userId);
+        console.log('id:', number, 'type:', typeof number);
+        if (!number || isNaN(number)) {
+            showSweetAlert("Invalid user ID");
+            return;
+        }
+
+        const selectedClub = this.value; // 获取当前选中的值
+
+        fetchClubMembers(selectedClub, token);
+    });
 
 
     function getToken() {
