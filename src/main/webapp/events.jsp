@@ -256,10 +256,12 @@
                         showSweetAlert('Failed to delete the event, due to \r\n  ' + response.statusText);
                     }
                 }).then(result => {
-                    showSweetAlert(result.code === 1 ? result.msg : "Request Denied due to " + result.msg, {
+                    showSweeetChoice(result.code === 1 ? result.msg : "Request Denied due to " + result.msg, {
                         icon: result.code === 1 ? 'success' : 'error',
                         title: result.code === 1 ? 'Success' : 'Error',
                         confirmButtonColor: result.code === 1 ? '#3085d6' : '#d33'
+                    }).then(() => {
+                        window.location.href = '/events';
                     });
                 }).catch(error => console.error('Error:', error));
             } else if (result.isDismissed) {
@@ -370,7 +372,7 @@
 
         fetchAdminedClubsByUser(number, token, clubSelect)
             .then(clubs => {
-                if (clubs.size === 0) {
+                if (clubs.length === 0) {  // 使用 clubs.length 而不是 clubs.size
                     // Hide the create event form if no clubs are administered
                     document.getElementById('createEventFormContainer').classList.add('disabled-form');
                     document.getElementById('noAdminAccessOverlay').style.display = 'flex';  // 显示提示文字
@@ -407,8 +409,14 @@
                 .then(response => response.json())  // 解析 JSON 响应
                 .then(result => {
                     if (result.code === 1) {
-                        showSweetAlert(result.msg);  // 成功信息
-                        window.location.href = '/events';
+                        showSweeetChoice(result.msg, {
+                            title: 'Success',
+                            icon: 'success',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#3085d6'
+                        }).then(() => {
+                            window.location.reload();
+                        });
                     } else {
                         return Promise.reject(result.msg);  // 失败信息
                     }
