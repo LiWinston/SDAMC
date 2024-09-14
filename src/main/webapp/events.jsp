@@ -57,9 +57,10 @@
                         <td><%= event.getEndTime() %>
                         </td>
                         <td>
-                            <a class="btn btn-edit btn-sm" data-toggle="modal" data-target="#editEventModal"
+                            <a class="btn btn-edit btn-sm" data-target="#editEventModal"
                                data-id="<%= event.getId() %>" onclick="openEditEventModal({
                                     id: '<%= event.getId() %>',
+                                    clubId: '<%= event.getClubId() %>',
                                     title: '<%= event.getTitle() %>',
                                     description: '<%= event.getDescription() %>',
                                     venue: '<%= event.getVenue() %>',
@@ -70,10 +71,11 @@
                                 <i class="fas fa-edit"></i> Edit
                             </a>
 
-                            <form id="deleteForm" style="display:inline;">
+                            <form id="deleteForm_<%= event.getId() %>" style="display:inline;"
+                                  onsubmit="event.preventDefault(); submitDeleteForm(this);">
                                 <input type="hidden" name="eventId" value="<%= event.getId() %>"/>
                                 <input type="hidden" name="clubId" value="<%= event.getClubId() %>"/>
-                                <button type="button" class="btn btn-delete btn-sm" onclick="submitDeleteForm()">
+                                <button type="submit" class="btn btn-delete btn-sm">
                                     <i class="fas fa-trash-alt"></i> Delete
                                 </button>
                             </form>
@@ -95,11 +97,14 @@
         </div>
     </div>
 
-    <div class="card mt-5">
+    <div class="card mt-5" id="createEventFormContainer">
         <div class="card-header">
             <i class="fas fa-plus"></i> Create New Event
         </div>
         <div class="card-body">
+            <div id="noAdminAccessOverlay" class="overlay-text" style="display: none;">
+                <p>You are not an admin of any clubs. Please contact an admin for administrator status.</p>
+            </div>
             <!-- Event creation form -->
             <form id="createEventForm" action="<%= request.getContextPath() %>/createEvent" method="post">
                 <div class="form-group">
@@ -199,14 +204,24 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 <script>
-    function submitDeleteForm() {
-        const form = document.getElementById('deleteForm');
+    // 全局数组存储用户管理的俱乐部 IDs
+    let adminClubs = new Map();
+
+    // 验证用户是否可以编辑事件
+    function canEditEvent(clubId) {
+        return adminClubs.has(String(clubId));
+    }
+
+    function submitDeleteForm(form) {
         const formData = new FormData(form);
 
         const userId = localStorage.getItem('userId');
         const clubId = formData.get('clubId');
         const eventId = formData.get('eventId');
 
+        const confirmation = confirm("Are you sure you want to delete this event?" +
+            eventId + " from club " + clubId + "as user " + userId + "? This action cannot be undone.");
+        if (!confirmation) return;
         const token = getToken();
         if (!token) {
             alert("You must be logged in to create events");
@@ -235,6 +250,11 @@
     }
 
     function openEditEventModal(event) {
+        if (!canEditEvent(event.clubId)) {
+            alert("Not authorized to edit this event, need to be an admin of the club " + event.clubId
+                + ". You are admin of clubs: " + (adminClubs.size > 0 ? Array.from(adminClubs.values()).join(", ") : "None"));
+            return;
+        }
         // Populate modal fields with event data
         document.getElementById('eventId').value = event.id;
         document.getElementById('editTitle').value = event.title;
@@ -339,13 +359,27 @@
             })
             .then(clubs => {
                 console.log('Clubs:', clubs);
+
                 // Populate the clubSelect dropdown
                 clubs.forEach(club => {
                     const option = document.createElement('option');
                     option.value = club.id;
                     option.textContent = club.name;
                     clubSelect.appendChild(option);
+                    adminClubs.set(String(club.id), club.name);
                 });
+                console.log('Admin clubs:\n', adminClubs);
+                if (adminClubs.size === 0) {
+                    // Hide the create event form if no clubs are administered
+                    // document.getElementById('createEventFormContainer').style.display = 'none';
+                    document.getElementById('createEventFormContainer').classList.add('disabled-form');
+                    document.getElementById('noAdminAccessOverlay').style.display = 'flex';  // 显示提示文字
+                    // 禁用所有表单元素
+                    const formElements = document.querySelectorAll('#createEventForm input, #createEventForm select, #createEventForm button');
+                    formElements.forEach(element => {
+                        element.disabled = true;  // 禁用每个元素
+                    });
+                }
             })
             .catch(error => {
                 console.error('Error fetching clubs:', error);
