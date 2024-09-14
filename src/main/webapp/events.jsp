@@ -97,11 +97,14 @@
         </div>
     </div>
 
-    <div class="card mt-5">
+    <div class="card mt-5" id="createEventFormContainer">
         <div class="card-header">
             <i class="fas fa-plus"></i> Create New Event
         </div>
         <div class="card-body">
+            <div id="noAdminAccessOverlay" class="overlay-text" style="display: none;">
+                <p>You are not an admin of any clubs. Please contact an admin for administrator status.</p>
+            </div>
             <!-- Event creation form -->
             <form id="createEventForm" action="<%= request.getContextPath() %>/createEvent" method="post">
                 <div class="form-group">
@@ -366,6 +369,17 @@
                     adminClubs.set(String(club.id), club.name);
                 });
                 console.log('Admin clubs:\n', adminClubs);
+                if (adminClubs.size === 0) {
+                    // Hide the create event form if no clubs are administered
+                    // document.getElementById('createEventFormContainer').style.display = 'none';
+                    document.getElementById('createEventFormContainer').classList.add('disabled-form');
+                    document.getElementById('noAdminAccessOverlay').style.display = 'flex';  // 显示提示文字
+                    // 禁用所有表单元素
+                    const formElements = document.querySelectorAll('#createEventForm input, #createEventForm select, #createEventForm button');
+                    formElements.forEach(element => {
+                        element.disabled = true;  // 禁用每个元素
+                    });
+                }
             })
             .catch(error => {
                 console.error('Error fetching clubs:', error);
