@@ -36,6 +36,12 @@ if docker ps --filter "publish=$HOST_PORT" | grep -q "0.0.0.0:$HOST_PORT"; then
   fi
 fi
 
+# 检查是否存在旧的镜像
+if docker images | grep -q "$IMAGE_NAME"; then
+  echo "Removing old $IMAGE_NAME image..."
+  docker rmi "$IMAGE_NAME"
+fi
+
 # 构建新的镜像
 echo "Building the $IMAGE_NAME docker image..."
 docker build -t "$IMAGE_NAME" .
