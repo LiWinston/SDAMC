@@ -70,10 +70,10 @@
                                 <i class="fas fa-edit"></i> Edit
                             </a>
 
-                            <form id="deleteForm" style="display:inline;">
+                            <form id="deleteForm_<%= event.getId() %>" style="display:inline;" onsubmit="event.preventDefault(); submitDeleteForm(this);">
                                 <input type="hidden" name="eventId" value="<%= event.getId() %>"/>
                                 <input type="hidden" name="clubId" value="<%= event.getClubId() %>"/>
-                                <button type="button" class="btn btn-delete btn-sm" onclick="submitDeleteForm()">
+                                <button type="submit" class="btn btn-delete btn-sm">
                                     <i class="fas fa-trash-alt"></i> Delete
                                 </button>
                             </form>
@@ -199,14 +199,16 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 <script>
-    function submitDeleteForm() {
-        const form = document.getElementById('deleteForm');
+    function submitDeleteForm(form) {
         const formData = new FormData(form);
 
         const userId = localStorage.getItem('userId');
         const clubId = formData.get('clubId');
         const eventId = formData.get('eventId');
 
+        const confirmation = confirm("Are you sure you want to delete this event?" +
+            eventId + " from club " + clubId + "as user " + userId + "? This action cannot be undone.");
+        if (!confirmation) return;
         const token = getToken();
         if (!token) {
             alert("You must be logged in to create events");
