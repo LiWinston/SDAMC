@@ -77,6 +77,46 @@
         isLogin = !isLogin;
     }
 
+    // 新增：处理成功登录后的重定向
+    function handleSuccessfulLogin(result) {
+        function setTokenWithExpiry(token, expiryTimeInMs) {
+            const now = new Date().getTime();
+            const item = {
+                token: token,
+                expiry: now + expiryTimeInMs
+            };
+            localStorage.setItem('token', JSON.stringify(item));
+        }
+
+        setTokenWithExpiry(result.data.token, 240 * 1000);  // 设置4分钟有效期
+        localStorage.setItem('userId', result.data.id);
+        console.log(result.data.id + " : " + localStorage.getItem('token'));
+
+        // 使用 SweetAlert2 显示多选项重定向对话框
+        Swal.fire({
+            title: 'Login Successful',
+            text: 'Where would you like to go?',
+            icon: 'success',
+            confirmButtonText: 'Events',
+            showCancelButton: true,
+            cancelButtonText: 'Dashboard',
+            showDenyButton: true,
+            denyButtonText: 'Others',
+            showCloseButton: true,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "/events";
+            } else if (result.isDenied) {
+                window.location.href = "/Others";
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+                window.location.href = "/dashboard";
+            } else {
+                // 如果用户关闭对话框，默认重定向到事件页面
+                window.location.href = "/events";
+            }
+        });
+    }
+
     document.getElementById('authForm').addEventListener('submit', function (event) {
         event.preventDefault();
 
@@ -100,11 +140,9 @@
                 if (!response.ok) {
                     if (contentType && contentType.includes('application/json')) {
                         return response.json().then(data => {
-                            // 抛出自定义的错误消息
                             throw new Error(data.msg || 'Unknown error');
                         });
                     } else {
-                        // 处理非JSON响应
                         throw new Error(`${response.status}: Unknown error (non-JSON response)`);
                     }
                 }
@@ -113,25 +151,8 @@
             .then(result => {
                 if (result.code === 1) {
                     if (isLogin) {
-                        // 处理登录成功，设置 token 和本地存储
-                        function setTokenWithExpiry(token, expiryTimeInMs) {
-                            const now = new Date().getTime();
-                            const item = {
-                                token: token,
-                                expiry: now + expiryTimeInMs // 当前时间 + 设定的有效期
-                            };
-                            localStorage.setItem('token', JSON.stringify(item));
-                        }
-
-                        // 设置 token 并保存 userId
-                        setTokenWithExpiry(result.data.token, 240 * 1000);  // 设置4分钟有效期
-                        localStorage.setItem('userId', result.data.id);
-                        console.log(result.data.id + " : " + localStorage.getItem('token'));
-
-                        // 登录成功后重定向到事件页面
-                        window.location.href = "/events";
+                        handleSuccessfulLogin(result);
                     } else {
-                        // 处理注册成功，仅提示成功信息
                         Swal.fire({
                             title: 'Registration successful',
                             icon: 'success',
@@ -139,20 +160,17 @@
                             showConfirmButton: false
                         }).then(() => {
                             document.getElementById('errorMessage').textContent = '';
-                            toggleForm(); // 切换到登录表单
+                            toggleForm();
                         });
                     }
                 } else {
-                    // 处理非成功的响应
                     throw new Error(result.msg || 'Unknown error');
                 }
             })
             .catch(error => {
-                // 显示错误消息
-                document.getElementById('errorMessage').textContent = error.message; // 在页面中显示错误信息
+                document.getElementById('errorMessage').textContent = error.message;
             });
     });
-
 </script>
 </body>
 </html>
