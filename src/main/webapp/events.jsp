@@ -16,17 +16,17 @@
 </head>
 <body>
 <div class="container">
-    <div class="header">
-        <h1 class="mb-4">Events for Club</h1>
-    </div>
+    <header class="header">
+        <h1>Upcoming Events</h1>
+    </header>
 
     <div class="card">
         <div class="card-header">
-            <i class="fas fa-calendar-alt"></i> Event List
+            Event List
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered table-striped">
+                <table class="table">
                     <thead>
                     <tr>
                         <th>Title</th>
@@ -35,31 +35,27 @@
                         <th>Capacity</th>
                         <th>Begin</th>
                         <th>End</th>
+                        <th>Actions</th>
                     </tr>
                     </thead>
                     <tbody>
                     <%
                         List<Events> events = (List<Events>) request.getAttribute("events");
-                        if (events != null) {
+                        if (events != null && !events.isEmpty()) {
                             for (Events event : events) {
                     %>
                     <tr>
                         <td>
-                            <a href="<%= request.getContextPath() %>/events?id=<%= event.getId() %>"><%= event.getTitle() %>
-                            </a></td>
-                        <td><%= event.getDescription() %>
+                            <a href="<%= request.getContextPath() %>/events?id=<%= event.getId() %>"><%= event.getTitle() %></a>
                         </td>
-                        <td><%= event.getVenue() %>
-                        </td>
-                        <td><%= event.getCapacity() %>
-                        </td>
-                        <td><%= event.getBeginTime() %>
-                        </td>
-                        <td><%= event.getEndTime() %>
-                        </td>
+                        <td><%= event.getDescription() %></td>
+                        <td><%= event.getVenue() %></td>
+                        <td><%= event.getCapacity() %></td>
+                        <td><%= event.getBeginTime() %></td>
+                        <td><%= event.getEndTime() %></td>
                         <td>
-                            <a class="btn btn-edit btn-sm" data-target="#editEventModal"
-                               data-id="<%= event.getId() %>" onclick="openEditEventModal({
+                            <button class="btn btn-edit" data-target="#editEventModal"
+                                    data-id="<%= event.getId() %>" onclick="openEditEventModal({
                                     id: '<%= event.getId() %>',
                                     clubId: '<%= event.getClubId() %>',
                                     title: '<%= event.getTitle() %>',
@@ -70,13 +66,13 @@
                                     endTime: '<%= event.getEndTime() %>'
                                     })">
                                 <i class="fas fa-edit"></i> Edit
-                            </a>
+                            </button>
 
                             <form id="deleteForm_<%= event.getId() %>" style="display:inline;"
                                   onsubmit="event.preventDefault(); submitDeleteForm(this);">
                                 <input type="hidden" name="eventId" value="<%= event.getId() %>"/>
                                 <input type="hidden" name="clubId" value="<%= event.getClubId() %>"/>
-                                <button type="submit" class="btn btn-delete btn-sm">
+                                <button type="submit" class="btn btn-delete">
                                     <i class="fas fa-trash-alt"></i> Delete
                                 </button>
                             </form>
@@ -87,7 +83,7 @@
                     } else {
                     %>
                     <tr>
-                        <td colspan="6" class="text-center">No events available</td>
+                        <td colspan="7" class="text-center">No events available</td>
                     </tr>
                     <%
                         }
@@ -110,20 +106,19 @@
             <form id="createEventForm" action="<%= request.getContextPath() %>/createEvent" method="post">
                 <div class="form-group">
                     <label for="clubSelect">Select Club</label>
-                    <select id="clubSelect" name="clubId" class="form-control mb-2 mr-sm-2" required>
+                    <select id="clubSelect" name="clubId" class="club-select" required>
                         <option value="">Select Club to Add Event</option>
                         <!-- Options will be dynamically loaded here -->
                     </select>
                 </div>
 
-                <input type="text" name="title" class="form-control mb-2 mr-sm-2" placeholder="Title" required/>
-                <input type="text" name="description" class="form-control mb-2 mr-sm-2" placeholder="Description"/>
-                <input type="text" name="venue" class="form-control mb-2 mr-sm-2" placeholder="Venue" required/>
-                <input type="number" name="capacity" class="form-control mb-2 mr-sm-2" placeholder="Capacity"/>
-                <input type="datetime-local" name="beginTime" class="form-control mb-2 mr-sm-2" placeholder="Begin Time"
-                       required/>
-                <input type="datetime-local" name="endTime" class="form-control mb-2 mr-sm-2" placeholder="End Time"/>
-                <button type="submit" class="btn btn-custom mb-2">Create</button>
+                <input type="text" name="title" class="form-control" placeholder="Title" required/>
+                <input type="text" name="description" class="form-control" placeholder="Description"/>
+                <input type="text" name="venue" class="form-control" placeholder="Venue" required/>
+                <input type="number" name="capacity" class="form-control" placeholder="Capacity"/>
+                <input type="datetime-local" name="beginTime" class="form-control" placeholder="Begin Time" required/>
+                <input type="datetime-local" name="endTime" class="form-control" placeholder="End Time"/>
+                <button type="submit" class="btn btn-custom">Create</button>
             </form>
         </div>
     </div>
@@ -165,7 +160,7 @@
                             <label for="editEndTime">End Time</label>
                             <input type="datetime-local" class="form-control" id="editEndTime" name="endTime">
                         </div>
-                        <button type="button" class="btn btn-primary" onclick="submitEditEvent()">Submit</button>
+                        <button type="button" class="btn btn-custom" onclick="submitEditEvent()">Submit</button>
                     </form>
                 </div>
             </div>
@@ -191,7 +186,7 @@
                             </div>
                         </div>
                         <button type="button" class="btn btn-secondary" onclick="addAttendee()">Add Attendee</button>
-                        <button type="button" class="btn btn-primary" onclick="submitRSVP()">Submit</button>
+                        <button type="button" class="btn btn-custom" onclick="submitRSVP()">Submit</button>
                     </form>
                 </div>
             </div>
