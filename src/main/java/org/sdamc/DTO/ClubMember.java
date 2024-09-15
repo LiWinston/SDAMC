@@ -6,6 +6,8 @@ import lombok.Data;
 public class ClubMember {
     private int id;
 
+    private int studentId;
+
     private String name;
 
     private String email;
@@ -14,8 +16,9 @@ public class ClubMember {
 
     private String role;
 
-    public ClubMember(int id, String name, String email, int clubid, String role){
+    public ClubMember(int id, int studentId, String name, String email, int clubid, String role){
         this.id = id;
+        this.studentId = studentId;
         this.name = name;
         this.email = email;
         this.clubid = clubid;

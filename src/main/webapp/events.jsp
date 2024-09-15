@@ -609,31 +609,63 @@
                     const roleTd = document.createElement('td');
                     roleTd.textContent = row.role;
                     tr.appendChild(roleTd);
+                    if(localStorage.getItem('userId') != row.studentId){
+                        const actionsTd = document.createElement('td');
 
-                    const actionsTd = document.createElement('td');
+                        if(row.role == "normal_member"){
+                            const editButton = document.createElement('button');
+                            editButton.textContent = 'Set Admin';
+                            editButton.addEventListener('click', () => {
+                                const cmid = row.id;
+                                let url = '/club/' + cmid + '/admin';
 
-                    if(row.role == "normal_member"){
-                        const editButton = document.createElement('button');
-                        editButton.textContent = 'Set Admin';
-                        editButton.addEventListener('click', () => {
-                            alert(`set operation ${row.name}`);
-                        });
-                        actionsTd.appendChild(editButton);
+                                fetch(url, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    }
+                                }).then(response => {
+                                    if (response.ok) {
+                                        alert('Role updated to admin successfully!');
+                                        fetchClubMembers(clubId, token);
+                                    }
+                                }).catch(error => {
+                                    console.error('There was an error!', error);
+                                    alert('Error updating role to Admin: ' + error.message);
+                                });
+                            });
+                            actionsTd.appendChild(editButton);
+                        }
+                        if(row.role == "admin"){
+                            const deleteButton = document.createElement('button');
+                            deleteButton.textContent = 'Cancel Admin';
+                            deleteButton.addEventListener('click', () => {
+                                const cmid = row.id;
+                                let url = '/club/' + cmid + '/normal_member';
+
+                                fetch(url, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    }
+                                }).then(response => {
+                                    if (response.ok) {
+                                        alert('Role updated to normal_member successfully!');
+                                        fetchClubMembers(clubId, token);
+                                    }
+                                }).catch(error => {
+                                    console.error('There was an error!', error);
+                                    alert('Error updating role to Normal Member: ' + error.message);
+                                });
+                            });
+                            actionsTd.appendChild(deleteButton);
+                        }
+
+                        tr.appendChild(actionsTd);
                     }
-                    if(row.role == "admin"){
-                        const deleteButton = document.createElement('button');
-                        deleteButton.textContent = 'Cancel Admin';
-                        deleteButton.addEventListener('click', () => {
-                            alert(`cancel operation ${row.name}`);
-                        });
-                        actionsTd.appendChild(deleteButton);
-                    }
-
-                    tr.appendChild(actionsTd);
 
                     tableBody.appendChild(tr); // 添加行到表格
                 });
-                return students;
             })
             .catch(error => {
                 console.error('Error fetching members:', error);
