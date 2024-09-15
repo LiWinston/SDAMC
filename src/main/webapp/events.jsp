@@ -609,9 +609,8 @@
                     const roleTd = document.createElement('td');
                     roleTd.textContent = row.role;
                     tr.appendChild(roleTd);
+                    const actionsTd = document.createElement('td');
                     if(localStorage.getItem('userId') != row.studentId){
-                        const actionsTd = document.createElement('td');
-
                         if(row.role == "normal_member"){
                             const editButton = document.createElement('button');
                             editButton.textContent = 'Set Admin';
@@ -626,12 +625,12 @@
                                     }
                                 }).then(response => {
                                     if (response.ok) {
-                                        alert('Role updated to admin successfully!');
+                                        showSweetAlert('Role updated to admin successfully!');
                                         fetchClubMembers(clubId, token);
                                     }
                                 }).catch(error => {
                                     console.error('There was an error!', error);
-                                    alert('Error updating role to Admin: ' + error.message);
+                                    showSweetAlert('Error updating role to Admin: ' + error.message);
                                 });
                             });
                             actionsTd.appendChild(editButton);
@@ -650,20 +649,18 @@
                                     }
                                 }).then(response => {
                                     if (response.ok) {
-                                        alert('Role updated to normal_member successfully!');
+                                        showSweetAlert('Role updated to normal_member successfully!');
                                         fetchClubMembers(clubId, token);
                                     }
                                 }).catch(error => {
                                     console.error('There was an error!', error);
-                                    alert('Error updating role to Normal Member: ' + error.message);
+                                    showSweetAlert('Error updating role to Normal Member: ' + error.message);
                                 });
                             });
                             actionsTd.appendChild(deleteButton);
                         }
-
-                        tr.appendChild(actionsTd);
                     }
-
+                    tr.appendChild(actionsTd);
                     tableBody.appendChild(tr); // 添加行到表格
                 });
             })
