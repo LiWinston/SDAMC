@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.sdamc.DTO.ClubMember;
 import org.sdamc.DTO.Result;
 import org.sdamc.DomainObject.Students;
 import org.sdamc.Mapper.ClubMembershipsMapper;
@@ -56,8 +57,8 @@ public class ClubController extends HttpServlet {
         UnitofWork.newCurrent();
         if (parts.length >= 2) {
             int clubid = Integer.parseInt(parts[1]); // parts[1] is "1"
-            List<Students> students = clubMembershipsMapper.getClubMembers(clubid);
-            艾欧包装器.writeValue(resp, students);
+            List<ClubMember> members = clubMembershipsMapper.getClubMembers(clubid);
+            艾欧包装器.writeValue(resp, members);
         }
         else {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
