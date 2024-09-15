@@ -2,8 +2,6 @@ package org.sdamc.Controller;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,6 +16,7 @@ import org.sdamc.Mapper.ClubMembershipsMapper;
 import org.sdamc.Mapper.StudentsMapper;
 import org.sdamc.UnitofWork;
 import org.sdamc.Utils.Constants;
+import org.sdamc.Utils.艾欧包装器;
 
 import java.io.IOException;
 import java.util.List;
@@ -31,21 +30,28 @@ public class UserController extends HttpServlet {
     private StudentsMapper studentsMapper;
 
     @Override
-    public void init() throws ServletException {
+    public void init() {
         studentsMapper = new StudentsMapper();
         clubMembershipsMapper = new ClubMembershipsMapper();
     }
 
     @Override
     // 获取用户管辖的club /user/{stuid}/clubs
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
-        String requestURI = req.getRequestURI();
-        if (requestURI.endsWith("/clubs")) {
-            handleGetClubsAdminedByUser(req, resp);
+    // 获取用户以超级管理员身份管辖的club /user/{stuid}/clubs_super
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
+        try {
+            String requestURI = req.getRequestURI();
+            if (requestURI.endsWith("/clubs")) {
+                handleGetClubsAdminedByUser(req, resp);
+            } else if(requestURI.endsWith("/clubs_super")){
+                handleGetClubsSuperAdminedByUser(req, resp);
+            }
+            else {
+                艾欧包装器.writeValue(resp, Result.error("Invalid path"));
+            }
         }
-        else {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        catch (IOException e) {
+            log.error("搞毛啊，IOException");
         }
     }
 
@@ -57,8 +63,23 @@ public class UserController extends HttpServlet {
         if (parts.length >= 2) {
             int stuid = Integer.parseInt(parts[1]); // parts[1] is "123"
             List<Clubs> clubs = clubMembershipsMapper.findClubsAdminedByStudent(stuid);
-            resp.setContentType("application/json");
-            new ObjectMapper().writeValue(resp.getOutputStream(), clubs);
+            艾欧包装器.writeValue(resp, clubs);
+        }
+        else {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
+        }
+        UnitofWork.getCurrent().commit();
+    }
+
+    private void handleGetClubsSuperAdminedByUser(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String pathInfo = req.getPathInfo(); // "/123/clubs_super"
+        String[] parts = pathInfo.split("/");
+
+        UnitofWork.newCurrent();
+        if (parts.length >= 2) {
+            int stuid = Integer.parseInt(parts[1]); // parts[1] is "123"
+            List<Clubs> clubs = clubMembershipsMapper.findClubsSuperAdminedByStudent(stuid);
+            艾欧包装器.writeValue(resp, clubs);
         }
         else {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
@@ -67,23 +88,27 @@ public class UserController extends HttpServlet {
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
         String requestURI = req.getRequestURI();
-
-        if (requestURI.endsWith("/login")) {
-            handleLogin(req, resp);
+        try {
+            if (requestURI.endsWith("/login")) {
+                handleLogin(req, resp);
+            }
+            else if (requestURI.endsWith("/register")) {
+                handleRegister(req, resp);
+            }
+            else {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+            }
         }
-        else if (requestURI.endsWith("/register")) {
-            handleRegister(req, resp);
-        }
-        else {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND);
+        catch (IOException e) {
+            log.error("搞毛啊，流都读不了");// in case IOException混淆视听
         }
     }
 
     private void handleRegister(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        UserDTO userDTO = mapper.readValue(req.getInputStream(), UserDTO.class);
+
+        UserDTO userDTO = 艾欧包装器.readValue(req, UserDTO.class);
 
         String email = userDTO.getEmail();
         String name = userDTO.getUsername();
@@ -98,9 +123,9 @@ public class UserController extends HttpServlet {
 
             if (studentsMapper.findByEmail(email) != null) {
                 // 返回 Result<T> 错误信息
-                resp.setStatus(HttpServletResponse.SC_CONFLICT);
+                // resp.setStatus(HttpServletResponse.SC_CONFLICT);
                 resp.setContentType("application/json");
-                mapper.writeValue(resp.getOutputStream(), Result.error("Email already registered"));
+                艾欧包装器.writeValue(resp, Result.error("Email already registered"), HttpServletResponse.SC_CONFLICT);
                 return;
             }
 
@@ -114,22 +139,21 @@ public class UserController extends HttpServlet {
             UnitofWork.getCurrent().commit();
 
             // 注册成功时返回 Result<T> 成功消息
-            resp.setStatus(HttpServletResponse.SC_CREATED);
+            // resp.setStatus(HttpServletResponse.SC_CREATED);
             resp.setContentType("application/json");
-            mapper.writeValue(resp.getOutputStream(), Result.success(null, "User registered successfully"));
+            艾欧包装器.writeValue(resp, Result.success("Registration successful"), HttpServletResponse.SC_CREATED);
         }
         catch (Exception e) {
             // 返回 Result<T> 错误信息
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            // resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.setContentType("application/json");
-            mapper.writeValue(resp.getOutputStream(), Result.error("Database error" + e.getMessage().substring(0, 50)));
+            艾欧包装器.writeValue(resp, Result.error("Database error"), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             e.printStackTrace();
         }
     }
 
     private void handleLogin(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        UserDTO userDTO = mapper.readValue(req.getInputStream(), UserDTO.class);
+        UserDTO userDTO = 艾欧包装器.readValue(req, UserDTO.class);
 
         String email = userDTO.getEmail();
         String password = userDTO.getPassword();
@@ -141,25 +165,21 @@ public class UserController extends HttpServlet {
             if (student != null && student.getPassword().equals(password)) {
                 String token = generateJwtToken(student.getId());
                 // 登录成功时返回 Result<LoginResponse>
-                resp.setContentType("application/json");
-                mapper.writeValue(resp.getOutputStream(),
-                        Result.success(new LoginResponse(token, student.getId()), "Login successful"));
+                艾欧包装器.writeValue(resp, Result.success(new LoginResponse(token, student.getId()), "Login successful"));
             }
             else {
                 // 返回 Result<T> 错误信息
-                resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                resp.setContentType("application/json");
-                mapper.writeValue(resp.getOutputStream(), Result.error("Invalid email or password"));
+                // resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                艾欧包装器.writeValue(resp, Result.error("Invalid email or password"), HttpServletResponse.SC_UNAUTHORIZED);
             }
 
             UnitofWork.getCurrent().commit();
         }
         catch (Exception e) {
             // 返回 Result<T> 错误信息
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            // resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.setContentType("application/json");
-            mapper.writeValue(resp.getOutputStream(), Result.error("Database error"));
-            e.printStackTrace();
+            艾欧包装器.writeValue(resp, Result.error("Database error" + e), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
 
