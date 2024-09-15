@@ -1,5 +1,7 @@
 package org.sdamc.Mapper;
 
+import lombok.extern.java.Log;
+import org.sdamc.DTO.ClubMember;
 import org.sdamc.DomainObject.ClubMemberships;
 import org.sdamc.DomainObject.Clubs;
 import org.sdamc.DomainObject.DomainObject;
@@ -166,26 +168,26 @@ public class ClubMembershipsMapper extends DataMapper {
         return clubs;
     }
 
-    public List<Students> getClubMembers(int clubId) {
-        String sql = "SELECT s.id, s.name, s.email FROM students s " + "JOIN club_memberships cm ON s.id = cm.student_id "
+    public List<ClubMember> getClubMembers(int clubId) {
+        String sql = "SELECT s.id, s.name, s.email, cm.club_id, cm.role FROM students s " + "JOIN club_memberships cm ON s.id = cm.student_id "
                 + "WHERE cm.club_id = ?";
 
-        List<Students> students = new ArrayList<>();
+        List<ClubMember> members = new ArrayList<>();
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
             stmt.setInt(1, clubId);
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                Students student = new Students(rs.getInt("id"));
-                student.setName(rs.getString("name"));
-                student.setEmail(rs.getString("email"));
-                students.add(student);
+                ClubMember member = new ClubMember(rs.getInt("id"), rs.getString("name"),
+                        rs.getString("email"), rs.getInt("club_id")
+                        , rs.getString("role"));
+                members.add(member);
             }
         }
         catch (SQLException e) {
             e.printStackTrace();
         }
-        return students;
+        return members;
     }
 
 }

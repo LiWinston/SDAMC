@@ -1,5 +1,6 @@
 <%@ page import="org.sdamc.DomainObject.Events " %>
 <%@ page import="org.sdamc.DomainObject.Students " %>
+<%@ page import="org.sdamc.DTO.ClubMember " %>
 <%@ page import="org.sdamc.DomainObject.ClubMemberships " %>
 <%@ page import="java.util.List" %>
 <%@ page contentType="text/html;charset=UTF-8" %>
@@ -441,7 +442,7 @@
                 showSweetAlert(error.message);
             });
 
-        fetchSuperAdminedClubsByUser(number, token, clubManageSelect)
+        fetchAdminedClubsByUser(number, token, clubManageSelect)
             .then(clubs => {
                 if (clubs.length === 0) {  // 使用 clubs.length 而不是 clubs.size
                     // Hide the create event form if no clubs are administered
@@ -588,13 +589,13 @@
                 }
                 return response.json();
             })
-            .then(students => {
-                console.log('Members:', students);
+            .then(members => {
+                console.log('Members:', members);
                 const table = document.getElementById('memberTable');
                 const tableBody = table.querySelector('tbody');
                 tableBody.innerHTML = ''; // 清空现有表格内容
 
-                students.forEach(row => {
+                members.forEach(row => {
                     const tr = document.createElement('tr');
 
                     const nameTd = document.createElement('td');
@@ -610,20 +611,24 @@
                     tr.appendChild(roleTd);
 
                     const actionsTd = document.createElement('td');
-                    const editButton = document.createElement('button');
-                    editButton.textContent = 'Edit';
-                    editButton.addEventListener('click', () => {
-                        alert(`Editing ${row.name}`);
-                    });
 
-                    const deleteButton = document.createElement('button');
-                    deleteButton.textContent = 'Delete';
-                    deleteButton.addEventListener('click', () => {
-                        alert(`Deleting ${row.name}`);
-                    });
+                    if(row.role == "normal_member"){
+                        const editButton = document.createElement('button');
+                        editButton.textContent = 'Set Admin';
+                        editButton.addEventListener('click', () => {
+                            alert(`set operation ${row.name}`);
+                        });
+                        actionsTd.appendChild(editButton);
+                    }
+                    if(row.role == "admin"){
+                        const deleteButton = document.createElement('button');
+                        deleteButton.textContent = 'Cancel Admin';
+                        deleteButton.addEventListener('click', () => {
+                            alert(`cancel operation ${row.name}`);
+                        });
+                        actionsTd.appendChild(deleteButton);
+                    }
 
-                    actionsTd.appendChild(editButton);
-                    actionsTd.appendChild(deleteButton);
                     tr.appendChild(actionsTd);
 
                     tableBody.appendChild(tr); // 添加行到表格
