@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.sdamc.DTO.ClubMember;
 import org.sdamc.DTO.Result;
-import org.sdamc.DomainObject.Students;
+import org.sdamc.DomainObject.ClubMemberships;
 import org.sdamc.Mapper.ClubMembershipsMapper;
 import org.sdamc.Mapper.StudentsMapper;
 import org.sdamc.UnitofWork;
@@ -70,7 +70,11 @@ public class ClubController extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) {
         String requestURI = req.getRequestURI();
         try {
-            if (requestURI.endsWith("/login")) {
+            if (requestURI.endsWith("/admin")) {
+                handleSet(req, resp);
+            }
+            else if (requestURI.endsWith("/normal_member")) {
+                handleCancel(req, resp);
             }
             else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -79,6 +83,54 @@ public class ClubController extends HttpServlet {
         catch (IOException e) {
             log.error("搞毛啊，流都读不了");// in case IOException混淆视听
         }
+    }
+
+    private void handleSet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String pathInfo = req.getPathInfo(); // "club/1/admin"
+        String[] parts = pathInfo.split("/");
+
+        UnitofWork.newCurrent();
+        if (parts.length >= 2) {
+            int cmid = Integer.parseInt(parts[1]); // parts[1] is "1"
+            ClubMemberships cm = (ClubMemberships) clubMembershipsMapper.find(cmid);
+
+            if (cm != null) {
+                cm.setRole("admin");
+
+                clubMembershipsMapper.update(cm);
+                resp.getWriter().write("Club Member updated successfully");
+            }else {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Club Member not found");
+            }
+        }
+        else {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
+        }
+        UnitofWork.getCurrent().commit();
+    }
+
+    private void handleCancel(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String pathInfo = req.getPathInfo(); // "club/1/normal_member"
+        String[] parts = pathInfo.split("/");
+
+        UnitofWork.newCurrent();
+        if (parts.length >= 2) {
+            int cmid = Integer.parseInt(parts[1]); // parts[1] is "1"
+            ClubMemberships cm = (ClubMemberships) clubMembershipsMapper.find(cmid);
+
+            if (cm != null) {
+                cm.setRole("normal_member");
+
+                clubMembershipsMapper.update(cm);
+                resp.getWriter().write("Club Member updated successfully");
+            }else {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Club Member not found");
+            }
+        }
+        else {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
+        }
+        UnitofWork.getCurrent().commit();
     }
 
     // JWT 生成逻辑

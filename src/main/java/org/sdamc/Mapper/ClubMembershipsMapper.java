@@ -8,6 +8,7 @@ import org.sdamc.DomainObject.DomainObject;
 import org.sdamc.DomainObject.Students;
 import org.sdamc.Utils.DatabaseUtil;
 
+import java.io.Console;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -29,6 +30,10 @@ public class ClubMembershipsMapper extends DataMapper {
         ClubMemberships membership = (ClubMemberships) obj;
         String sql = "UPDATE club_memberships SET student_id = ?, club_id = ?, role = ?::member_role WHERE id = ?";
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
+            System.out.println("student id: " + membership.getStudentId());
+            System.out.println("club id: " + membership.getClubId());
+            System.out.println("role: " + membership.getRole());
+            System.out.println("id: " + membership.getId());
             stmt.setInt(1, membership.getStudentId());
             stmt.setInt(2, membership.getClubId());
             stmt.setString(3, membership.getRole());
@@ -37,6 +42,7 @@ public class ClubMembershipsMapper extends DataMapper {
         }
         catch (SQLException e) {
             e.printStackTrace();
+            throw new RuntimeException("Database update failed", e);
         }
     }
 
@@ -169,7 +175,8 @@ public class ClubMembershipsMapper extends DataMapper {
     }
 
     public List<ClubMember> getClubMembers(int clubId) {
-        String sql = "SELECT s.id, s.name, s.email, cm.club_id, cm.role FROM students s " + "JOIN club_memberships cm ON s.id = cm.student_id "
+        String sql = "SELECT cm.id, cm.student_id, s.name, s.email, cm.club_id, cm.role FROM students s "
+                + "JOIN club_memberships cm ON s.id = cm.student_id "
                 + "WHERE cm.club_id = ?";
 
         List<ClubMember> members = new ArrayList<>();
@@ -178,9 +185,9 @@ public class ClubMembershipsMapper extends DataMapper {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                ClubMember member = new ClubMember(rs.getInt("id"), rs.getString("name"),
-                        rs.getString("email"), rs.getInt("club_id")
-                        , rs.getString("role"));
+                ClubMember member = new ClubMember(rs.getInt("id"), rs.getInt("student_id"),
+                        rs.getString("name"), rs.getString("email"),
+                        rs.getInt("club_id"), rs.getString("role"));
                 members.add(member);
             }
         }
