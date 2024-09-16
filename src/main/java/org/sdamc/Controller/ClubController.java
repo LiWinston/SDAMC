@@ -14,7 +14,7 @@ import org.sdamc.Mapper.ClubMembershipsMapper;
 import org.sdamc.Mapper.StudentsMapper;
 import org.sdamc.UnitofWork;
 import org.sdamc.Utils.Constants;
-import org.sdamc.Utils.艾欧包装器;
+import org.sdamc.Utils.IOWrapper;
 
 import java.io.IOException;
 import java.util.List;
@@ -42,7 +42,7 @@ public class ClubController extends HttpServlet {
                 handleGetClubMembers(req, resp);
             }
             else {
-                艾欧包装器.writeValue(resp, Result.error("Invalid path"));
+                IOWrapper.writeValue(resp, Result.error("Invalid path"));
             }
         }
         catch (IOException e) {
@@ -58,7 +58,7 @@ public class ClubController extends HttpServlet {
         if (parts.length >= 2) {
             int clubid = Integer.parseInt(parts[1]); // parts[1] is "1"
             List<ClubMember> members = clubMembershipsMapper.getClubMembers(clubid);
-            艾欧包装器.writeValue(resp, members);
+            IOWrapper.writeValue(resp, members);
         }
         else {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");

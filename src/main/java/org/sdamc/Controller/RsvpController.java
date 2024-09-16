@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.sdamc.DTO.Result;
+import org.sdamc.DTO.RsvpSubmitDTO;
 import org.sdamc.DomainObject.Events;
 import org.sdamc.DomainObject.Rsvps;
 import org.sdamc.DomainObject.Students;
@@ -14,6 +15,7 @@ import org.sdamc.Mapper.EventsMapper;
 import org.sdamc.Mapper.RsvpsMapper;
 import org.sdamc.Mapper.StudentsMapper;
 import org.sdamc.UnitofWork;
+import org.sdamc.Utils.IOWrapper;
 
 import java.io.IOException;
 import java.util.List;
@@ -89,26 +91,29 @@ public class RsvpController extends HttpServlet {
 
     private void handleRsvpSubmit(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json");
-
-        System.out.println("Handling RSVP submit");
-        System.out.println("Request method: " + req.getMethod());
-        System.out.println("Content type: " + req.getContentType());
-        System.out.println("All parameters:");
-        req.getParameterMap().forEach((key, value) ->
-                System.out.println(key + ": " + String.join(", ", value)));
+//
+//        System.out.println("Handling RSVP submit");
+//        System.out.println("Request method: " + req.getMethod());
+//        System.out.println("Content type: " + req.getContentType());
+//        System.out.println("All parameters:");
+//        req.getParameterMap().forEach((key, value) ->
+//                System.out.println(key + ": " + String.join(", ", value)));
 
         try {
-            String eventIdStr = req.getParameter("eventId");
+            RsvpSubmitDTO rsvpSubmitDTO = IOWrapper.readValue(req, RsvpSubmitDTO.class);
+            String eventIdStr = rsvpSubmitDTO.getEventId();
             System.out.println("Received eventId in submit: " + eventIdStr);  //这里没有获取到eventid！！
 
             if (eventIdStr == null || eventIdStr.isEmpty()) {
-                throw new IllegalArgumentException("Event ID is missing");
+                throw new IllegalArgumentException("missing Event ID");
             }
             int eventId = Integer.parseInt(eventIdStr);
 
-            String[] studentIds = req.getParameterValues("studentId[]");
-            String[] names = req.getParameterValues("name[]");
-            String[] emails = req.getParameterValues("email[]");
+            String[] studentIds = rsvpSubmitDTO.getAttendees().stream()
+                    .map(attendee -> attendee.getStudentId().toString()) // 将 Integer 转为 String
+                    .toArray(String[]::new);
+            String[] names = rsvpSubmitDTO.getAttendees().stream().map(RsvpSubmitDTO.Attendee::getName).toArray(String[]::new);
+            String[] emails = rsvpSubmitDTO.getAttendees().stream().map(RsvpSubmitDTO.Attendee::getEmail).toArray(String[]::new);
 
             if (studentIds == null || names == null || emails == null ||
                     studentIds.length != names.length || studentIds.length != emails.length) {

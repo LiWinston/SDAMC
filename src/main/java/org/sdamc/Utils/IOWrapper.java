@@ -12,15 +12,15 @@ import lombok.extern.slf4j.Slf4j;
 * Как следует из названия, оболочка ввода-вывода — это оболочка для ввода-вывода.
 * */
 @Slf4j
-public class 艾欧包装器 {
+public class IOWrapper {
 
     ObjectMapper mapper = new ObjectMapper();
 
-    static 艾欧包装器 iobzq;
+    static IOWrapper iobzq;
 
-    public static 艾欧包装器 getInstance() {
+    public static IOWrapper getInstance() {
         if (iobzq == null) {
-            iobzq = new 艾欧包装器();
+            iobzq = new IOWrapper();
         }
         return iobzq;
     }

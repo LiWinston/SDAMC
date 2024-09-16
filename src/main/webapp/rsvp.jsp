@@ -61,9 +61,10 @@
         attendeesDiv.appendChild(newAttendee);
     }
 
-    document.getElementById('rsvpSubmitForm').onsubmit = function(e) {
+    const form = document.getElementById('rsvpSubmitForm');
+    form.onsubmit = function(e) {
         e.preventDefault();
-        var formData = new FormData(this);
+        var formData = new FormData(form);
 
         var eventId = formData.get('eventId');
         console.log('Submitting form with eventId:', eventId);
@@ -86,9 +87,34 @@
             console.log(pair[0]+ ', ' + pair[1]);
         }
 
+        // 获取所有attendee相关字段的数据
+        var studentIds = formData.getAll('studentId[]');
+        var names = formData.getAll('name[]');
+        var emails = formData.getAll('email[]');
+
+        // 构造attendee数组
+        var attendees = [];
+        for (var i = 0; i < studentIds.length; i++) {
+            attendees.push({
+                studentId: studentIds[i],
+                name: names[i],
+                email: emails[i]
+            });
+        }
+
+        // 构造最终的JSON结构
+        var rsvpData = {
+            eventId: eventId,
+            attendees: attendees
+        };
+
         fetch('/rsvp/submit', {
             method: 'POST',
-            body: formData
+            headers: {
+                <%--'Authorization': `Bearer ${token}`,--%>
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(rsvpData),
         })
             .then(response => response.json())
             .then(data => {
