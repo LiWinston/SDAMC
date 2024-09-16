@@ -116,4 +116,44 @@ public class RsvpsMapper extends DataMapper {
         }
     }
 
+    // 在 RsvpsMapper 类中添加以下方法
+
+    public List<Rsvps> findByStudentId(int studentId) {
+        List<Rsvps> rsvps = new ArrayList<>();
+        String sql = "SELECT * FROM rsvps WHERE student_id = ?";
+        try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
+            stmt.setInt(1, studentId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                Rsvps rsvp = new Rsvps(rs.getInt("id"));
+                rsvp.setStudentId(rs.getInt("student_id"));
+                rsvp.setEventId(rs.getInt("event_id"));
+                rsvp.setNumTickets(rs.getInt("num_tickets"));
+                rsvps.add(rsvp);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return rsvps;
+    }
+
+    public Rsvps findByStudentIdAndEventId(int studentId, int eventId) {
+        String sql = "SELECT * FROM rsvps WHERE student_id = ? AND event_id = ?";
+        try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
+            stmt.setInt(1, studentId);
+            stmt.setInt(2, eventId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                Rsvps rsvp = new Rsvps(rs.getInt("id"));
+                rsvp.setStudentId(rs.getInt("student_id"));
+                rsvp.setEventId(rs.getInt("event_id"));
+                rsvp.setNumTickets(rs.getInt("num_tickets"));
+                return rsvp;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }

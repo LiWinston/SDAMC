@@ -39,6 +39,8 @@
                         <th>Begin</th>
                         <th>End</th>
                         <th>Actions</th>
+                        <!-- 新增的 RSVP 列标题 -->
+                        <th>RSVP</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -56,6 +58,10 @@
                         <td><%= event.getCapacity() %></td>
                         <td><%= event.getBeginTime() %></td>
                         <td><%= event.getEndTime() %></td>
+                        <!-- 新增的 RSVP 按钮列 -->
+                        <td>
+                            <a href="<%= request.getContextPath() %>/rsvp?eventId=<%= event.getId() %>" class="btn btn-primary">RSVP</a>
+                        </td>
                         <td>
                             <button class="btn btn-edit" data-target="#editEventModal"
                                     data-id="<%= event.getId() %>" onclick="openEditEventModal({
@@ -86,7 +92,7 @@
                     } else {
                     %>
                     <tr>
-                        <td colspan="7" class="text-center">No events available</td>
+                        <td colspan="8" class="text-center">No events available</td>
                     </tr>
                     <%
                         }
