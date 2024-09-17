@@ -803,6 +803,9 @@
     }
 
     document.getElementById('clubManageSelect').addEventListener('change', function() {
+        if(this.value == 0){
+            return;
+        }
         const token = getToken();
         const userId = localStorage.getItem('userId');
         console.log('userId:', userId);
