@@ -35,7 +35,6 @@ public class RsvpController extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        UnitofWork.newCurrent();
         try {
             String pathInfo = req.getPathInfo();
             if (pathInfo == null || pathInfo.equals("/")) {
@@ -45,8 +44,10 @@ public class RsvpController extends HttpServlet {
             } else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Invalid path");
             }
-        } finally {
-            UnitofWork.getCurrent().commit();
+        } catch (Exception e) {
+            // 记录错误
+            e.printStackTrace();
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred");
         }
     }
 
@@ -97,28 +98,16 @@ public class RsvpController extends HttpServlet {
             }
             int eventId = Integer.parseInt(eventIdStr);
 
-            String[] studentIds = rsvpSubmitDTO.getAttendees().stream()
-                    .map(attendee -> attendee.getStudentId().toString()) // 将 Integer 转为 String
-                    .toArray(String[]::new);
-            String[] names = rsvpSubmitDTO.getAttendees().stream().map(RsvpSubmitDTO.Attendee::getName).toArray(String[]::new);
-            String[] emails = rsvpSubmitDTO.getAttendees().stream().map(RsvpSubmitDTO.Attendee::getEmail).toArray(String[]::new);
-
-            if (studentIds == null || names == null || emails == null ||
-                    studentIds.length != names.length || studentIds.length != emails.length) {
-                throw new IllegalArgumentException("Invalid or mismatched student information");
-            }
-
-            for (int i = 0; i < studentIds.length; i++) {
-                int studentId = Integer.parseInt(studentIds[i]);
+            for (RsvpSubmitDTO.Attendee attendee : rsvpSubmitDTO.getAttendees()) {
+                int studentId = attendee.getStudentId();
                 Students student = (Students) studentsMapper.find(studentId);
-                if (student == null || !student.getName().equals(names[i]) || !student.getEmail().equals(emails[i])) {
+                if (student == null || !student.getName().equals(attendee.getName()) || !student.getEmail().equals(attendee.getEmail())) {
                     throw new IllegalArgumentException("Invalid student information for ID: " + studentId);
                 }
                 if (rsvpsMapper.findByStudentIdAndEventId(studentId, eventId) != null) {
                     throw new IllegalArgumentException("Student " + studentId + " already RSVPed for this event");
                 }
-                Rsvps rsvp = Rsvps.insert(studentId, eventId, 1);
-                rsvpsMapper.insert(rsvp);
+                Rsvps.insert(studentId, eventId, 1);
             }
 
             new ObjectMapper().writeValue(resp.getOutputStream(), Result.success("RSVP successful"));
@@ -126,6 +115,7 @@ public class RsvpController extends HttpServlet {
             System.out.println("Error in handleRsvpSubmit: " + e.getMessage());
             e.printStackTrace();
             new ObjectMapper().writeValue(resp.getOutputStream(), Result.error(e.getMessage()));
+            throw e; // 重新抛出异常，让 doPost 方法捕获并处理
         }
     }
 }
