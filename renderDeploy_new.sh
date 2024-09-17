@@ -37,7 +37,8 @@ fi
 
 # 调用 Render 部署钩子
 echo "Triggering Render deployment..."
-curl -X POST "https://api.render.com/deploy/srv-cqt2qcogph6c73co8ocg?key=VjXYO92eYcU"
+#curl -X POST "https://api.render.com/deploy/srv-cqt2qcogph6c73co8ocg?key=VjXYO92eYcU"
+curl -X POST "https://api.render.com/deploy/srv-crji1klds78s73ebcnl0?key=lFXaM23cu5Y"
 if [ $? -ne 0 ]; then
   echo "Render deployment trigger failed!"
   exit 1
