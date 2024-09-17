@@ -149,7 +149,14 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                Swal.fire('Error', "Failed to submit RSVP" + error, 'error');
+                // Swal.fire('Error', "Failed to submit RSVP" + error, 'error');
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Failed to submit RSVP',
+                    icon: 'error',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
             });
     };
 </script>
