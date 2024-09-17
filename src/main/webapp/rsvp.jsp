@@ -1,4 +1,3 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ page import="org.sdamc.DomainObject.Events" %>
 <!DOCTYPE html>
 <html lang="en">
@@ -7,45 +6,94 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RSVP for Event</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+        }
+        .container {
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            padding: 30px;
+            margin-top: 50px;
+        }
+        h1 {
+            color: #007bff;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+        .event-card {
+            background-color: #f1f8ff;
+            border-left: 5px solid #007bff;
+        }
+        .form-control {
+            border-radius: 20px;
+        }
+        .btn {
+            border-radius: 20px;
+            padding: 10px 20px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        .attendee {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
 <div class="container">
-    <h1 class="my-4">RSVP for Event</h1>
-
-    <!-- 添加调试信息 -->
-    <p>Debug: eventId attribute = ${eventId}</p>
-
     <%
         Events event = (Events) request.getAttribute("event");
 //        if (event != null) {
     %>
 
-    <div class="card mb-4">
+    <h1 class="text-center"><i class="fas fa-calendar-check mr-2"></i>RSVP for Event</h1>
+
+    <div class="card mb-4 event-card">
         <div class="card-body">
             <h5 class="card-title"><%= event.getTitle() %></h5>
             <p class="card-text"><%= event.getDescription() %></p>
-            <p>Venue: <%= event.getVenue() %></p>
-            <p>Date: <%= event.getBeginTime() %></p>
+            <p><i class="fas fa-map-marker-alt mr-2"></i>Venue: <%= event.getVenue() %></p>
+            <p><i class="far fa-calendar-alt mr-2"></i>Date: <%= event.getBeginTime() %></p>
         </div>
     </div>
 
-    <%--<% } else { %>
-    <p>Debug: No event found</p>
-    <% } %>--%>
-
     <form id="rsvpSubmitForm">
         <input type="hidden" id="eventId" name="eventId" value="${eventId}">
-        <!-- 其他表单字段 -->
         <div id="attendees">
-            <div class="attendee form-group">
-                <input type="number" name="studentId[]" class="form-control mb-2" placeholder="Student ID" required>
-                <input type="text" name="name[]" class="form-control mb-2" placeholder="Name" required>
-                <input type="email" name="email[]" class="form-control mb-2" placeholder="Email" required>
+            <div class="attendee">
+                <h5 class="mb-3">Attendee Information</h5>
+                <div class="form-group">
+                    <input type="number" name="studentId[]" class="form-control" placeholder="Student ID" required>
+                </div>
+                <div class="form-group">
+                    <input type="text" name="name[]" class="form-control" placeholder="Name" required>
+                </div>
+                <div class="form-group">
+                    <input type="email" name="email[]" class="form-control" placeholder="Email" required>
+                </div>
             </div>
         </div>
-        <button type="button" class="btn btn-secondary mb-2" onclick="addAttendee()">Add Attendee</button>
-        <button type="submit" class="btn btn-primary">Submit RSVP</button>
+        <div class="text-center mt-4">
+            <button type="button" class="btn btn-secondary mb-3" onclick="addAttendee()">
+                <i class="fas fa-user-plus mr-2"></i>Add Attendee
+            </button>
+            <button type="submit" class="btn btn-primary mb-3 ml-2">
+                <i class="fas fa-paper-plane mr-2"></i>Submit RSVP
+            </button>
+        </div>
     </form>
 </div>
 
@@ -53,12 +101,19 @@
     function addAttendee() {
         var attendeesDiv = document.getElementById('attendees');
         var newAttendee = document.createElement('div');
-        newAttendee.className = 'attendee form-group';
+        newAttendee.className = 'attendee mt-4';
         newAttendee.innerHTML = `
-        <input type="number" name="studentId[]" class="form-control mb-2" placeholder="Student ID" required>
-        <input type="text" name="name[]" class="form-control mb-2" placeholder="Name" required>
-        <input type="email" name="email[]" class="form-control mb-2" placeholder="Email" required>
-    `;
+            <h5 class="mb-3">Additional Attendee</h5>
+            <div class="form-group">
+                <input type="number" name="studentId[]" class="form-control" placeholder="Student ID" required>
+            </div>
+            <div class="form-group">
+                <input type="text" name="name[]" class="form-control" placeholder="Name" required>
+            </div>
+            <div class="form-group">
+                <input type="email" name="email[]" class="form-control" placeholder="Email" required>
+            </div>
+        `;
         attendeesDiv.appendChild(newAttendee);
     }
 
@@ -83,17 +138,17 @@
             }
         }
 
-        // 打印所有表单数据
+        // Print all form data
         for (var pair of formData.entries()) {
             console.log(pair[0]+ ', ' + pair[1]);
         }
 
-        // 获取所有attendee相关字段的数据
+        // Get all attendee-related field data
         var studentIds = formData.getAll('studentId[]');
         var names = formData.getAll('name[]');
         var emails = formData.getAll('email[]');
 
-        // 构造attendee数组
+        // Construct attendee array
         var attendees = [];
         for (var i = 0; i < studentIds.length; i++) {
             attendees.push({
@@ -103,7 +158,7 @@
             });
         }
 
-        // 构造最终的JSON结构
+        // Construct final JSON structure
         var rsvpData = {
             eventId: eventId,
             attendees: attendees
@@ -112,7 +167,6 @@
         fetch('/rsvp/submit', {
             method: 'POST',
             headers: {
-                <%--'Authorization': `Bearer ${token}`,--%>
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify(rsvpData),
@@ -126,7 +180,6 @@
             .then(data => {
                 console.log('Response:', data);
                 if (data.code === 1) {
-                    // Swal.fire('Success', data.msg, 'success');
                     Swal.fire({
                         title: 'Success',
                         text: data.msg,
@@ -137,7 +190,6 @@
                         window.location.href = '/events';
                     });
                 } else {
-                    // Swal.fire('Error', data.msg, 'error');
                     Swal.fire({
                         title: 'Error',
                         text: data.msg,
@@ -149,7 +201,6 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                // Swal.fire('Error', "Failed to submit RSVP" + error, 'error');
                 Swal.fire({
                     title: 'Error',
                     text: 'Failed to submit RSVP',
