@@ -160,6 +160,23 @@
                     <tbody>
                     </tbody>
                 </table>
+                <table id="fundingTable" class="table">
+                    <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                <form id="createFundingForm" action="<%= request.getContextPath() %>/submit" method="post">
+                    <input type="text" name="description" class="form-control" placeholder="Description" required/>
+                    <input type="number" name="amount" class="form-control" placeholder="Amount" required/>
+                    <button type="submit" class="btn btn-custom">Submit</button>
+                </form>
             </div>
         </div>
     </div>
@@ -499,6 +516,46 @@
                     showSweetAlert('Failed to create event: ' + error);
                 });
         };
+
+        const form2 = document.getElementById('createFundingForm');
+        form2.onsubmit = function (event) {
+            event.preventDefault();
+
+            const formData = new FormData(form2);
+            const data = Object.fromEntries(formData.entries());
+            const clubId = document.getElementById('clubManageSelect').value;
+            data['studentId'] = userId;
+            data['clubId'] = clubId;
+            let reqBodyJson = JSON.stringify(data);
+
+            fetch('/funding/submit', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: reqBodyJson
+            })
+                .then(response => response.json())  // 解析 JSON 响应
+                .then(result => {
+                    if (result.code === 1) {
+                        showSweeetChoice(result.msg, {
+                            title: 'Success',
+                            icon: 'success',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#3085d6'
+                        }).then(() => {
+                            fetchFundingApplications(clubId, token);
+                        });
+                    } else {
+                        return Promise.reject(result.msg);  // 失败信息
+                    }
+                })
+                .catch(error => {
+                    console.error('Error creating event:', error);
+                    showSweetAlert('Failed to create event: ' + error);
+                });
+        };
     };
 
     function fetchSuperAdminedClubsByUser(userId, token, clubSelect) {
@@ -577,6 +634,75 @@
             });
     }
 
+    function fetchFundingApplications(clubId, token) {
+        let url = '/funding/' + clubId + '/club';
+        console.log('Constructed URL:', url);
+
+        // Fetch clubs administered by the user
+        return fetch(url, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(applications => {
+                console.log('Applications:', applications);
+                const table = document.getElementById('fundingTable');
+                const tableBody = table.querySelector('tbody');
+                tableBody.innerHTML = ''; // 清空现有表格内容
+
+                applications.forEach(row => {
+                    const tr = document.createElement('tr');
+
+                    const nameTd = document.createElement('td');
+                    nameTd.textContent = row.description;
+                    tr.appendChild(nameTd);
+
+                    const emailTd = document.createElement('td');
+                    emailTd.textContent = row.amount;
+                    tr.appendChild(emailTd);
+
+                    const roleTd = document.createElement('td');
+                    roleTd.textContent = row.status;
+                    tr.appendChild(roleTd);
+                    const actionsTd = document.createElement('td');
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Cancel Funding';
+                    deleteButton.addEventListener('click', () => {
+                        const fid = row.id;
+                        let url = '/funding/' + fid + '/cancel';
+
+                        fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        }).then(response => {
+                            if (response.ok) {
+                                showSweetAlert('Role updated to normal_member successfully!');
+                                fetchFundingApplications(clubId, token);
+                            }
+                        }).catch(error => {
+                            console.error('There was an error!', error);
+                            showSweetAlert('Error updating role to Normal Member: ' + error.message);
+                        });
+                    });
+                    actionsTd.appendChild(deleteButton);
+                    tr.appendChild(actionsTd);
+                    tableBody.appendChild(tr); // 添加行到表格
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching members:', error);
+                throw new Error('Failed to load club members: ' + error.message);
+            });
+    }
 
     function fetchClubMembers(clubId, token) {
         let url = '/club/' + clubId + '/all';
@@ -701,6 +827,7 @@
         const selectedClub = this.value; // 获取当前选中的值
 
         fetchClubMembers(selectedClub, token);
+        fetchFundingApplications(selectedClub, token);
     });
 
 

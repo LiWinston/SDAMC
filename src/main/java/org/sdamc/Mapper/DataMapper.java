@@ -1,11 +1,6 @@
 package org.sdamc.Mapper;
 
-import org.sdamc.DomainObject.Clubs;
-import org.sdamc.DomainObject.ClubMemberships;
-import org.sdamc.DomainObject.DomainObject;
-import org.sdamc.DomainObject.Events;
-import org.sdamc.DomainObject.Rsvps;
-import org.sdamc.DomainObject.Students;
+import org.sdamc.DomainObject.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -22,6 +17,7 @@ public abstract class DataMapper {
         mapperMap.put(Events.tableName, new EventsMapper());
         mapperMap.put(Rsvps.tableName, new RsvpsMapper());
         mapperMap.put(Students.tableName, new StudentsMapper());
+        mapperMap.put(FundingApplication.tableName, new FundingApplicationMapper());
     }
 
     public static DataMapper GetMapper(String tableName) {

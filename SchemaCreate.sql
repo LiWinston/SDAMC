@@ -64,7 +64,7 @@ CREATE INDEX rsvps_sid_eid_hash ON rsvps (student_id, event_id);
 CREATE INDEX rsvps_sid_hash ON rsvps (student_id);
 CREATE INDEX rsvps_eid_hash ON rsvps (event_id);
 
-CREATE TYPE funding_status AS ENUM ('In Draft', 'Submitted', 'In Review', 'Approved', 'Rejected');
+CREATE TYPE funding_status AS ENUM ('in_draft', 'submitted', 'in_review', 'approved', 'rejected');
 CREATE TABLE funding_applications (
     id SERIAL PRIMARY KEY,
     description VARCHAR(255) NOT NULL,
