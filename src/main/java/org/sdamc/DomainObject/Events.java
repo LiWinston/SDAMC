@@ -27,6 +27,17 @@ public class Events extends DomainObject {
 
     private Timestamp endTime;
 
+    public void decreaseCapacity(int amount) {
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Amount must be positive");
+        }
+        if (this.capacity < amount) {
+            throw new IllegalArgumentException("Not enough capacity");
+        }
+        this.capacity -= amount;
+        UnitofWork.getCurrent().registerDirty(this);
+    }
+
     public Events(int id) {
         this.id = id;
     }

@@ -98,6 +98,12 @@ public class RsvpController extends HttpServlet {
             }
             int eventId = Integer.parseInt(eventIdStr);
 
+            Events event = (Events) eventsMapper.find(eventId);
+            int totalAttendeesToRsvp = rsvpSubmitDTO.getAttendees().size();
+            if (event.getCapacity() < totalAttendeesToRsvp) {
+                throw new IllegalArgumentException("Not enough capacity for this RSVP");
+            }
+
             for (RsvpSubmitDTO.Attendee attendee : rsvpSubmitDTO.getAttendees()) {
                 int studentId = attendee.getStudentId();
                 Students student = (Students) studentsMapper.find(studentId);
@@ -109,6 +115,10 @@ public class RsvpController extends HttpServlet {
                 }
                 Rsvps.insert(studentId, eventId, 1);
             }
+
+            // 更新事件容量
+            event.decreaseCapacity(totalAttendeesToRsvp);
+//            eventsMapper.update(event);
 
             new ObjectMapper().writeValue(resp.getOutputStream(), Result.success("RSVP successful"));
         } catch (Exception e) {
