@@ -18,7 +18,7 @@
 
     <%
         Events event = (Events) request.getAttribute("event");
-        if (event != null) {
+//        if (event != null) {
     %>
 
     <div class="card mb-4">
@@ -29,9 +29,10 @@
             <p>Date: <%= event.getBeginTime() %></p>
         </div>
     </div>
-    <% } else { %>
+
+    <%--<% } else { %>
     <p>Debug: No event found</p>
-    <% } %>
+    <% } %>--%>
 
     <form id="rsvpSubmitForm">
         <input type="hidden" id="eventId" name="eventId" value="${eventId}">

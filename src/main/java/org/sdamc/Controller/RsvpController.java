@@ -52,7 +52,6 @@ public class RsvpController extends HttpServlet {
 
     private void handleRsvpPage(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String eventId = req.getParameter("eventId");
-        System.out.println("Received eventId: " + eventId); // 添加日志
         req.setAttribute("eventId", eventId);
         if (eventId != null && !eventId.isEmpty()) {
             Events event = (Events) eventsMapper.find(Integer.parseInt(eventId));
@@ -73,9 +72,6 @@ public class RsvpController extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println("Received POST request to " + req.getRequestURI());
-        System.out.println("All parameters: " + req.getParameterMap());
-
         UnitofWork.newCurrent();
         try {
             String pathInfo = req.getPathInfo();
@@ -91,18 +87,10 @@ public class RsvpController extends HttpServlet {
 
     private void handleRsvpSubmit(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json");
-//
-//        System.out.println("Handling RSVP submit");
-//        System.out.println("Request method: " + req.getMethod());
-//        System.out.println("Content type: " + req.getContentType());
-//        System.out.println("All parameters:");
-//        req.getParameterMap().forEach((key, value) ->
-//                System.out.println(key + ": " + String.join(", ", value)));
 
         try {
             RsvpSubmitDTO rsvpSubmitDTO = IOWrapper.readValue(req, RsvpSubmitDTO.class);
             String eventIdStr = rsvpSubmitDTO.getEventId();
-            System.out.println("Received eventId in submit: " + eventIdStr);  //这里没有获取到eventid！！
 
             if (eventIdStr == null || eventIdStr.isEmpty()) {
                 throw new IllegalArgumentException("missing Event ID");
