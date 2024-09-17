@@ -67,8 +67,8 @@ public class FundingApplicationMapper extends DataMapper {
             throw new IllegalArgumentException("Invalid object type");
         }
         FundingApplication application = (FundingApplication) obj;
-        String sql = "INSERT INTO funding_applications (id, description, amount, students_id, club_id, status) " +
-                "VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO funding_applications (id, description, amount, student_id, club_id, status) " +
+                "VALUES (?, ?, ?, ?, ?, ?::funding_status)";
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
             stmt.setInt(1, application.getId());
             stmt.setString(2, application.getDescription());
