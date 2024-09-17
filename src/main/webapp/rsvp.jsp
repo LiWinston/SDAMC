@@ -117,18 +117,39 @@
             },
             body: JSON.stringify(rsvpData),
         })
-            .then(response => response.json())
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
                 console.log('Response:', data);
                 if (data.code === 1) {
-                    Swal.fire('Success', data.msg, 'success');
+                    // Swal.fire('Success', data.msg, 'success');
+                    Swal.fire({
+                        title: 'Success',
+                        text: data.msg,
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href = '/events';
+                    });
                 } else {
-                    Swal.fire('Error', data.msg, 'error');
+                    // Swal.fire('Error', data.msg, 'error');
+                    Swal.fire({
+                        title: 'Error',
+                        text: data.msg,
+                        icon: 'error',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                Swal.fire('Error', 'An error occurred while submitting the RSVP', 'error');
+                Swal.fire('Error', "Failed to submit RSVP" + error, 'error');
             });
     };
 </script>
