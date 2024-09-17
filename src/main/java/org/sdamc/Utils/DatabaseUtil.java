@@ -13,13 +13,14 @@ public class DatabaseUtil {
     private static final String JDBC_DRIVER = "org.postgresql.Driver";
 
     // 新的 JDBC URL
-    private static final String JDBC_URL = "jdbc:postgresql://ep-icy-sea-a7vt9oiq.ap-southeast-2.aws.neon.tech/postgres1?user=postgres1_owner&password=nt4ug9SwXZUr&sslmode=require";
+//    private static final String JDBC_URL = "jdbc:postgresql://ep-icy-sea-a7vt9oiq.ap-southeast-2.aws.neon.tech/postgres1?user=postgres1_owner&password=nt4ug9SwXZUr&sslmode=require";
+    private static final String JDBC_URL = "jdbc:postgresql://dpg-crkoe03tq21c73ddtb8g-a.singapore-postgres.render.com/postgres_sdamc";
 
     // 新的数据库用户名
-    private static final String JDBC_USER = "postgres1_owner";
+    private static final String JDBC_USER = "postgres_sdamc_user";
 
     // 新的数据库密码
-    private static final String JDBC_PASSWORD = "nt4ug9SwXZUr";
+    private static final String JDBC_PASSWORD = "0Z1WenG5FErwzFeEs0DT7N3Rpf2d4J7T";
 
     private static ThreadLocal<Connection> connection = ThreadLocal.withInitial(() -> null);
 

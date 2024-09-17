@@ -44,5 +44,5 @@ VALUES
 -- Insert data into funding_applications
 INSERT INTO funding_applications (description, amount, student_id, club_id, status)
 VALUES
-    ('Request for new camera equipment', 1500.00, 1, 1, 'Submitted'),
-    ('Request for chess clocks', 500.00, 2, 2, 'In Review');
+    ('Request for new camera equipment', 1500.00, 1, 1, 'submitted'),
+    ('Request for chess clocks', 500.00, 2, 2, 'in_review');
