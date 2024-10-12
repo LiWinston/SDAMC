@@ -99,7 +99,8 @@ public class ClubController extends HttpServlet {
 
                 clubMembershipsMapper.update(cm);
                 resp.getWriter().write("Club Member updated successfully");
-            }else {
+            }
+            else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Club Member not found");
             }
         }
@@ -123,7 +124,8 @@ public class ClubController extends HttpServlet {
 
                 clubMembershipsMapper.update(cm);
                 resp.getWriter().write("Club Member updated successfully");
-            }else {
+            }
+            else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Club Member not found");
             }
         }

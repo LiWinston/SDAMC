@@ -49,7 +49,8 @@ public class RsvpsMapper extends DataMapper {
             stmt.setInt(2, rsvp.getEventId());
             stmt.setInt(3, rsvp.getNumTickets());
             stmt.executeUpdate();
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Error inserting RSVP", e);
         }
@@ -130,7 +131,8 @@ public class RsvpsMapper extends DataMapper {
                 rsvp.setNumTickets(rs.getInt("num_tickets"));
                 rsvps.add(rsvp);
             }
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             e.printStackTrace();
         }
         return rsvps;
@@ -149,7 +151,8 @@ public class RsvpsMapper extends DataMapper {
                 rsvp.setNumTickets(rs.getInt("num_tickets"));
                 return rsvp;
             }
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             e.printStackTrace();
         }
         return null;

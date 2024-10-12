@@ -49,4 +49,8 @@ public class UnitofWork {
         }
     }
 
+    public void rollback() {
+        // 要加吗？
+    }
+
 }

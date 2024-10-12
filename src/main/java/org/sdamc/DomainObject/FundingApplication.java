@@ -54,7 +54,8 @@ public class FundingApplication extends DomainObject {
         }
     }
 
-    public static FundingApplication insert(String description, float amount, int studentId, int clubId, String status) {
+    public static FundingApplication insert(String description, float amount, int studentId, int clubId,
+            String status) {
         FundingApplication application = new FundingApplication(DataMapper.GetMapper(tableName).getNewId());
         application.description = description;
         application.amount = amount;

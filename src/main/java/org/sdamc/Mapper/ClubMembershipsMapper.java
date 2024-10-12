@@ -176,8 +176,7 @@ public class ClubMembershipsMapper extends DataMapper {
 
     public List<ClubMember> getClubMembers(int clubId) {
         String sql = "SELECT cm.id, cm.student_id, s.name, s.email, cm.club_id, cm.role FROM students s "
-                + "JOIN club_memberships cm ON s.id = cm.student_id "
-                + "WHERE cm.club_id = ?";
+                + "JOIN club_memberships cm ON s.id = cm.student_id " + "WHERE cm.club_id = ?";
 
         List<ClubMember> members = new ArrayList<>();
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
@@ -185,9 +184,8 @@ public class ClubMembershipsMapper extends DataMapper {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                ClubMember member = new ClubMember(rs.getInt("id"), rs.getInt("student_id"),
-                        rs.getString("name"), rs.getString("email"),
-                        rs.getInt("club_id"), rs.getString("role"));
+                ClubMember member = new ClubMember(rs.getInt("id"), rs.getInt("student_id"), rs.getString("name"),
+                        rs.getString("email"), rs.getInt("club_id"), rs.getString("role"));
                 members.add(member);
             }
         }

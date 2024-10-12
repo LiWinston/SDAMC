@@ -43,7 +43,8 @@ public class UserController extends HttpServlet {
             String requestURI = req.getRequestURI();
             if (requestURI.endsWith("/clubs")) {
                 handleGetClubsAdminedByUser(req, resp);
-            } else if(requestURI.endsWith("/clubs_super")){
+            }
+            else if (requestURI.endsWith("/clubs_super")) {
                 handleGetClubsSuperAdminedByUser(req, resp);
             }
             else {
@@ -165,12 +166,14 @@ public class UserController extends HttpServlet {
             if (student != null && student.getPassword().equals(password)) {
                 String token = generateJwtToken(student.getId());
                 // 登录成功时返回 Result<LoginResponse>
-                IOWrapper.writeValue(resp, Result.success(new LoginResponse(token, student.getId()), "Login successful"));
+                IOWrapper.writeValue(resp,
+                        Result.success(new LoginResponse(token, student.getId()), "Login successful"));
             }
             else {
                 // 返回 Result<T> 错误信息
                 // resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                IOWrapper.writeValue(resp, Result.error("Invalid email or password"), HttpServletResponse.SC_UNAUTHORIZED);
+                IOWrapper.writeValue(resp, Result.error("Invalid email or password"),
+                        HttpServletResponse.SC_UNAUTHORIZED);
             }
 
             UnitofWork.getCurrent().commit();
@@ -179,7 +182,8 @@ public class UserController extends HttpServlet {
             // 返回 Result<T> 错误信息
             // resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.setContentType("application/json");
-            IOWrapper.writeValue(resp, Result.error("Database error" + e), HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            IOWrapper.writeValue(resp, Result.error("Database error" + e),
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
 

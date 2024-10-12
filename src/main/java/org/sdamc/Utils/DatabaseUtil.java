@@ -13,7 +13,8 @@ public class DatabaseUtil {
     private static final String JDBC_DRIVER = "org.postgresql.Driver";
 
     // 新的 JDBC URL
-//    private static final String JDBC_URL = "jdbc:postgresql://ep-icy-sea-a7vt9oiq.ap-southeast-2.aws.neon.tech/postgres1?user=postgres1_owner&password=nt4ug9SwXZUr&sslmode=require";
+    // private static final String JDBC_URL =
+    // "jdbc:postgresql://ep-icy-sea-a7vt9oiq.ap-southeast-2.aws.neon.tech/postgres1?user=postgres1_owner&password=nt4ug9SwXZUr&sslmode=require";
     private static final String JDBC_URL = "jdbc:postgresql://dpg-crkoe03tq21c73ddtb8g-a.singapore-postgres.render.com/postgres_sdamc";
 
     // 新的数据库用户名
