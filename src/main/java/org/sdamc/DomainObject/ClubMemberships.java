@@ -1,13 +1,12 @@
 package org.sdamc.DomainObject;
 
-import lombok.NoArgsConstructor;
 import org.sdamc.Mapper.DataMapper;
 import org.sdamc.UnitofWork;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-@NoArgsConstructor(force = true)
+//@NoArgsConstructor(force = true)
 public class ClubMemberships extends DomainObject {
 
     public static final String tableName = "club_memberships";

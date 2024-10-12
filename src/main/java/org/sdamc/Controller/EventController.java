@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.jetbrains.annotations.NotNull;
 import org.sdamc.DTO.Result;
 import org.sdamc.Services.EventCascadeOpSvc;
+import org.sdamc.Services.EventService;
 import org.sdamc.Transaction.TransactionalScanner;
 
 import java.io.IOException;

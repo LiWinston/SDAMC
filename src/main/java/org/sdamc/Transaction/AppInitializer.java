@@ -13,8 +13,7 @@ public class AppInitializer implements ServletContextListener {
     public void contextInitialized(ServletContextEvent sce) {
         logger.info("AppInitializer: Context initialized");
         try {
-            TransactionalScanner.scanAndCreateProxies("org.sdamc.Service");
-            TransactionalScanner.scanAndCreateProxies("org.sdamc.Controller");
+            TransactionalScanner.scanAndCacheTransactionalClasses("org.sdamc");
             logger.info("AppInitializer: Proxy creation completed");
         }
         catch (Exception e) {
