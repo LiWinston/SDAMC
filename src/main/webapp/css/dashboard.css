@@ -1,0 +1,251 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(145deg, #f2f2f2, #d7d7d7);
+    padding-top: 20px;
+    color: #333;
+}
+
+.container {
+    max-width: 1500px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.5);
+    /*backdrop-filter: blur(10px); 禁用这个 会把edit搞死*/
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+
+.header h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    color: #000;
+    letter-spacing: -0.05rem;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.card {
+    border-radius: 20px;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(15px);
+    overflow: hidden; /* Ensure contents don't exceed the boundaries */
+}
+
+.card-header {
+    background-color: #007bff;
+    color: white;
+    font-size: 1.5rem;
+    padding: 20px;
+    border-top-left-radius: 20px !important;
+    border-top-right-radius: 20px !important;
+    text-align: center;
+}
+
+.card-body {
+    padding: 20px;
+    border-radius: 20px;
+}
+
+.card-body:hover {
+    background-color: rgba(0, 123, 255, 0.02);
+    transition: background-color 0.3s ease;
+}
+
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 0;
+}
+
+.table th,
+.table td {
+    text-align: center;
+    vertical-align: middle;
+    padding: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.table thead th {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    border-top: none;
+}
+
+.table tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+    transition: background-color 0.3s ease;
+}
+
+.btn-custom {
+    background-color: #007aff;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+.btn-custom:hover {
+    background-color: #005bb5;
+    transform: scale(1.05);
+}
+
+.btn-edit {
+    background-color: #ffc107; /* 中和后的黄色 */
+    color: #333;
+    padding: 10px 16px;
+    border-radius: 10px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-edit:hover {
+    background-color: #e0a800; /* 更深的黄色 */
+    transform: scale(1.05);
+}
+
+.btn-delete {
+    background-color: #ff4d4f; /* 中和后的红色 */
+    color: white;
+    padding: 10px 16px;
+    border-radius: 10px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-delete:hover {
+    background-color: #d9363e; /* 更深的红色 */
+    transform: scale(1.05);
+}
+
+@media (max-width: 1600px) {
+    .btn-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-edit, .btn-delete {
+        width: 100%; /* 宽度全屏 */
+        padding: 4px 8px; /* 缩小按钮的内边距 */
+        font-size: 0.8rem; /* 缩小字体大小 */
+        margin-bottom: 4px; /* 按钮之间的间距 */
+    }
+}
+
+.form-inline input {
+    border-radius: 12px;
+    padding: 12px;
+    border: 1px solid #ccc;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+    transition: box-shadow 0.3s ease, background-color 0.3s ease;
+}
+
+.form-inline input:focus {
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+    background-color: white;
+}
+
+.form-inline button {
+    border-radius: 5px;
+    padding: 10px 15px;
+}
+
+/* 设置主内容样式 */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.text-content {
+    text-align: center;
+}
+
+.artistic-text {
+    font-size: 36px;
+    font-weight: bold;
+    color: #333;
+}
+
+.btn-primary {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background-color: #45a049;
+}
+
+/* Spotify 播放器样式 */
+.spotify-player {
+    width: 320px;
+    height: 80px;
+    margin-top: 20px;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* 下拉菜单样式 */
+.club-select {
+    margin: 20px 0;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+}
+
+.club-select option {
+    padding: 10px;
+}
+/* 灰色透明效果 */
+/* 灰色透明效果 */
+.disabled-form {
+    opacity: 0.6;
+    background-color: rgba(255, 255, 255, 0.5);
+    pointer-events: none;
+    backdrop-filter: blur(8px);
+}
+
+/* 禁用状态时显示的浮动层 */
+.overlay-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.8);  /* 浅色背景半透明 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: red;
+    font-size: 1.5em;
+    z-index: 10;  /* 让浮动层位于表单之上 */
+    pointer-events: none;  /* 浮层本身不接受鼠标事件 */
+}
+
+#noAdminAccessOverlay p {
+    margin: 0;
+    font-weight: bold;
+}

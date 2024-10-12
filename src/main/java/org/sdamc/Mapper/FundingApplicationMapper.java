@@ -41,7 +41,7 @@ public class FundingApplicationMapper extends DataMapper {
 
     public List<FundingApplication> getAll() throws SQLException {
         String sql = "SELECT * FROM funding_applications " +
-                "WHERE status = submitted or status = in_review;";
+                "WHERE status = 'submitted' or status = 'in_review';";
         List<FundingApplication> applications = new ArrayList<>();
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
             ResultSet rs = stmt.executeQuery();

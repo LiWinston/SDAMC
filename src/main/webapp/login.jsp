@@ -109,7 +109,7 @@
             } else if (result.isDenied) {
                 window.location.href = "/Others";
             } else if (result.dismiss === Swal.DismissReason.cancel) {
-                window.location.href = "/dashboard";
+                window.location.href = "/dashboard.jsp";
             } else {
                 // 如果用户关闭对话框，默认重定向到事件页面
                 window.location.href = "/events";

@@ -9,10 +9,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.sdamc.DTO.ClubMember;
+import org.sdamc.DTO.Fundings;
 import org.sdamc.DTO.Result;
 import org.sdamc.DomainObject.Events;
 import org.sdamc.DomainObject.FundingApplication;
+import org.sdamc.DomainObject.Clubs;
+import org.sdamc.DomainObject.Students;
 import org.sdamc.Mapper.ClubMembershipsMapper;
+import org.sdamc.Mapper.ClubsMapper;
 import org.sdamc.Mapper.FundingApplicationMapper;
 import org.sdamc.Mapper.StudentsMapper;
 import org.sdamc.UnitofWork;
@@ -22,6 +26,7 @@ import org.sdamc.Utils.IOWrapper;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -35,12 +40,14 @@ public class FundingApplicationController extends HttpServlet {
 
     private StudentsMapper studentsMapper;
     private ClubMembershipsMapper membershipsMapper;
+    private ClubsMapper clubsMapper;
 
     @Override
     public void init() {
         studentsMapper = new StudentsMapper();
         membershipsMapper = new ClubMembershipsMapper();
         fundingApplicationMapper = new FundingApplicationMapper();
+        clubsMapper = new ClubsMapper();
     }
 
     @Override
@@ -65,10 +72,31 @@ public class FundingApplicationController extends HttpServlet {
     }
 
     private void handleGetFundings(HttpServletRequest req, HttpServletResponse resp) throws IOException, SQLException {
-        UnitofWork.newCurrent();
-        List<FundingApplication> applications = fundingApplicationMapper.getAll();
-        IOWrapper.writeValue(resp, applications);
-        UnitofWork.getCurrent().commit();
+        try{
+            UnitofWork.newCurrent();
+            List<FundingApplication> applications = fundingApplicationMapper.getAll();
+            for (FundingApplication application : applications) {
+                application.setStatus("in_review");
+                fundingApplicationMapper.update(application);
+            }
+            List<Fundings> result = new ArrayList<Fundings>();
+            for (FundingApplication application : applications) {
+                int id = application.getId();
+                Clubs club = (Clubs) clubsMapper.find(application.getClubId());
+                String clubName = club.getName();
+                Students student = (Students) studentsMapper.find(application.getStudentId());
+                String applicant = student.getName();
+                String description = application.getDescription();
+                float amount = application.getAmount();
+                String status = application.getStatus();
+                Fundings funding = new Fundings(id, clubName, applicant, description, amount, status);
+                result.add(funding);
+            }
+            IOWrapper.writeValue(resp, result);
+            UnitofWork.getCurrent().commit();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void handleGetFundingsByClub(HttpServletRequest req, HttpServletResponse resp) throws IOException, SQLException {
@@ -97,6 +125,10 @@ public class FundingApplicationController extends HttpServlet {
                 handleSubmit(req, resp);
             } else if(requestURI.endsWith("/cancel")){
                 handleCancel(req, resp);
+            } else if(requestURI.endsWith("/approve")){
+                handleApprove(req, resp);
+            } else if(requestURI.endsWith("/reject")){
+                handleReject(req, resp);
             }
             else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -203,6 +235,46 @@ public class FundingApplicationController extends HttpServlet {
             new ObjectMapper().writeValue(resp.getOutputStream(),
                     Result.success(null, "Funding application: " + application.getId()
                             + " canceled successfully"));
+        }
+        else {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
+        }
+        UnitofWork.getCurrent().commit();
+    }
+
+    private void handleApprove(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String pathInfo = req.getPathInfo(); // "funding/1/approve"
+        String[] parts = pathInfo.split("/");
+
+        UnitofWork.newCurrent();
+        if (parts.length >= 2) {
+            int id = Integer.parseInt(parts[1]); // parts[1] is "1"
+            FundingApplication application = (FundingApplication) fundingApplicationMapper.find(id);
+            application.setStatus("approved");
+            fundingApplicationMapper.update(application);
+            new ObjectMapper().writeValue(resp.getOutputStream(),
+                    Result.success(null, "Funding application: " + application.getId()
+                            + " approved"));
+        }
+        else {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
+        }
+        UnitofWork.getCurrent().commit();
+    }
+
+    private void handleReject(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String pathInfo = req.getPathInfo(); // "funding/1/reject"
+        String[] parts = pathInfo.split("/");
+
+        UnitofWork.newCurrent();
+        if (parts.length >= 2) {
+            int id = Integer.parseInt(parts[1]); // parts[1] is "1"
+            FundingApplication application = (FundingApplication) fundingApplicationMapper.find(id);
+            application.setStatus("rejected");
+            fundingApplicationMapper.update(application);
+            new ObjectMapper().writeValue(resp.getOutputStream(),
+                    Result.success(null, "Funding application: " + application.getId()
+                            + " rejected"));
         }
         else {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
