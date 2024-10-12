@@ -12,6 +12,7 @@ import java.util.Map;
 public class TransactionalScanner {
 
     private static final Logger logger = LoggerFactory.getLogger(TransactionalScanner.class);
+
     private static final Map<Class<?>, Object> proxyCache = new HashMap<>();
 
     public static void scanAndCreateProxies(String packageName) throws Exception {
@@ -43,7 +44,8 @@ public class TransactionalScanner {
                 logger.info("Proxy created and cached for class: {}", clazz.getName());
             }
             else {
-                logger.info("No @Transactional methods found in class: {}. Caching original instance.", clazz.getName());
+                logger.info("No @Transactional methods found in class: {}. Caching original instance.",
+                        clazz.getName());
                 proxyCache.put(clazz, target);
             }
         }
@@ -53,15 +55,18 @@ public class TransactionalScanner {
     public static Object getProxy(Class<?> clazz) {
         Object proxy = proxyCache.get(clazz);
         if (proxy == null) {
-            logger.warn("No proxy or instance found for class: {}. Attempting to create a new instance.", clazz.getName());
+            logger.warn("No proxy or instance found for class: {}. Attempting to create a new instance.",
+                    clazz.getName());
             try {
                 proxy = clazz.getDeclaredConstructor().newInstance();
                 proxyCache.put(clazz, proxy);
                 logger.info("Created and cached new instance for class: {}", clazz.getName());
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 logger.error("Failed to create new instance for class: {}", clazz.getName(), e);
             }
-        } else {
+        }
+        else {
             logger.info("Retrieved proxy or instance for class: {}", clazz.getName());
         }
         return proxy;
