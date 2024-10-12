@@ -31,7 +31,7 @@ class TransactionManager {
 
     public static void beginTransaction(IsolationLevel level) throws SQLException {
         Connection conn = DatabaseUtil.getConnection();
-        conn.setAutoCommit(false);
+//        conn.setAutoCommit(false); //在DBUtil中统一设置了
         setIsolationLevel(conn, level);
         connectionHolder.set(conn);
         UnitofWork.newCurrent(); // 开启新的UnitofWork

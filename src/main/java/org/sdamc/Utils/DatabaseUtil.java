@@ -63,6 +63,7 @@ public class DatabaseUtil {
                 throw new RuntimeException("Failed to create database connection", e);
             }
         }
+        connection.get().setAutoCommit(false);
         return connection.get();
     }
 
