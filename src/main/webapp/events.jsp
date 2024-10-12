@@ -181,6 +181,37 @@
         </div>
     </div>
 
+    <!-- Modal for editing funding application -->
+    <div class="modal fade" id="editFundingModal" tabindex="-1" aria-labelledby="editFundingLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editFundingLabel">Edit Funding Application</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editFundingForm">
+                        <input type="hidden" name="applicationId" id="applicationId">
+
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <input type="text" class="form-control" id="description" name="description" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="amount">Amount</label>
+                            <input type="number" class="form-control" id="amount" name="amount" min="0" required>
+                        </div>
+
+                        <button type="button" id="saveEdit" class="btn btn-primary">Save</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal for editing event -->
     <div class="modal fade" id="editEventModal" tabindex="-1" aria-labelledby="editEventLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -685,15 +716,24 @@
                             }
                         }).then(response => {
                             if (response.ok) {
-                                showSweetAlert('Role updated to normal_member successfully!');
+                                showSweetAlert('Funding application canceled.');
                                 fetchFundingApplications(clubId, token);
                             }
                         }).catch(error => {
                             console.error('There was an error!', error);
-                            showSweetAlert('Error updating role to Normal Member: ' + error.message);
+                            showSweetAlert('Error canceling funding application: ' + error.message);
                         });
                     });
                     actionsTd.appendChild(deleteButton);
+
+                    // Edit Button
+                    const editButton = document.createElement('button');
+                    editButton.textContent = 'Edit';
+                    editButton.addEventListener('click', () => {
+                        openEditFundingModal(row, clubId, token);  // Call function to open edit modal
+                    });
+                    actionsTd.appendChild(editButton);
+
                     tr.appendChild(actionsTd);
                     tableBody.appendChild(tr); // 添加行到表格
                 });
@@ -702,6 +742,48 @@
                 console.error('Error fetching members:', error);
                 throw new Error('Failed to load club members: ' + error.message);
             });
+    }
+
+    // Function to open edit modal
+    function openEditFundingModal(row, clubId, token) {
+        const modal = document.getElementById('editFundingModal');
+        const descriptionInput = document.getElementById('description');
+        const amountInput = document.getElementById('amount');
+        const saveButton = document.getElementById('saveEdit');
+
+        // Populate the modal with the current values
+        descriptionInput.value = row.description;
+        amountInput.value = row.amount;
+        $('#editFundingModal').modal('show');
+
+        saveButton.onclick = function () {
+            const data = {
+                 "id": row.id.toString(),
+                 "description": descriptionInput.value,
+                 "amount": amountInput.value
+            };
+
+            let reqBodyJson = JSON.stringify(data);
+
+            fetch('/funding/update', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: reqBodyJson
+            }).then(response => {
+                  if (response.ok) {
+                      showSweetAlert('Funding application updated.');
+                      fetchFundingApplications(clubId, token);
+                  } else {
+                      showSweetError("Failed to update funding" + response.statusText);
+                  }
+              }).catch(error => {
+                  console.error('There was an error!', error);
+                  showSweetAlert('Error updating funding application: ' + error.message);
+              });
+        };
     }
 
     function fetchClubMembers(clubId, token) {

@@ -65,19 +65,10 @@ public class FundingApplicationController extends HttpServlet {
     }
 
     private void handleGetFundings(HttpServletRequest req, HttpServletResponse resp) throws IOException, SQLException {
-//        String pathInfo = req.getPathInfo(); // "/all"
-//        String[] parts = pathInfo.split("/");
-//
-//        UnitofWork.newCurrent();
-//        if (parts.length >= 2) {
-//            int clubId = Integer.parseInt(parts[1]); // parts[1] is "1"
-//            List<FundingApplication> applications = fundingApplicationMapper.findByClubId(clubId);
-//            IOWrapper.writeValue(resp, applications);
-//        }
-//        else {
-//            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
-//        }
-//        UnitofWork.getCurrent().commit();
+        UnitofWork.newCurrent();
+        List<FundingApplication> applications = fundingApplicationMapper.getAll();
+        IOWrapper.writeValue(resp, applications);
+        UnitofWork.getCurrent().commit();
     }
 
     private void handleGetFundingsByClub(HttpServletRequest req, HttpServletResponse resp) throws IOException, SQLException {
@@ -104,6 +95,8 @@ public class FundingApplicationController extends HttpServlet {
                 handleUpdate(req, resp);
             } else if(requestURI.endsWith("/submit")){
                 handleSubmit(req, resp);
+            } else if(requestURI.endsWith("/cancel")){
+                handleCancel(req, resp);
             }
             else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -115,27 +108,33 @@ public class FundingApplicationController extends HttpServlet {
     }
 
     private void handleUpdate(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        String pathInfo = req.getPathInfo(); // "funding/1/update"
-        String[] parts = pathInfo.split("/");
-
-        UnitofWork.newCurrent();
-        if (parts.length >= 2) {
-            int fundingId = Integer.parseInt(parts[1]); // parts[1] is "1"
+        ObjectMapper mapper = new ObjectMapper();
+        Map<String, String> requestBody = mapper.readValue(req.getInputStream(), Map.class);
+        try {
+            int fundingId = Integer.parseInt(requestBody.get("id"));
+            UnitofWork.newCurrent();
             FundingApplication application = (FundingApplication) fundingApplicationMapper.find(fundingId);
-
             if (application != null) {
                 //application.setRole("admin");
-
+                String description = requestBody.get("description");
+                Float amount = Float.parseFloat(requestBody.get("amount"));
+                application.setDescription(description);
+                application.setAmount(amount);
                 fundingApplicationMapper.update(application);
-                resp.getWriter().write("Funding updated successfully");
+                UnitofWork.getCurrent().commit();
+                new ObjectMapper().writeValue(resp.getOutputStream(),
+                        Result.success(null, "Funding application: " + application.getId()
+                                + " updated successfully"));
             }else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Funding not found");
             }
         }
-        else {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
+        catch (Exception e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.setContentType("application/json");
+            new ObjectMapper().writeValue(resp.getOutputStream(), Result.error("Database error"));
+            e.printStackTrace();
         }
-        UnitofWork.getCurrent().commit();
     }
 
     private void handleSubmit(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -190,6 +189,25 @@ public class FundingApplicationController extends HttpServlet {
             new ObjectMapper().writeValue(resp.getOutputStream(), Result.error("Database error"));
             e.printStackTrace();
         }
+    }
+
+    private void handleCancel(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String pathInfo = req.getPathInfo(); // "funding/1/cancel"
+        String[] parts = pathInfo.split("/");
+
+        UnitofWork.newCurrent();
+        if (parts.length >= 2) {
+            int id = Integer.parseInt(parts[1]); // parts[1] is "1"
+            FundingApplication application = (FundingApplication) fundingApplicationMapper.find(id);
+            fundingApplicationMapper.delete(application);
+            new ObjectMapper().writeValue(resp.getOutputStream(),
+                    Result.success(null, "Funding application: " + application.getId()
+                            + " canceled successfully"));
+        }
+        else {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
+        }
+        UnitofWork.getCurrent().commit();
     }
 
     // JWT 生成逻辑

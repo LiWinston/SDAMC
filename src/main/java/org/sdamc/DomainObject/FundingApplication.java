@@ -45,7 +45,7 @@ public class FundingApplication extends DomainObject {
                 amount = result.getFloat("amount");
                 studentId = result.getInt("student_id");
                 clubId = result.getInt("club_id");
-                status = result.getString("funding_status");
+                status = result.getString("status");
                 initialed = true;
             }
         }
