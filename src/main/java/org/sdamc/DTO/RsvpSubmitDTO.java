@@ -7,12 +7,18 @@ import java.util.List;
 public class RsvpSubmitDTO {
 
     private String eventId;
+
     private List<Attendee> attendees;
 
     @Data
     public static class Attendee {
+
         private Integer studentId;
+
         private String name;
+
         private String email;
+
     }
+
 }

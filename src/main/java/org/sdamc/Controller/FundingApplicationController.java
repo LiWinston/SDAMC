@@ -34,6 +34,7 @@ public class FundingApplicationController extends HttpServlet {
     FundingApplicationMapper fundingApplicationMapper;
 
     private StudentsMapper studentsMapper;
+
     private ClubMembershipsMapper membershipsMapper;
 
     @Override
@@ -50,7 +51,8 @@ public class FundingApplicationController extends HttpServlet {
             String requestURI = req.getRequestURI();
             if (requestURI.endsWith("/all")) {
                 handleGetFundings(req, resp);
-            } else if(requestURI.endsWith("/club")){
+            }
+            else if (requestURI.endsWith("/club")) {
                 handleGetFundingsByClub(req, resp);
             }
             else {
@@ -59,28 +61,31 @@ public class FundingApplicationController extends HttpServlet {
         }
         catch (IOException e) {
             log.error("搞毛啊，IOException");
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
     private void handleGetFundings(HttpServletRequest req, HttpServletResponse resp) throws IOException, SQLException {
-//        String pathInfo = req.getPathInfo(); // "/all"
-//        String[] parts = pathInfo.split("/");
-//
-//        UnitofWork.newCurrent();
-//        if (parts.length >= 2) {
-//            int clubId = Integer.parseInt(parts[1]); // parts[1] is "1"
-//            List<FundingApplication> applications = fundingApplicationMapper.findByClubId(clubId);
-//            IOWrapper.writeValue(resp, applications);
-//        }
-//        else {
-//            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
-//        }
-//        UnitofWork.getCurrent().commit();
+        // String pathInfo = req.getPathInfo(); // "/all"
+        // String[] parts = pathInfo.split("/");
+        //
+        // UnitofWork.newCurrent();
+        // if (parts.length >= 2) {
+        // int clubId = Integer.parseInt(parts[1]); // parts[1] is "1"
+        // List<FundingApplication> applications =
+        // fundingApplicationMapper.findByClubId(clubId);
+        // IOWrapper.writeValue(resp, applications);
+        // }
+        // else {
+        // resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
+        // }
+        // UnitofWork.getCurrent().commit();
     }
 
-    private void handleGetFundingsByClub(HttpServletRequest req, HttpServletResponse resp) throws IOException, SQLException {
+    private void handleGetFundingsByClub(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException, SQLException {
         String pathInfo = req.getPathInfo(); // "funding/1/club"
         String[] parts = pathInfo.split("/");
 
@@ -102,7 +107,8 @@ public class FundingApplicationController extends HttpServlet {
         try {
             if (requestURI.endsWith("/update")) {
                 handleUpdate(req, resp);
-            } else if(requestURI.endsWith("/submit")){
+            }
+            else if (requestURI.endsWith("/submit")) {
                 handleSubmit(req, resp);
             }
             else {
@@ -124,11 +130,12 @@ public class FundingApplicationController extends HttpServlet {
             FundingApplication application = (FundingApplication) fundingApplicationMapper.find(fundingId);
 
             if (application != null) {
-                //application.setRole("admin");
+                // application.setRole("admin");
 
                 fundingApplicationMapper.update(application);
                 resp.getWriter().write("Funding updated successfully");
-            }else {
+            }
+            else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Funding not found");
             }
         }
@@ -181,8 +188,7 @@ public class FundingApplicationController extends HttpServlet {
             resp.setStatus(HttpServletResponse.SC_CREATED);
             resp.setContentType("application/json");
             new ObjectMapper().writeValue(resp.getOutputStream(),
-                    Result.success(null, "Funding application: " + application.getId()
-                            + " submitted successfully"));
+                    Result.success(null, "Funding application: " + application.getId() + " submitted successfully"));
         }
         catch (Exception e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
