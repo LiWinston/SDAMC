@@ -34,6 +34,7 @@ public class FundingApplicationController extends HttpServlet {
     FundingApplicationMapper fundingApplicationMapper;
 
     private StudentsMapper studentsMapper;
+
     private ClubMembershipsMapper membershipsMapper;
 
     @Override
@@ -50,7 +51,8 @@ public class FundingApplicationController extends HttpServlet {
             String requestURI = req.getRequestURI();
             if (requestURI.endsWith("/all")) {
                 handleGetFundings(req, resp);
-            } else if(requestURI.endsWith("/club")){
+            }
+            else if (requestURI.endsWith("/club")) {
                 handleGetFundingsByClub(req, resp);
             }
             else {
@@ -59,7 +61,8 @@ public class FundingApplicationController extends HttpServlet {
         }
         catch (IOException e) {
             log.error("搞毛啊，IOException");
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
@@ -71,7 +74,8 @@ public class FundingApplicationController extends HttpServlet {
         UnitofWork.getCurrent().commit();
     }
 
-    private void handleGetFundingsByClub(HttpServletRequest req, HttpServletResponse resp) throws IOException, SQLException {
+    private void handleGetFundingsByClub(HttpServletRequest req, HttpServletResponse resp)
+            throws IOException, SQLException {
         String pathInfo = req.getPathInfo(); // "funding/1/club"
         String[] parts = pathInfo.split("/");
 
@@ -93,9 +97,11 @@ public class FundingApplicationController extends HttpServlet {
         try {
             if (requestURI.endsWith("/update")) {
                 handleUpdate(req, resp);
-            } else if(requestURI.endsWith("/submit")){
+            }
+            else if (requestURI.endsWith("/submit")) {
                 handleSubmit(req, resp);
-            } else if(requestURI.endsWith("/cancel")){
+            }
+            else if (requestURI.endsWith("/cancel")) {
                 handleCancel(req, resp);
             }
             else {
@@ -115,7 +121,7 @@ public class FundingApplicationController extends HttpServlet {
             UnitofWork.newCurrent();
             FundingApplication application = (FundingApplication) fundingApplicationMapper.find(fundingId);
             if (application != null) {
-                //application.setRole("admin");
+                // application.setRole("admin");
                 String description = requestBody.get("description");
                 Float amount = Float.parseFloat(requestBody.get("amount"));
                 application.setDescription(description);
@@ -123,9 +129,9 @@ public class FundingApplicationController extends HttpServlet {
                 fundingApplicationMapper.update(application);
                 UnitofWork.getCurrent().commit();
                 new ObjectMapper().writeValue(resp.getOutputStream(),
-                        Result.success(null, "Funding application: " + application.getId()
-                                + " updated successfully"));
-            }else {
+                        Result.success(null, "Funding application: " + application.getId() + " updated successfully"));
+            }
+            else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Funding not found");
             }
         }
@@ -180,8 +186,7 @@ public class FundingApplicationController extends HttpServlet {
             resp.setStatus(HttpServletResponse.SC_CREATED);
             resp.setContentType("application/json");
             new ObjectMapper().writeValue(resp.getOutputStream(),
-                    Result.success(null, "Funding application: " + application.getId()
-                            + " submitted successfully"));
+                    Result.success(null, "Funding application: " + application.getId() + " submitted successfully"));
         }
         catch (Exception e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -201,8 +206,7 @@ public class FundingApplicationController extends HttpServlet {
             FundingApplication application = (FundingApplication) fundingApplicationMapper.find(id);
             fundingApplicationMapper.delete(application);
             new ObjectMapper().writeValue(resp.getOutputStream(),
-                    Result.success(null, "Funding application: " + application.getId()
-                            + " canceled successfully"));
+                    Result.success(null, "Funding application: " + application.getId() + " canceled successfully"));
         }
         else {
             resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");

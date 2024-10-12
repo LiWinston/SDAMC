@@ -34,9 +34,11 @@ public class EventService {
         this.membershipsMapper = new ClubMembershipsMapper();
     }
 
-    @Transactional(isolationLevel = IsolationLevel.REPEATABLE_READ, lockingStrategy = LockingStrategy.OPTIMISTIC)
+    // @Transactional(isolationLevel = IsolationLevel.REPEATABLE_READ, lockingStrategy =
+    // LockingStrategy.OPTIMISTIC)
     public void handleGetAllEvents(HttpServletRequest req, HttpServletResponse resp)
             throws IOException, ServletException {
+        UnitofWork.newCurrent();
         List<Events> eventsList = eventsMapper.findAll();
         for (Events event : eventsList) {
             resp.getWriter().write(event.toString() + "\n");
@@ -124,7 +126,7 @@ public class EventService {
         ObjectMapper mapper = new ObjectMapper();
         Map<String, String> requestBody = mapper.readValue(req.getInputStream(), Map.class);
 
-        UnitofWork.newCurrent();
+        // UnitofWork.newCurrent();
 
         int eventId = Integer.parseInt(requestBody.get("eventId"));
         Events event = (Events) eventsMapper.find(eventId);
@@ -152,7 +154,7 @@ public class EventService {
         else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Event not found");
         }
-        UnitofWork.getCurrent().commit();
+        // UnitofWork.getCurrent().commit();
     }
 
 }
