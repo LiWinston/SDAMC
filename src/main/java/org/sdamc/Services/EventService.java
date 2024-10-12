@@ -34,7 +34,7 @@ public class EventService {
         this.membershipsMapper = new ClubMembershipsMapper();
     }
 
-    @Transactional(isolationLevel = IsolationLevel.READ_COMMITTED, lockingStrategy = LockingStrategy.OPTIMISTIC)
+    @Transactional(isolationLevel = IsolationLevel.REPEATABLE_READ, lockingStrategy = LockingStrategy.OPTIMISTIC)
     public void handleGetAllEvents(HttpServletRequest req, HttpServletResponse resp)
             throws IOException, ServletException {
         List<Events> eventsList = eventsMapper.findAll();
@@ -45,7 +45,7 @@ public class EventService {
         req.getRequestDispatcher("/events.jsp").forward(req, resp);
     }
 
-    @Transactional(isolationLevel = IsolationLevel.SERIALIZABLE, lockingStrategy = LockingStrategy.PESSIMISTIC)
+    @Transactional(isolationLevel = IsolationLevel.REPEATABLE_READ, lockingStrategy = LockingStrategy.PESSIMISTIC)
     public void handleCreateEvent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String token = req.getHeader("Authorization");
         ObjectMapper mapper = new ObjectMapper();

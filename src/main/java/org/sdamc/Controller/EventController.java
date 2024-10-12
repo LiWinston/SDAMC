@@ -22,10 +22,11 @@ public class EventController extends HttpServlet {
 
     private EventService eventService;
 
-    private final EventCascadeOpSvc eventCascadeOpSvc = EventCascadeOpSvc.getInstance();
+    private EventCascadeOpSvc eventCascadeOpSvc;
 
     public void init() {
         this.eventService = (EventService) TransactionalScanner.getProxy(EventService.class);
+        this.eventCascadeOpSvc = (EventCascadeOpSvc) TransactionalScanner.getProxy(EventCascadeOpSvc.class);
     }
 
     // 查找所有事件 (GET)
