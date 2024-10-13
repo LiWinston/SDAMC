@@ -677,35 +677,53 @@
 
     function displayUserRsvps(rsvps) {
         const rsvpTableBody = document.querySelector('#userRsvpsTable tbody');
-        rsvpTableBody.innerHTML = ''; // Clear existing content
+        rsvpTableBody.innerHTML = ''; // 清空之前的内容
 
         if (rsvps && rsvps.length > 0) {
             rsvps.forEach(rsvp => {
-                const row = `
-                <tr>
-                    <td>${rsvp.eventTitle}</td>
-                    <%--<td>${new Date(rsvp.beginTime).toLocaleString()}</td>--%>
-                    <%--<td>${new Date(rsvp.endTime).toLocaleString()}</td>--%>
-                    <td>${rsvp.venue}</td>
-                    <td>${rsvp.attendeeName}</td>
-                    <td>${rsvp.attendeeEmail}</td>
-                    <td>
-                        <button class="btn btn-danger" onclick="cancelRsvp(${rsvp.rsvpId})">
-                            Cancel RSVP
-                        </button>
-                    </td>
-                </tr>
-            `;
-                rsvpTableBody.innerHTML += row;
+                // 创建表格行
+                const row = document.createElement('tr');
+
+                // 创建表格数据单元格，并插入相应数据
+                const eventTitleCell = document.createElement('td');
+                eventTitleCell.textContent = rsvp.eventTitle;
+                row.appendChild(eventTitleCell);
+
+                const venueCell = document.createElement('td');
+                venueCell.textContent = rsvp.venue;
+                row.appendChild(venueCell);
+
+                const attendeeNameCell = document.createElement('td');
+                attendeeNameCell.textContent = rsvp.attendeeName;
+                row.appendChild(attendeeNameCell);
+
+                const attendeeEmailCell = document.createElement('td');
+                attendeeEmailCell.textContent = rsvp.attendeeEmail;
+                row.appendChild(attendeeEmailCell);
+
+                // 创建按钮单元格
+                const actionCell = document.createElement('td');
+                const cancelButton = document.createElement('button');
+                cancelButton.classList.add('btn', 'btn-danger');
+                cancelButton.textContent = 'Cancel RSVP';
+                cancelButton.onclick = () => cancelRsvp(rsvp.rsvpId); // 绑定取消操作
+                actionCell.appendChild(cancelButton);
+                row.appendChild(actionCell);
+
+                // 将行添加到表格中
+                rsvpTableBody.appendChild(row);
             });
         } else {
-            rsvpTableBody.innerHTML = `
-            <tr>
-                <td colspan="7" class="text-center">You haven't RSVP'd to any events yet</td>
-            </tr>
-        `;
+            const emptyRow = document.createElement('tr');
+            const emptyCell = document.createElement('td');
+            emptyCell.setAttribute('colspan', '7');
+            emptyCell.classList.add('text-center');
+            emptyCell.textContent = "You haven't RSVP'd to any events yet";
+            emptyRow.appendChild(emptyCell);
+            rsvpTableBody.appendChild(emptyRow);
         }
     }
+
 
     function cancelRsvp(rsvpId) {
         if (confirm('Are you sure you want to cancel this RSVP?')) {
