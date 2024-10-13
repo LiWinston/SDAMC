@@ -1,6 +1,5 @@
 package org.sdamc.Controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -44,12 +43,15 @@ public class RsvpController extends HttpServlet {
             String pathInfo = req.getPathInfo();
             if (pathInfo == null || pathInfo.equals("/")) {
                 handleRsvpPage(req, resp);
-            } else if ("/student".equals(pathInfo)) {
+            }
+            else if ("/student".equals(pathInfo)) {
                 handleStudentRsvps(req, resp);
-            } else {
+            }
+            else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Invalid path");
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             // 记录错误
             e.printStackTrace();
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "An error occurred");
@@ -63,7 +65,8 @@ public class RsvpController extends HttpServlet {
             Events event = (Events) eventsMapper.find(Integer.parseInt(eventId));
             req.setAttribute("event", event);
             System.out.println("Event found: " + (event != null)); // 添加日志
-        } else {
+        }
+        else {
             System.out.println("No eventId provided"); // 添加日志
         }
         req.getRequestDispatcher("/rsvp.jsp").forward(req, resp);
@@ -83,12 +86,15 @@ public class RsvpController extends HttpServlet {
             String pathInfo = req.getPathInfo();
             if ("/submit".equals(pathInfo)) {
                 handleRsvpSubmit(req, resp);
-            } else if ("/cancel".equals(pathInfo)) {
+            }
+            else if ("/cancel".equals(pathInfo)) {
                 handleRsvpCancel(req, resp);
-            } else {
+            }
+            else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Invalid path");
             }
-        } finally {
+        }
+        finally {
             UnitofWork.getCurrent().commit();
         }
     }
@@ -110,7 +116,8 @@ public class RsvpController extends HttpServlet {
             rsvpsMapper.delete(rsvp);
 
             IOWrapper.writeValue(resp, Result.success("RSVP cancelled successfully"));
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
             IOWrapper.writeValue(resp, Result.error(e.getMessage()));
         }
@@ -152,13 +159,13 @@ public class RsvpController extends HttpServlet {
             // eventsMapper.update(event);
 
             new ObjectMapper().writeValue(resp.getOutputStream(), Result.success("RSVP successful"));
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             System.out.println("Error in handleRsvpSubmit: " + e.getMessage());
             e.printStackTrace();
             new ObjectMapper().writeValue(resp.getOutputStream(), Result.error(e.getMessage()));
             throw e; // 重新抛出异常，让 doPost 方法捕获并处理
         }
     }
-
 
 }

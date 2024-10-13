@@ -19,8 +19,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import static org.sdamc.Utils.JwtUtil.VerifyToken;
-
 @WebServlet(name = "EventController", value = "/events/*")
 public class EventController extends HttpServlet {
 
@@ -80,26 +78,12 @@ public class EventController extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String pathInfo = req.getPathInfo();
 
-        // RSVP to an event
-        if (pathInfo != null && pathInfo.matches("/\\d+/rsvp")) {
-            handleRSVP(req, resp);
-        }
-        else if (pathInfo == null || pathInfo.equals("/")) {
+        if (pathInfo == null || pathInfo.equals("/")) {
             handleCreateEvent(req, resp); // 创建事件
         }
         else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Invalid path");
         }
-    }
-
-    private void handleRSVP(@NotNull HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        int studentId = Integer.parseInt(req.getParameter("userId"));
-        if (!VerifyToken(req, resp, studentId))
-            return;
-        int eventId = Integer.parseInt(req.getParameter("eventId"));
-
-        // 检查是否已 RSVP 过该事件，避免重复操作
-
     }
 
     // 创建事件 (POST /events)

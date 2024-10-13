@@ -18,14 +18,11 @@ public class RsvpsMapper extends DataMapper {
 
     public List<RsvpDTO> findDetailedRsvpsByStudentId(int studentId) {
         List<RsvpDTO> rsvps = new ArrayList<>();
-        String sql = "SELECT r.id as rsvp_id, r.student_id, r.event_id, " +
-                "e.title as event_title, e.begin_time, e.end_time, e.venue, " +
-                "s.name as attendee_name, s.email as attendee_email " +
-                "FROM rsvps r " +
-                "JOIN events e ON r.event_id = e.id " +
-                "JOIN students s ON r.student_id = s.id " +
-                "WHERE r.student_id = ? OR r.id IN " +
-                "(SELECT id FROM rsvps WHERE student_id = ?)";
+        String sql = "SELECT r.id as rsvp_id, r.student_id, r.event_id, "
+                + "e.title as event_title, e.begin_time, e.end_time, e.venue, "
+                + "s.name as attendee_name, s.email as attendee_email " + "FROM rsvps r "
+                + "JOIN events e ON r.event_id = e.id " + "JOIN students s ON r.student_id = s.id "
+                + "WHERE r.student_id = ? OR r.id IN " + "(SELECT id FROM rsvps WHERE student_id = ?)";
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
             stmt.setInt(1, studentId);
             stmt.setInt(2, studentId);
@@ -43,7 +40,8 @@ public class RsvpsMapper extends DataMapper {
                 rsvp.setAttendeeEmail(rs.getString("attendee_email"));
                 rsvps.add(rsvp);
             }
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             e.printStackTrace();
         }
         return rsvps;
