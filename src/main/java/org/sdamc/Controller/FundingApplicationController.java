@@ -8,28 +8,23 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.sdamc.DTO.ClubMember;
 import org.sdamc.DTO.Fundings;
 import org.sdamc.DTO.Result;
-import org.sdamc.DomainObject.Events;
-import org.sdamc.DomainObject.FundingApplication;
 import org.sdamc.DomainObject.Clubs;
+import org.sdamc.DomainObject.FundingApplication;
 import org.sdamc.DomainObject.Students;
-import org.sdamc.Mapper.ClubMembershipsMapper;
-import org.sdamc.Mapper.ClubsMapper;
-import org.sdamc.Mapper.FundingApplicationMapper;
-import org.sdamc.Mapper.StudentsMapper;
+import org.sdamc.Mapper.*;
 import org.sdamc.UnitofWork;
 import org.sdamc.Utils.Constants;
 import org.sdamc.Utils.IOWrapper;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.Integer.parseInt;
 import static org.sdamc.Utils.JwtUtil.VerifyToken;
 
 @Slf4j
@@ -41,7 +36,10 @@ public class FundingApplicationController extends HttpServlet {
     private StudentsMapper studentsMapper;
 
     private ClubMembershipsMapper membershipsMapper;
+
     private ClubsMapper clubsMapper;
+
+    private AdminMapper adminMapper;
 
     @Override
     public void init() {
@@ -49,6 +47,7 @@ public class FundingApplicationController extends HttpServlet {
         membershipsMapper = new ClubMembershipsMapper();
         fundingApplicationMapper = new FundingApplicationMapper();
         clubsMapper = new ClubsMapper();
+        adminMapper = new AdminMapper();
     }
 
     @Override
@@ -75,7 +74,7 @@ public class FundingApplicationController extends HttpServlet {
     }
 
     private void handleGetFundings(HttpServletRequest req, HttpServletResponse resp) throws IOException, SQLException {
-        try{
+        try {
             UnitofWork.newCurrent();
             List<FundingApplication> applications = fundingApplicationMapper.getAll();
             for (FundingApplication application : applications) {
@@ -97,7 +96,8 @@ public class FundingApplicationController extends HttpServlet {
             }
             IOWrapper.writeValue(resp, result);
             UnitofWork.getCurrent().commit();
-        } catch (Exception e){
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -109,7 +109,7 @@ public class FundingApplicationController extends HttpServlet {
 
         UnitofWork.newCurrent();
         if (parts.length >= 2) {
-            int clubId = Integer.parseInt(parts[1]); // parts[1] is "1"
+            int clubId = parseInt(parts[1]); // parts[1] is "1"
             List<FundingApplication> applications = fundingApplicationMapper.findByClubId(clubId);
             IOWrapper.writeValue(resp, applications);
         }
@@ -131,9 +131,11 @@ public class FundingApplicationController extends HttpServlet {
             }
             else if (requestURI.endsWith("/cancel")) {
                 handleCancel(req, resp);
-            } else if(requestURI.endsWith("/approve")){
+            }
+            else if (requestURI.endsWith("/approve")) {
                 handleApprove(req, resp);
-            } else if(requestURI.endsWith("/reject")){
+            }
+            else if (requestURI.endsWith("/reject")) {
                 handleReject(req, resp);
             }
             else {
@@ -149,7 +151,7 @@ public class FundingApplicationController extends HttpServlet {
         ObjectMapper mapper = new ObjectMapper();
         Map<String, String> requestBody = mapper.readValue(req.getInputStream(), Map.class);
         try {
-            int fundingId = Integer.parseInt(requestBody.get("id"));
+            int fundingId = parseInt(requestBody.get("id"));
             UnitofWork.newCurrent();
             FundingApplication application = (FundingApplication) fundingApplicationMapper.find(fundingId);
             if (application != null) {
@@ -179,7 +181,7 @@ public class FundingApplicationController extends HttpServlet {
         String token = req.getHeader("Authorization");
         ObjectMapper mapper = new ObjectMapper();
         Map<String, String> requestBody = mapper.readValue(req.getInputStream(), Map.class);
-        int studentId = Integer.parseInt(requestBody.get("studentId"));
+        int studentId = parseInt(requestBody.get("studentId"));
         log("studentId: " + studentId);
 
         // 验证 token 和 studentId
@@ -188,7 +190,7 @@ public class FundingApplicationController extends HttpServlet {
             return;
         }
 
-        int clubId = Integer.parseInt(requestBody.get("clubId"));
+        int clubId = parseInt(requestBody.get("clubId"));
         try {
             UnitofWork.newCurrent();
             // 检查用户是否为此社团的管理员
@@ -234,7 +236,7 @@ public class FundingApplicationController extends HttpServlet {
 
         UnitofWork.newCurrent();
         if (parts.length >= 2) {
-            int id = Integer.parseInt(parts[1]); // parts[1] is "1"
+            int id = parseInt(parts[1]); // parts[1] is "1"
             FundingApplication application = (FundingApplication) fundingApplicationMapper.find(id);
             fundingApplicationMapper.delete(application);
             new ObjectMapper().writeValue(resp.getOutputStream(),
@@ -249,40 +251,79 @@ public class FundingApplicationController extends HttpServlet {
     private void handleApprove(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String pathInfo = req.getPathInfo(); // "funding/1/approve"
         String[] parts = pathInfo.split("/");
+        String userId = new ObjectMapper().readTree(req.getInputStream()).get("userId").asText();
 
         UnitofWork.newCurrent();
+
+        // 检查路径是否合法
         if (parts.length >= 2) {
-            int id = Integer.parseInt(parts[1]); // parts[1] is "1"
+            // 从 StudentsMapper 获取用户 email 和密码
+            Students student = (Students) studentsMapper.find(Integer.parseInt(userId));
+
+            if (student == null) {
+                IOWrapper.writeValue(resp, Result.error("User not found"), HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+
+            // 检查是否为管理员
+            if (!adminMapper.isAdmin(student.getEmail(), student.getPassword())) {
+                IOWrapper.writeValue(resp, Result.error("Operation not permitted, " + student.getEmail() + " "
+                        + student.getPassword() + " is Not FundingAdmin"), HttpServletResponse.SC_OK);
+                return;
+            }
+
+            int id = parseInt(parts[1]); // parts[1] is "1"
             FundingApplication application = (FundingApplication) fundingApplicationMapper.find(id);
             application.setStatus("approved");
             fundingApplicationMapper.update(application);
+
             new ObjectMapper().writeValue(resp.getOutputStream(),
-                    Result.success(null, "Funding application: " + application.getId()
-                            + " approved"));
+                    Result.success(null, "Funding application: " + application.getId() + " approved"));
         }
         else {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
+            IOWrapper.writeValue(resp, Result.error("Invalid path"), HttpServletResponse.SC_BAD_REQUEST);
         }
+
         UnitofWork.getCurrent().commit();
     }
 
     private void handleReject(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         String pathInfo = req.getPathInfo(); // "funding/1/reject"
         String[] parts = pathInfo.split("/");
-
+        String userId = new ObjectMapper().readTree(req.getInputStream()).get("userId").asText();
+        log.warn("userId: " + userId);
         UnitofWork.newCurrent();
+
+        // 检查路径是否合法
         if (parts.length >= 2) {
-            int id = Integer.parseInt(parts[1]); // parts[1] is "1"
+            // 从 StudentsMapper 获取用户 email 和密码
+            Students student = (Students) studentsMapper.find(parseInt(userId));
+            log.warn("student: " + student);
+
+            if (student == null) {
+                IOWrapper.writeValue(resp, Result.error("User not found"), HttpServletResponse.SC_BAD_REQUEST);
+                return;
+            }
+
+            // 检查是否为管理员
+            if (!adminMapper.isAdmin(student.getEmail(), student.getPassword())) {
+                IOWrapper.writeValue(resp, Result.error("Operation not permitted, " + student.getEmail() + " "
+                        + student.getPassword() + " is Not FundingAdmin"), HttpServletResponse.SC_OK);
+                return;
+            }
+
+            int id = parseInt(parts[1]); // parts[1] is "1"
             FundingApplication application = (FundingApplication) fundingApplicationMapper.find(id);
             application.setStatus("rejected");
             fundingApplicationMapper.update(application);
+
             new ObjectMapper().writeValue(resp.getOutputStream(),
-                    Result.success(null, "Funding application: " + application.getId()
-                            + " rejected"));
+                    Result.success(null, "Funding application: " + application.getId() + " rejected"));
         }
         else {
-            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid path");
+            IOWrapper.writeValue(resp, Result.error("Invalid path"), HttpServletResponse.SC_BAD_REQUEST);
         }
+
         UnitofWork.getCurrent().commit();
     }
 

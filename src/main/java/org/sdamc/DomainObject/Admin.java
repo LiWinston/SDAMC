@@ -1,19 +1,15 @@
 package org.sdamc.DomainObject;
 
-import lombok.Getter;
-import lombok.ToString;
-import org.sdamc.UnitofWork;
 import org.sdamc.Mapper.DataMapper;
+import org.sdamc.UnitofWork;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-@ToString
-public class Students extends DomainObject {
+public class Admin extends DomainObject {
 
-    public static final String tableName = "students";
+    public static final String tableName = "admins";
 
-    // Getters and Setters
-    @Getter
     private final int id;
 
     private String name;
@@ -22,7 +18,8 @@ public class Students extends DomainObject {
 
     private String password;
 
-    public Students(int id) {
+    // Constructor
+    public Admin(int id) {
         this.id = id;
     }
 
@@ -41,14 +38,15 @@ public class Students extends DomainObject {
         }
     }
 
-    public static Students insert(String name, String email) {
-        Students student = new Students(DataMapper.GetMapper(tableName).getNewId());
-        student.name = name;
-        student.email = email;
-        student.insert = true;
-        student.initialed = true;
-        UnitofWork.getCurrent().registerNew(student);
-        return student;
+    public static Admin insert(int id, String name, String email, String password) {
+        Admin admin = new Admin(id);
+        admin.name = name;
+        admin.email = email;
+        admin.password = password;
+        admin.insert = true;
+        admin.initialed = true;
+        UnitofWork.getCurrent().registerNew(admin);
+        return admin;
     }
 
     public void delete() {
@@ -56,6 +54,7 @@ public class Students extends DomainObject {
         deleted = true;
     }
 
+    // Getters and Setters
     public String getName() {
         assert (!deleted);
         if (!initialed) {
@@ -115,7 +114,16 @@ public class Students extends DomainObject {
 
     @Override
     public String getTableName() {
+        assert (!deleted);
+        if (!initialed) {
+            load();
+        }
         return tableName;
+    }
+
+    @Override
+    public int getId() {
+        return id;
     }
 
 }

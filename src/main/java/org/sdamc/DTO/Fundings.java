@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class Fundings {
+
     private int id;
 
     private String clubName;
@@ -24,4 +25,5 @@ public class Fundings {
         this.applicant = applicant;
         this.status = status;
     }
+
 }

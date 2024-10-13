@@ -33,20 +33,20 @@
             <div class="table-responsive">
                 <table id="fundingTable" class="table">
                     <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Club</th>
-                            <th>Applicant</th>
-                            <th>Description</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
+                    <tr>
+                        <th>ID</th>
+                        <th>Club</th>
+                        <th>Applicant</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td colspan="7" class="text-center">Loading funding applications...</td>
-                        </tr>
+                    <tr>
+                        <td colspan="7" class="text-center">Loading funding applications...</td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
@@ -127,16 +127,28 @@
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
-                            }
+                            },
+                            body: JSON.stringify({
+                                userId: localStorage.getItem('userId')
+                            })
                         }).then(response => {
-                            if (response.ok) {
+                                if (!response.ok) {
+                                    throw new Error(`HTTP error! status: ${response.status}`);
+                                }
+                                return response.json();
+                            }
+                        ).then(result => {
+                            if (result.code === 1) {
                                 showSweetAlert('Funding application approved.');
                                 fetchFundingApplications(token);
+                            } else {
+                                showSweetAlert('Error approving funding application: ' + result.msg);
                             }
-                        }).catch(error => {
-                            console.error('There was an error!', error);
-                            showSweetAlert('Error approving funding application: ' + error.message);
-                        });
+                        })
+                            .catch(error => {
+                                console.error('There was an error!', error);
+                                showSweetAlert('Error approving funding application: ' + error.message);
+                            });
                     });
                     actionsTd.appendChild(approveButton);
 
@@ -150,13 +162,25 @@
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
-                            }
+                            },
+                            body: JSON.stringify({
+                                userId: localStorage.getItem('userId')
+                            })
                         }).then(response => {
-                            if (response.ok) {
-                                showSweetAlert('Funding application rejected.');
-                                fetchFundingApplications(token);
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
                             }
-                        }).catch(error => {
+                            return response.json();
+                        })
+                            .then(
+                                result => {
+                                    if (result.code === 1) {
+                                        showSweetAlert('Funding application rejected.');
+                                        fetchFundingApplications(token);
+                                    } else {
+                                        showSweetAlert('Error rejecting funding application: ' + result.msg);
+                                    }
+                                }).catch(error => {
                             console.error('There was an error!', error);
                             showSweetAlert('Error rejecting funding application: ' + error.message);
                         });

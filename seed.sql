@@ -17,8 +17,8 @@ VALUES
 -- Insert data into admins
 INSERT INTO admins (name, email, password)
 VALUES
-    ('David Clark', 'david.clark@admin.example.com', 'adminpass1'),
-    ('Eva Davis', 'eva.davis@admin.example.com', 'adminpass2');
+    ('leeyc.official@gmail.com', 'leeyc.official@gmail.com', 'password123'),
+    ('Alice Johnson', 'alice.johnson@student.example.com', 'password123');
 
 -- Insert data into club_memberships
 INSERT INTO club_memberships (student_id, club_id, role)

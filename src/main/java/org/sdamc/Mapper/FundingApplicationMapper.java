@@ -26,10 +26,8 @@ public class FundingApplicationMapper extends DataMapper {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                FundingApplication application = new FundingApplication(rs.getInt("id"),
-                        rs.getString("description"), rs.getFloat("amount"),
-                        rs.getInt("student_id"), rs.getInt("club_id"),
-                        rs.getString("status"));
+                FundingApplication application = new FundingApplication(rs.getInt("id"), rs.getString("description"),
+                        rs.getFloat("amount"), rs.getInt("student_id"), rs.getInt("club_id"), rs.getString("status"));
                 applications.add(application);
             }
         }
@@ -40,17 +38,14 @@ public class FundingApplicationMapper extends DataMapper {
     }
 
     public List<FundingApplication> getAll() throws SQLException {
-        String sql = "SELECT * FROM funding_applications " +
-                "WHERE status = 'submitted' or status = 'in_review';";
+        String sql = "SELECT * FROM funding_applications " + "WHERE status = 'submitted' or status = 'in_review';";
         List<FundingApplication> applications = new ArrayList<>();
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-                FundingApplication application = new FundingApplication(rs.getInt("id"),
-                        rs.getString("description"), rs.getFloat("amount"),
-                        rs.getInt("student_id"), rs.getInt("club_id"),
-                        rs.getString("status"));
+                FundingApplication application = new FundingApplication(rs.getInt("id"), rs.getString("description"),
+                        rs.getFloat("amount"), rs.getInt("student_id"), rs.getInt("club_id"), rs.getString("status"));
                 applications.add(application);
             }
         }
@@ -66,8 +61,8 @@ public class FundingApplicationMapper extends DataMapper {
             throw new IllegalArgumentException("Invalid object type");
         }
         FundingApplication application = (FundingApplication) obj;
-        String sql = "UPDATE funding_applications SET description = ?, amount = ?, student_id = ?, club_id = ?," +
-                " status = ?::funding_status WHERE id = ?";
+        String sql = "UPDATE funding_applications SET description = ?, amount = ?, student_id = ?, club_id = ?,"
+                + " status = ?::funding_status WHERE id = ?";
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
             stmt.setString(1, application.getDescription());
             stmt.setFloat(2, application.getAmount());
@@ -88,8 +83,8 @@ public class FundingApplicationMapper extends DataMapper {
             throw new IllegalArgumentException("Invalid object type");
         }
         FundingApplication application = (FundingApplication) obj;
-        String sql = "INSERT INTO funding_applications (id, description, amount, student_id, club_id, status) " +
-                "VALUES (?, ?, ?, ?, ?, ?::funding_status)";
+        String sql = "INSERT INTO funding_applications (id, description, amount, student_id, club_id, status) "
+                + "VALUES (?, ?, ?, ?, ?, ?::funding_status)";
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
             stmt.setInt(1, application.getId());
             stmt.setString(2, application.getDescription());
