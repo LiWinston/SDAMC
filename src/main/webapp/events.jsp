@@ -657,7 +657,7 @@
             return;
         }
 
-        fetch(`/events/user-rsvps?userId=${userId}`, {
+        fetch('/events/user-rsvps?userId=' + userId, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
