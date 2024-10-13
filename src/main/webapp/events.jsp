@@ -110,6 +110,31 @@
             </div>
         </div>
     </div>
+    <div class="card mt-5">
+        <div class="card-header">
+            Your RSVP'd Events
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="userRsvpsTable" class="table">
+                    <thead>
+                    <tr>
+                        <th>Event Title</th>
+<%--                        <th>Begin Time</th>--%>
+<%--                        <th>End Time</th>--%>
+                        <th>Venue</th>
+                        <th>Attendee Name</th>
+                        <th>Attendee Email</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- RSVP 列表将通过 JavaScript 动态加载到这里 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
     <div class="card mt-5" id="createEventFormContainer">
         <div class="card-header">
@@ -618,7 +643,105 @@
                     showSweetAlert('Failed to create event: ' + error);
                 });
         };
+
+        // 加载用户的 RSVP 列表
+        loadUserRsvps();
     };
+
+    function loadUserRsvps() {
+        const userId = localStorage.getItem('userId');
+        const token = getToken();
+
+        if (!userId || !token) {
+            console.error('User ID or token not found');
+            return;
+        }
+
+        fetch(`/events/user-rsvps?userId=${userId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 1) {
+                    displayUserRsvps(data.data);
+                } else {
+                    console.error('Failed to load RSVPs:', data.msg);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading RSVPs:', error);
+            });
+    }
+
+    function displayUserRsvps(rsvps) {
+        const rsvpTableBody = document.querySelector('#userRsvpsTable tbody');
+        rsvpTableBody.innerHTML = ''; // Clear existing content
+
+        if (rsvps && rsvps.length > 0) {
+            rsvps.forEach(rsvp => {
+                const row = `
+                <tr>
+                    <td>${rsvp.eventTitle}</td>
+                    <%--<td>${new Date(rsvp.beginTime).toLocaleString()}</td>--%>
+                    <%--<td>${new Date(rsvp.endTime).toLocaleString()}</td>--%>
+                    <td>${rsvp.venue}</td>
+                    <td>${rsvp.attendeeName}</td>
+                    <td>${rsvp.attendeeEmail}</td>
+                    <td>
+                        <button class="btn btn-danger" onclick="cancelRsvp(${rsvp.rsvpId})">
+                            Cancel RSVP
+                        </button>
+                    </td>
+                </tr>
+            `;
+                rsvpTableBody.innerHTML += row;
+            });
+        } else {
+            rsvpTableBody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center">You haven't RSVP'd to any events yet</td>
+            </tr>
+        `;
+        }
+    }
+
+    function cancelRsvp(rsvpId) {
+        if (confirm('Are you sure you want to cancel this RSVP?')) {
+            const token = getToken();
+            fetch('/rsvp/cancel', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ rsvpId: rsvpId })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.code === 1) {
+                        showSweetAlert('RSVP cancelled successfully', {
+                            icon: 'success',
+                            title: 'Success'
+                        });
+                        loadUserRsvps(); // Reload the RSVP list
+                    } else {
+                        showSweetAlert(data.msg, {
+                            icon: 'error',
+                            title: 'Error'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showSweetAlert('An error occurred while cancelling the RSVP', {
+                        icon: 'error',
+                        title: 'Error'
+                    });
+                });
+        }
+    }
 
     function fetchSuperAdminedClubsByUser(userId, token, clubSelect) {
         let url = '/user/' + userId + '/clubs_super';

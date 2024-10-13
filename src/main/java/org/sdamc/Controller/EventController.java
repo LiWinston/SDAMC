@@ -8,11 +8,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.jetbrains.annotations.NotNull;
 import org.sdamc.DTO.Result;
+import org.sdamc.DTO.RsvpDTO;
+import org.sdamc.Mapper.RsvpsMapper;
 import org.sdamc.Services.EventCascadeOpSvc;
 import org.sdamc.Services.EventService;
 import org.sdamc.Transaction.TransactionalScanner;
+import org.sdamc.Utils.IOWrapper;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import static org.sdamc.Utils.JwtUtil.VerifyToken;
@@ -24,9 +28,12 @@ public class EventController extends HttpServlet {
 
     private EventCascadeOpSvc eventCascadeOpSvc;
 
+    private RsvpsMapper rsvpsMapper;
+
     public void init() {
         this.eventService = (EventService) TransactionalScanner.getProxy(EventService.class);
         this.eventCascadeOpSvc = (EventCascadeOpSvc) TransactionalScanner.getProxy(EventCascadeOpSvc.class);
+        this.rsvpsMapper = new RsvpsMapper();
     }
 
     // 查找所有事件 (GET)
@@ -39,9 +46,25 @@ public class EventController extends HttpServlet {
             case "/":
                 handleGetAllEvents(req, resp);
                 break;
+            case "/user-rsvps":
+                handleGetUserRsvps(req, resp);
+                break;
             default:
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Invalid path");
         }
+    }
+
+    private void handleGetUserRsvps(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String userIdStr = req.getParameter("userId");
+        if (userIdStr == null || userIdStr.isEmpty()) {
+            resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "User ID is required");
+            return;
+        }
+
+        int userId = Integer.parseInt(userIdStr);
+        List<RsvpDTO> userRsvps = rsvpsMapper.findDetailedRsvpsByStudentId(userId);
+
+        IOWrapper.writeValue(resp, Result.success(userRsvps));
     }
 
     private void handleGetAllEvents(HttpServletRequest req, HttpServletResponse resp)
