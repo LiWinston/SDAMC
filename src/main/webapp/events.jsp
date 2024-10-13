@@ -705,39 +705,49 @@
     }
 
     function cancelRsvp(rsvpId) {
-        if (confirm('Are you sure you want to cancel this RSVP?')) {
-            const token = getToken();
-            fetch('/rsvp/cancel', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ rsvpId: rsvpId })
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.code === 1) {
-                        showSweetAlert('RSVP cancelled successfully', {
-                            icon: 'success',
-                            title: 'Success'
-                        });
-                        loadUserRsvps(); // Reload the RSVP list
-                    } else {
-                        showSweetAlert(data.msg, {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you want to cancel this RSVP?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, cancel it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const token = getToken();
+                fetch('/rsvp/cancel', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ rsvpId: rsvpId })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.code === 1) {
+                            showSweetAlert('RSVP cancelled successfully', {
+                                icon: 'success',
+                                title: 'Success'
+                            });
+                            loadUserRsvps(); // Reload the RSVP list
+                        } else {
+                            showSweetAlert(data.msg, {
+                                icon: 'error',
+                                title: 'Error'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showSweetAlert('An error occurred while cancelling the RSVP', {
                             icon: 'error',
                             title: 'Error'
                         });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    showSweetAlert('An error occurred while cancelling the RSVP', {
-                        icon: 'error',
-                        title: 'Error'
                     });
-                });
-        }
+            }
+        });
     }
 
     function fetchSuperAdminedClubsByUser(userId, token, clubSelect) {
