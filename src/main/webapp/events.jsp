@@ -555,6 +555,14 @@
             const formData = new FormData(form2);
             const data = Object.fromEntries(formData.entries());
             const clubId = document.getElementById('clubManageSelect').value;
+            if (!clubId) {
+                swal.fire({
+                    icon: 'warning',
+                    title: 'Warning',
+                    text: 'Please select a club to manage.'
+                });
+                return;
+            }
             data['studentId'] = userId;
             data['clubId'] = clubId;
             let reqBodyJson = JSON.stringify(data);

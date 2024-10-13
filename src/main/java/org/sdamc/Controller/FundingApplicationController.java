@@ -277,7 +277,7 @@ public class FundingApplicationController extends HttpServlet {
             application.setStatus("approved");
             fundingApplicationMapper.update(application);
 
-            new ObjectMapper().writeValue(resp.getOutputStream(),
+            IOWrapper.writeValue(resp,
                     Result.success(null, "Funding application: " + application.getId() + " approved"));
         }
         else {
@@ -317,7 +317,7 @@ public class FundingApplicationController extends HttpServlet {
             application.setStatus("rejected");
             fundingApplicationMapper.update(application);
 
-            new ObjectMapper().writeValue(resp.getOutputStream(),
+            IOWrapper.writeValue(resp,
                     Result.success(null, "Funding application: " + application.getId() + " rejected"));
         }
         else {

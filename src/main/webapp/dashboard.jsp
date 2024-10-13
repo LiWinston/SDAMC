@@ -143,7 +143,7 @@
                                 swal.fire({
                                     icon: 'success',
                                     title: 'Success',
-                                    text: 'Funding application approved.',
+                                    text: result.msg,
                                     timer: 2000,
                                     showConfirmButton: false
                                 });
@@ -193,7 +193,7 @@
                                 swal.fire({
                                     icon: 'success',
                                     title: 'Success',
-                                    text: 'Funding application rejected.',
+                                    text: result.msg,
                                     timer: 2000,
                                     showConfirmButton: false
                                 });
