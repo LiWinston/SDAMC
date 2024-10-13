@@ -133,23 +133,39 @@
                             })
                         }).then(response => {
                                 if (!response.ok) {
+                                    handleHTTPError(response);
                                     throw new Error(`HTTP error! status: ${response.status}`);
                                 }
                                 return response.json();
                             }
                         ).then(result => {
                             if (result.code === 1) {
-                                showSweetAlert('Funding application approved.');
+                                swal.fire({
+                                    icon: 'success',
+                                    title: 'Success',
+                                    text: 'Funding application approved.',
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
                                 fetchFundingApplications(token);
                             } else {
-                                showSweetAlert('Error approving funding application: ' + result.msg);
+                                swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Error approving funding application: ' + result.msg
+                                });
                             }
                         })
                             .catch(error => {
                                 console.error('There was an error!', error);
-                                showSweetAlert('Error approving funding application: ' + error.message);
+                                swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Error approving funding application: ' + error.message
+                                });
                             });
                     });
+
                     actionsTd.appendChild(approveButton);
 
                     const rejectButton = document.createElement('button');
@@ -168,23 +184,56 @@
                             })
                         }).then(response => {
                             if (!response.ok) {
+                                handleHTTPError(response);
                                 throw new Error(`HTTP error! status: ${response.status}`);
                             }
                             return response.json();
-                        })
-                            .then(
-                                result => {
-                                    if (result.code === 1) {
-                                        showSweetAlert('Funding application rejected.');
-                                        fetchFundingApplications(token);
-                                    } else {
-                                        showSweetAlert('Error rejecting funding application: ' + result.msg);
-                                    }
-                                }).catch(error => {
+                        }).then(result => {
+                            if (result.code === 1) {
+                                swal.fire({
+                                    icon: 'success',
+                                    title: 'Success',
+                                    text: 'Funding application rejected.',
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                });
+                                fetchFundingApplications(token);
+                            } else {
+                                swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'Error rejecting funding application: ' + result.msg
+                                });
+                            }
+                        }).catch(error => {
                             console.error('There was an error!', error);
-                            showSweetAlert('Error rejecting funding application: ' + error.message);
+                            swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Error rejecting funding application: ' + error.message
+                            });
                         });
                     });
+
+                    actionsTd.appendChild(rejectButton);
+
+                    // Helper function to handle HTTP errors and categorize responses
+                    function handleHTTPError(response) {
+                        let errorMessage;
+                        if (response.status >= 400 && response.status < 500) {
+                            errorMessage = 'Client error: Please check your request.';
+                        } else if (response.status >= 500) {
+                            errorMessage = 'Server error: Please try again later.';
+                        } else {
+                            errorMessage = 'Unexpected error occurred.';
+                        }
+                        swal.fire({
+                            icon: 'error',
+                            title: 'HTTP Error',
+                            text: `${errorMessage} (Status: ${response.status})`
+                        });
+                    }
+
                     actionsTd.appendChild(rejectButton);
 
                     tr.appendChild(actionsTd);
