@@ -90,6 +90,7 @@
 
         setTokenWithExpiry(result.data.token, 240 * 1000);  // 设置4分钟有效期
         localStorage.setItem('userId', result.data.id);
+        localStorage.setItem('userName', result.data.name);
         console.log(result.data.id + " : " + localStorage.getItem('token'));
 
         // 使用 SweetAlert2 显示多选项重定向对话框

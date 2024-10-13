@@ -17,12 +17,21 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/events.css">
 </head>
 
 <body>
 <div class="container">
     <header class="header">
+        <div class="user-info">
+            <span id="userLabel">User ID: </span><span id="userIdDsp"></span> -
+            <span id="nameLabel">Username: </span><span id="userNameDsp"></span>
+        </div>
         <h1>Funding Applications</h1>
+
+        <div class="logout-button">
+            <button id="logoutBtn" class="btn btn-danger">Logout</button>
+        </div>
     </header>
 
     <div class="card">
@@ -55,6 +64,24 @@
 </div>
 
 <script>
+    window.onload = function () {
+        const userId = localStorage.getItem('userId');
+        const userName = localStorage.getItem('userName');
+
+        // 设置用户信息
+        document.getElementById('userIdDsp').textContent = userId;
+        document.getElementById('userNameDsp').textContent = userName;
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', function() {
+        // Clear user ID and token from local storage
+        localStorage.removeItem('userId');
+        localStorage.removeItem('token');
+
+        // Redirect to login page
+        window.location.href = 'login.jsp';
+    });
+
     // 使用 fetchFundingApplications 加载 funding applications 数据
     document.addEventListener('DOMContentLoaded', function () {
         const token = localStorage.getItem('token');  // 从 localStorage 获取 token

@@ -166,8 +166,8 @@ public class UserController extends HttpServlet {
             if (student != null && student.getPassword().equals(password)) {
                 String token = generateJwtToken(student.getId());
                 // 登录成功时返回 Result<LoginResponse>
-                IOWrapper.writeValue(resp,
-                        Result.success(new LoginResponse(token, student.getId()), "Login successful"));
+                IOWrapper.writeValue(resp, Result.success(new LoginResponse(token, student.getId(), student.getName()),
+                        "Login successful"));
             }
             else {
                 // 返回 Result<T> 错误信息

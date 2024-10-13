@@ -11,9 +11,12 @@ public class LoginResponse {
 
     private int id;
 
-    public LoginResponse(String token, int id) {
+    private String name;
+
+    public LoginResponse(String token, int id, String name) {
         this.token = token;
         this.id = id;
+        this.name = name;
     }
 
 }

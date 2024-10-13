@@ -20,8 +20,16 @@
 <body>
 <div class="container">
     <header class="header">
+        <div class="user-info">
+            <span id="userLabel">User ID: </span><span id="userIdDsp"></span> -
+            <span id="nameLabel">Username: </span><span id="userNameDsp"></span>
+        </div>
         <h1>Upcoming Events</h1>
+        <div class="logout-button">
+            <button id="logoutBtn" class="btn btn-danger">Logout</button>
+        </div>
     </header>
+
 
     <div class="card">
         <div class="card-header">
@@ -289,6 +297,15 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 <script>
+    document.getElementById('logoutBtn').addEventListener('click', function() {
+        // Clear user ID and token from local storage
+        localStorage.removeItem('userId');
+        localStorage.removeItem('token');
+
+        // Redirect to login page
+        window.location.href = 'login.jsp';
+    });
+
     // 全局数组存储用户管理的俱乐部 IDs
     let adminClubs = new Map();
 
@@ -458,6 +475,12 @@
     window.onload = function () {
         const token = getToken();
         const userId = localStorage.getItem('userId');
+        const userName = localStorage.getItem('userName');
+
+        // 设置用户信息
+        document.getElementById('userIdDsp').textContent = userId;
+        document.getElementById('userNameDsp').textContent = userName;
+
         console.log('userId:', userId);
         const clubSelect = document.getElementById('clubSelect');
 

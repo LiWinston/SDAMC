@@ -16,8 +16,37 @@ body {
 }
 
 .header {
+    position: relative;
     text-align: center;
     margin-bottom: 12px;
+}
+
+.header .logout-button {
+    position: absolute;
+    top: 10px; /* 可以根据需要调整距离顶部的高度 */
+    right: 10px; /* 将按钮放置在右边的距离 */
+    z-index: 1000;
+}
+
+.user-info {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
+    font-size: 14px;
+    color: #333;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.user-info span {
+    font-weight: bold;
+}
+
+#userLabel, #nameLabel {
+    color: #555;
 }
 
 
