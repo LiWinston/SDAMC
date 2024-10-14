@@ -417,14 +417,21 @@
                 });
             return;
         }
+
         // Populate modal fields with event data
         document.getElementById('eventId').value = event.id;
         document.getElementById('editTitle').value = event.title;
+        document.getElementById('editTitle').setAttribute('data-original', event.title);
         document.getElementById('editDescription').value = event.description;
+        document.getElementById('editDescription').setAttribute('data-original', event.description);
         document.getElementById('editVenue').value = event.venue;
+        document.getElementById('editVenue').setAttribute('data-original', event.venue);
         document.getElementById('editCapacity').value = event.capacity;
+        document.getElementById('editCapacity').setAttribute('data-original', event.capacity);
         document.getElementById('editBeginTime').value = event.beginTime;
+        document.getElementById('editBeginTime').setAttribute('data-original', event.beginTime);
         document.getElementById('editEndTime').value = event.endTime;
+        document.getElementById('editEndTime').setAttribute('data-original', event.endTime);
 
         $('#editEventModal').modal('show');
     }
@@ -432,6 +439,7 @@
     function submitEditEvent() {
         const form = document.getElementById('editEventForm');
         const formData = new FormData(form);
+
         const originalValues = {
             eventId: document.getElementById('eventId').value,
             title: document.getElementById('editTitle').getAttribute('data-original'),
@@ -444,15 +452,30 @@
 
         const modifiedFields = {};
         for (const [key, value] of formData.entries()) {
-            if (value !== originalValues[key]) {
+            if (key === 'beginTime' || key === 'endTime') {
+                // Trim seconds before comparing
+                const trimmedValue = trimSecondsFromTime(value);
+                if (trimmedValue !== originalValues[key]) {
+                    modifiedFields[key] = trimmedValue;
+                }
+            } else if (value !== originalValues[key]) {
                 modifiedFields[key] = value;
             }
         }
+        // Helper function to remove seconds from datetime-local format
+        function trimSecondsFromTime(timeStr) {
+            if (timeStr.length >= 19) { // Format with seconds: YYYY-MM-DDTHH:mm:ss
+                return timeStr.slice(0, 16); // Keep only YYYY-MM-DDTHH:mm
+            }
+            return timeStr; // If no seconds, return as-is
+        }
+
+        // Always include the eventId as it is needed for the update
         modifiedFields['eventId'] = originalValues.eventId;
 
         const jsonData = JSON.stringify(modifiedFields);
 
-        fetch('/events/' + originalValues.eventId, {
+        fetch(`/events/${originalValues.eventId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'

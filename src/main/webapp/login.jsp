@@ -88,7 +88,7 @@
             localStorage.setItem('token', JSON.stringify(item));
         }
 
-        setTokenWithExpiry(result.data.token, 240 * 1000);  // 设置4分钟有效期
+        setTokenWithExpiry(result.data.token, 2400 * 1000);  // 设置 40 分钟的过期时间
         localStorage.setItem('userId', result.data.id);
         localStorage.setItem('userName', result.data.name);
         console.log(result.data.id + " : " + localStorage.getItem('token'));

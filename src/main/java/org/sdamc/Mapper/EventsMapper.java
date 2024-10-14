@@ -107,7 +107,8 @@ public class EventsMapper extends DataMapper {
             if (updates.get("endTime") != null && !updates.get("endTime").isBlank()) {
                 String endTimeStr = updates.get("endTime").replace("T", " ") + ":00";
                 params.add(Timestamp.valueOf(endTimeStr));
-            } else {
+            }
+            else {
                 params.add(null);
             }
         }
@@ -126,12 +127,12 @@ public class EventsMapper extends DataMapper {
                 stmt.setObject(i + 1, params.get(i));
             }
             stmt.executeUpdate();
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             e.printStackTrace();
             throw e;
         }
     }
-
 
     @Override
     public void insert(DomainObject obj) {

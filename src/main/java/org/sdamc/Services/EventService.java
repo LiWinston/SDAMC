@@ -13,6 +13,7 @@ import org.sdamc.Transaction.IsolationLevel;
 import org.sdamc.Transaction.LockingStrategy;
 import org.sdamc.Transaction.Transactional;
 import org.sdamc.UnitofWork;
+import org.sdamc.Utils.LockManager;
 
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -24,9 +25,9 @@ import static org.sdamc.Utils.JwtUtil.VerifyToken;
 @Slf4j
 public class EventService {
 
-    private EventsMapper eventsMapper;
+    private final EventsMapper eventsMapper;
 
-    private ClubMembershipsMapper membershipsMapper;
+    private final ClubMembershipsMapper membershipsMapper;
 
     public EventService() {
         // 初始化mapper
@@ -121,29 +122,46 @@ public class EventService {
         }
     }
 
-//    @Transactional(isolationLevel = IsolationLevel.REPEATABLE_READ, lockingStrategy = LockingStrategy.PESSIMISTIC)
-public void handlePutEvent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-    try{
-        UnitofWork.newCurrent();
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String, String> requestBody = mapper.readValue(req.getInputStream(), Map.class);
+    // @Transactional(isolationLevel = IsolationLevel.REPEATABLE_READ, lockingStrategy =
+    // LockingStrategy.PESSIMISTIC)
+    public void handlePutEvent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, String> requestBody = mapper.readValue(req.getInputStream(), Map.class);
 
-        int eventId = Integer.parseInt(requestBody.get("eventId"));
-        Events event = (Events) eventsMapper.find(eventId);
-        if (event != null) {
-            // 更新事件信息
-            requestBody.remove("eventId"); // 移除eventId，避免更新时出错
-            eventsMapper.update(event, requestBody);
+            int eventId = Integer.parseInt(requestBody.get("eventId"));
+            Events event = (Events) eventsMapper.find(eventId);
 
-            UnitofWork.getCurrent().commit();
-            resp.getWriter().write("Event updated successfully");
-        } else {
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Event not found");
+            // 尝试获取锁，超时时间为2000毫秒
+            boolean lockAcquired = LockManager.getInstance().acquireLock("Event_" + eventId, "handlePutEvent", 2000);
+
+            if (!lockAcquired) {
+                // 锁获取失败，返回错误响应
+                resp.sendError(HttpServletResponse.SC_CONFLICT,
+                        "Failed to acquire lock for the event. Try again later.");
+                return; // 直接退出，避免后续操作
+            }
+
+            // 如果锁获取成功，继续执行以下操作
+            UnitofWork.newCurrent();
+
+            if (event != null) {
+                // 更新事件信息
+                requestBody.remove("eventId"); // 移除eventId，避免更新时出错
+                eventsMapper.update(event, requestBody);
+
+                UnitofWork.getCurrent().commit();
+                LockManager.getInstance().releaseLock("Event_" + eventId, "update");
+                resp.getWriter().write("Event updated successfully");
+            }
+            else {
+                resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Event not found");
+            }
         }
-    }catch (Exception e){
-        resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error");
-        e.printStackTrace();
+        catch (Exception e) {
+            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error");
+            e.printStackTrace();
+        }
     }
-}
 
 }
