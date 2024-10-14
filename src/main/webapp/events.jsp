@@ -636,10 +636,7 @@
                         });
                     } else {
                         showSweetAlert('Failed to create event: ' + result.msg)
-                        .then(() => {
-                               fetchFundingApplications(clubId, token);
-                           });
-                        return Promise.reject(result.msg);  // 失败信息
+                        fetchFundingApplications(clubId, token);
                     }
                 })
                 .catch(error => {
@@ -871,37 +868,39 @@
                     roleTd.textContent = row.status;
                     tr.appendChild(roleTd);
                     const actionsTd = document.createElement('td');
-                    const deleteButton = document.createElement('button');
-                    deleteButton.textContent = 'Cancel Funding';
-                    deleteButton.addEventListener('click', () => {
-                        const fid = row.id;
-                        let url = '/funding/' + fid + '/cancel';
 
-                        fetch(url, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        }).then(response => {
-                            if (response.ok) {
-                                showSweetAlert('Funding application canceled.');
-                                fetchFundingApplications(clubId, token);
-                            }
-                        }).catch(error => {
-                            console.error('There was an error!', error);
-                            showSweetAlert('Error canceling funding application: ' + error.message);
+                    if(row.status == "submitted" || row.status == "in_review"){
+                        const deleteButton = document.createElement('button');
+                        deleteButton.textContent = 'Cancel Funding';
+                        deleteButton.addEventListener('click', () => {
+                            const fid = row.id;
+                            let url = '/funding/' + fid + '/cancel';
+
+                            fetch(url, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            }).then(response => {
+                                if (response.ok) {
+                                    showSweetAlert('Funding application canceled.');
+                                    fetchFundingApplications(clubId, token);
+                                }
+                            }).catch(error => {
+                                console.error('There was an error!', error);
+                                showSweetAlert('Error canceling funding application: ' + error.message);
+                            });
                         });
-                    });
-                    actionsTd.appendChild(deleteButton);
+                        actionsTd.appendChild(deleteButton);
 
-                    // Edit Button
-                    const editButton = document.createElement('button');
-                    editButton.textContent = 'Edit';
-                    editButton.addEventListener('click', () => {
-                        openEditFundingModal(row, clubId, token);  // Call function to open edit modal
-                    });
-                    actionsTd.appendChild(editButton);
-
+                        // Edit Button
+                        const editButton = document.createElement('button');
+                        editButton.textContent = 'Edit';
+                        editButton.addEventListener('click', () => {
+                            openEditFundingModal(row, clubId, token);  // Call function to open edit modal
+                        });
+                        actionsTd.appendChild(editButton);
+                    }
                     tr.appendChild(actionsTd);
                     tableBody.appendChild(tr); // 添加行到表格
                 });

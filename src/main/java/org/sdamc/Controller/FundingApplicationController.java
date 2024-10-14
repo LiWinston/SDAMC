@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static java.lang.Integer.parseInt;
 import static org.sdamc.Utils.JwtUtil.VerifyToken;
@@ -213,6 +214,8 @@ public class FundingApplicationController extends HttpServlet {
             application.setStudentId(studentId);
             application.setClubId(clubId);
             application.setStatus(status);
+            application.setSemester("2024_S2");
+            application.setVersion(0);
 
             fundingApplicationMapper.insert(application);
             UnitofWork.getCurrent().commit();
@@ -223,10 +226,12 @@ public class FundingApplicationController extends HttpServlet {
                     Result.success(null, "Funding application: " + application.getId() + " submitted successfully"));
         }
         catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.setStatus(HttpServletResponse.SC_ACCEPTED);
             resp.setContentType("application/json");
             new ObjectMapper().writeValue(resp.getOutputStream(), Result.error(e.getMessage()));
-            e.printStackTrace();
+            if(!Objects.equals(e.getMessage(), "Funding application already existed")){
+                e.printStackTrace();
+            }
         }
     }
 

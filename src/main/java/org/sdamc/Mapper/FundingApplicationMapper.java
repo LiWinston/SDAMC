@@ -86,8 +86,7 @@ public class FundingApplicationMapper extends DataMapper {
         }
         FundingApplication application = (FundingApplication) obj;
 
-        String checkSql = "SELECT COUNT(*) FROM funding_applications WHERE club_id = ? AND semester = ? AND " +
-                "(status = 'in_review' OR status = 'submitted')";
+        String checkSql = "SELECT COUNT(*) FROM funding_applications WHERE club_id = ? AND semester = ?";
         try (PreparedStatement checkStmt = DatabaseUtil.getConnection().prepareStatement(checkSql)) {
             checkStmt.setInt(1, application.getClubId());
             checkStmt.setString(2, application.getSemester());
