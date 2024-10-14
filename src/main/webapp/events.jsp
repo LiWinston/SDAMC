@@ -732,6 +732,9 @@
                                 title: 'Success'
                             });
                             loadUserRsvps(); // Reload the RSVP list
+                            setTimeout(() => {
+                                window.location.reload(); // 直接刷新页面
+                            }, 1500); // 等待1.5秒后刷新，给用户时间看到成功消息
                         } else {
                             showSweetAlert(data.msg, {
                                 icon: 'error',

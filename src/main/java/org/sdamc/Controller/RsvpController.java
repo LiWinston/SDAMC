@@ -110,9 +110,11 @@ public class RsvpController extends HttpServlet {
             }
 
             Events event = (Events) eventsMapper.find(rsvp.getEventId());
+            //System.out.println(event.getCapacity());
             event.increaseCapacity(1); // Assuming each RSVP is for 1 ticket
+            //System.out.println(event.getCapacity());
             eventsMapper.update(event);
-
+            //System.out.println(event.getCapacity());
             rsvpsMapper.delete(rsvp);
 
             IOWrapper.writeValue(resp, Result.success("RSVP cancelled successfully"));
@@ -156,7 +158,7 @@ public class RsvpController extends HttpServlet {
 
             // 更新事件容量
             event.decreaseCapacity(totalAttendeesToRsvp);
-            // eventsMapper.update(event);
+            //eventsMapper.update(event);
 
             new ObjectMapper().writeValue(resp.getOutputStream(), Result.success("RSVP successful"));
         }
