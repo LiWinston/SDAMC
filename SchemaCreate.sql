@@ -72,6 +72,8 @@ CREATE TABLE funding_applications (
     student_id INTEGER NOT NULL,
     club_id INTEGER NOT NULL,
     status funding_status NOT NULL,
+    semester VARCHAR(255) NOT NULL,
+    version INTEGER NOT NULL,
     FOREIGN KEY (student_id) REFERENCES students(id),
     FOREIGN KEY (club_id) REFERENCES clubs(id)
 );

@@ -653,7 +653,8 @@
                             fetchFundingApplications(clubId, token);
                         });
                     } else {
-                        return Promise.reject(result.msg);  // 失败信息
+                        showSweetAlert('Failed to create event: ' + result.msg)
+                        fetchFundingApplications(clubId, token);
                     }
                 })
                 .catch(error => {
@@ -885,37 +886,39 @@
                     roleTd.textContent = row.status;
                     tr.appendChild(roleTd);
                     const actionsTd = document.createElement('td');
-                    const deleteButton = document.createElement('button');
-                    deleteButton.textContent = 'Cancel Funding';
-                    deleteButton.addEventListener('click', () => {
-                        const fid = row.id;
-                        let url = '/funding/' + fid + '/cancel';
 
-                        fetch(url, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        }).then(response => {
-                            if (response.ok) {
-                                showSweetAlert('Funding application canceled.');
-                                fetchFundingApplications(clubId, token);
-                            }
-                        }).catch(error => {
-                            console.error('There was an error!', error);
-                            showSweetAlert('Error canceling funding application: ' + error.message);
+                    if(true || row.status == "submitted" || row.status == "in_review"){
+                        const deleteButton = document.createElement('button');
+                        deleteButton.textContent = 'Cancel Funding';
+                        deleteButton.addEventListener('click', () => {
+                            const fid = row.id;
+                            let url = '/funding/' + fid + '/cancel';
+
+                            fetch(url, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            }).then(response => {
+                                if (response.ok) {
+                                    showSweetAlert('Funding application canceled.');
+                                    fetchFundingApplications(clubId, token);
+                                }
+                            }).catch(error => {
+                                console.error('There was an error!', error);
+                                showSweetAlert('Error canceling funding application: ' + error.message);
+                            });
                         });
-                    });
-                    actionsTd.appendChild(deleteButton);
+                        actionsTd.appendChild(deleteButton);
 
-                    // Edit Button
-                    const editButton = document.createElement('button');
-                    editButton.textContent = 'Edit';
-                    editButton.addEventListener('click', () => {
-                        openEditFundingModal(row, clubId, token);  // Call function to open edit modal
-                    });
-                    actionsTd.appendChild(editButton);
-
+                        // Edit Button
+                        const editButton = document.createElement('button');
+                        editButton.textContent = 'Edit';
+                        editButton.addEventListener('click', () => {
+                            openEditFundingModal(row, clubId, token);  // Call function to open edit modal
+                        });
+                        actionsTd.appendChild(editButton);
+                    }
                     tr.appendChild(actionsTd);
                     tableBody.appendChild(tr); // 添加行到表格
                 });
@@ -959,7 +962,7 @@
                       showSweetAlert('Funding application updated.');
                       fetchFundingApplications(clubId, token);
                   } else {
-                      showSweetError("Failed to update funding" + response.statusText);
+                      showSweetError("Failed to update funding: " + response.msg);
                   }
               }).catch(error => {
                   console.error('There was an error!', error);

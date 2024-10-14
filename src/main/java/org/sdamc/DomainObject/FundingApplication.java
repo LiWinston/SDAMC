@@ -22,18 +22,25 @@ public class FundingApplication extends DomainObject {
 
     private String status;
 
+    private String semester;
+
+    private int version;
+
     // Constructor
     public FundingApplication(int id) {
         this.id = id;
     }
 
-    public FundingApplication(int id, String description, float amount, int studentId, int clubId, String status) {
+    public FundingApplication(int id, String description, float amount, int studentId, int clubId, String status,
+                              String semester, int version) {
         this.id = id;
         this.description = description;
         this.amount = amount;
         this.studentId = studentId;
         this.clubId = clubId;
         this.status = status;
+        this.semester = semester;
+        this.version = version;
         this.initialed = true;
     }
 
@@ -46,6 +53,8 @@ public class FundingApplication extends DomainObject {
                 studentId = result.getInt("student_id");
                 clubId = result.getInt("club_id");
                 status = result.getString("status");
+                semester = result.getString("semester");
+                version = result.getInt("version");
                 initialed = true;
             }
         }
@@ -55,13 +64,15 @@ public class FundingApplication extends DomainObject {
     }
 
     public static FundingApplication insert(String description, float amount, int studentId, int clubId,
-            String status) {
+            String status, String semester, int version) {
         FundingApplication application = new FundingApplication(DataMapper.GetMapper(tableName).getNewId());
         application.description = description;
         application.amount = amount;
         application.studentId = studentId;
         application.clubId = clubId;
         application.status = status;
+        application.semester = semester;
+        application.version = version;
         application.insert = true;
         application.initialed = true;
         UnitofWork.getCurrent().registerNew(application);
@@ -112,6 +123,22 @@ public class FundingApplication extends DomainObject {
             load();
         }
         return status;
+    }
+
+    public String getSemester() {
+        assert (!deleted);
+        if (!initialed) {
+            load();
+        }
+        return semester;
+    }
+
+    public int getVersion() {
+        assert (!deleted);
+        if (!initialed) {
+            load();
+        }
+        return version;
     }
 
     public void setDescription(String description) {
@@ -176,6 +203,28 @@ public class FundingApplication extends DomainObject {
             load();
         }
         return tableName;
+    }
+
+    public void setSemester(String semester) {
+        assert (!deleted);
+        if (!initialed) {
+            load();
+        }
+        if (!insert) {
+            UnitofWork.getCurrent().registerDirty(this);
+        }
+        this.semester = semester;
+    }
+
+    public void setVersion(int version) {
+        assert (!deleted);
+        if (!initialed) {
+            load();
+        }
+        if (!insert) {
+            UnitofWork.getCurrent().registerDirty(this);
+        }
+        this.version = version;
     }
 
     @Override
