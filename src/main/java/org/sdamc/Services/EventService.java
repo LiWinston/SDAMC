@@ -121,40 +121,29 @@ public class EventService {
         }
     }
 
-    @Transactional(isolationLevel = IsolationLevel.REPEATABLE_READ, lockingStrategy = LockingStrategy.PESSIMISTIC)
-    public void handlePutEvent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+//    @Transactional(isolationLevel = IsolationLevel.REPEATABLE_READ, lockingStrategy = LockingStrategy.PESSIMISTIC)
+public void handlePutEvent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    try{
+        UnitofWork.newCurrent();
         ObjectMapper mapper = new ObjectMapper();
         Map<String, String> requestBody = mapper.readValue(req.getInputStream(), Map.class);
-
-        // UnitofWork.newCurrent();
 
         int eventId = Integer.parseInt(requestBody.get("eventId"));
         Events event = (Events) eventsMapper.find(eventId);
         if (event != null) {
             // 更新事件信息
-            event.setTitle(requestBody.get("title"));
-            event.setDescription(requestBody.get("description"));
-            event.setVenue(requestBody.get("venue"));
-            event.setCapacity(Integer.parseInt(requestBody.get("capacity")));
-            String beginTimeStr = requestBody.get("beginTime").replace("T", " ") + ":00"; // 确保有秒部分
-            Timestamp beginTime = Timestamp.valueOf(beginTimeStr);
+            requestBody.remove("eventId"); // 移除eventId，避免更新时出错
+            eventsMapper.update(event, requestBody);
 
-            Timestamp endTime = null;
-            if (requestBody.get("endTime") != null && !requestBody.get("endTime").isEmpty()
-                    && !requestBody.get("endTime").isBlank()) {
-                String endTimeStr = requestBody.get("endTime").replace("T", " ") + ":00";
-                endTime = Timestamp.valueOf(endTimeStr);
-            }
-            event.setBeginTime(beginTime);
-            event.setEndTime(endTime);
-            eventsMapper.update(event);
+            UnitofWork.getCurrent().commit();
             resp.getWriter().write("Event updated successfully");
-        }
-
-        else {
+        } else {
             resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Event not found");
         }
-        // UnitofWork.getCurrent().commit();
+    }catch (Exception e){
+        resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error");
+        e.printStackTrace();
     }
+}
 
 }

@@ -432,9 +432,27 @@
     function submitEditEvent() {
         const form = document.getElementById('editEventForm');
         const formData = new FormData(form);
-        const jsonData = JSON.stringify(Object.fromEntries(formData.entries()));
+        const originalValues = {
+            eventId: document.getElementById('eventId').value,
+            title: document.getElementById('editTitle').getAttribute('data-original'),
+            description: document.getElementById('editDescription').getAttribute('data-original'),
+            venue: document.getElementById('editVenue').getAttribute('data-original'),
+            capacity: document.getElementById('editCapacity').getAttribute('data-original'),
+            beginTime: document.getElementById('editBeginTime').getAttribute('data-original'),
+            endTime: document.getElementById('editEndTime').getAttribute('data-original')
+        };
 
-        fetch(`/events/${eventId}`, {
+        const modifiedFields = {};
+        for (const [key, value] of formData.entries()) {
+            if (value !== originalValues[key]) {
+                modifiedFields[key] = value;
+            }
+        }
+        modifiedFields['eventId'] = originalValues.eventId;
+
+        const jsonData = JSON.stringify(modifiedFields);
+
+        fetch('/events/' + originalValues.eventId, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
@@ -450,9 +468,8 @@
                 setTimeout(() => {
                     window.location.reload();
                 }, 1000);
-                // location.reload();
-            }else{
-                showSweetError("Failed to update event" + response.statusText);
+            } else {
+                showSweetError("Failed to update event: " + response.statusText);
             }
         }).catch(error => {
             console.error('Error updating event:', error);
@@ -462,6 +479,7 @@
             }, 1300);
         });
     }
+
 
     function openRSVPModal(eventId) {
         $('#rsvpModal').modal('show');

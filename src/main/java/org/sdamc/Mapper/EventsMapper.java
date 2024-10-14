@@ -8,7 +8,10 @@ import org.sdamc.Utils.DatabaseUtil;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 public class EventsMapper extends DataMapper {
@@ -69,6 +72,67 @@ public class EventsMapper extends DataMapper {
         }
     }
 
+    public void update(Events event, Map<String, String> updates) throws SQLException {
+        // 构建动态 SQL
+        StringBuilder sqlBuilder = new StringBuilder("UPDATE events SET ");
+        List<Object> params = new ArrayList<>();
+
+        if (updates.containsKey("title")) {
+            sqlBuilder.append("title = ?, ");
+            params.add(updates.get("title"));
+        }
+        if (updates.containsKey("description")) {
+            sqlBuilder.append("description = ?, ");
+            params.add(updates.get("description"));
+        }
+        if (updates.containsKey("venue")) {
+            sqlBuilder.append("venue = ?, ");
+            params.add(updates.get("venue"));
+        }
+        if (updates.containsKey("capacity")) {
+            sqlBuilder.append("capacity = ?, ");
+            params.add(Integer.parseInt(updates.get("capacity")));
+        }
+        if (updates.containsKey("clubId")) {
+            sqlBuilder.append("club_id = ?, ");
+            params.add(Integer.parseInt(updates.get("clubId")));
+        }
+        if (updates.containsKey("beginTime")) {
+            sqlBuilder.append("begin_time = ?, ");
+            String beginTimeStr = updates.get("beginTime").replace("T", " ") + ":00";
+            params.add(Timestamp.valueOf(beginTimeStr));
+        }
+        if (updates.containsKey("endTime")) {
+            sqlBuilder.append("end_time = ?, ");
+            if (updates.get("endTime") != null && !updates.get("endTime").isBlank()) {
+                String endTimeStr = updates.get("endTime").replace("T", " ") + ":00";
+                params.add(Timestamp.valueOf(endTimeStr));
+            } else {
+                params.add(null);
+            }
+        }
+
+        // 去掉末尾的逗号，并加上 WHERE 条件
+        sqlBuilder.deleteCharAt(sqlBuilder.length() - 2);
+        sqlBuilder.append(" WHERE id = ?");
+
+        params.add(event.getId());
+
+        String sql = sqlBuilder.toString();
+
+        // 执行 SQL 语句
+        try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setObject(i + 1, params.get(i));
+            }
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw e;
+        }
+    }
+
+
     @Override
     public void insert(DomainObject obj) {
         if (!(obj instanceof Events)) {
@@ -123,7 +187,7 @@ public class EventsMapper extends DataMapper {
 
     @Override
     public ResultSet getRecord(int id) throws SQLException {
-        String sql = "SELECT * FROM events WHERE id = " + id + ";";
+        String sql = "SELECT * FROM events WHERE id = " + id + " FOR UPDATE;";
         PreparedStatement statement = DatabaseUtil.getConnection().prepareStatement(sql);
         return statement.executeQuery();
     }
