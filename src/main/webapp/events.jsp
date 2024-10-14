@@ -869,7 +869,7 @@
                     tr.appendChild(roleTd);
                     const actionsTd = document.createElement('td');
 
-                    if(row.status == "submitted" || row.status == "in_review"){
+                    if(true || row.status == "submitted" || row.status == "in_review"){
                         const deleteButton = document.createElement('button');
                         deleteButton.textContent = 'Cancel Funding';
                         deleteButton.addEventListener('click', () => {
@@ -944,7 +944,7 @@
                       showSweetAlert('Funding application updated.');
                       fetchFundingApplications(clubId, token);
                   } else {
-                      showSweetError("Failed to update funding" + response.statusText);
+                      showSweetError("Failed to update funding: " + response.msg);
                   }
               }).catch(error => {
                   console.error('There was an error!', error);

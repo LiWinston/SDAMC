@@ -80,7 +80,7 @@ public class FundingApplicationController extends HttpServlet {
             List<FundingApplication> applications = fundingApplicationMapper.getAll();
             for (FundingApplication application : applications) {
                 application.setStatus("in_review");
-                fundingApplicationMapper.update(application);
+                fundingApplicationMapper.optimisticUpdate(application);
             }
             List<Fundings> result = new ArrayList<Fundings>();
             for (FundingApplication application : applications) {
@@ -171,10 +171,16 @@ public class FundingApplicationController extends HttpServlet {
             }
         }
         catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            resp.setContentType("application/json");
-            new ObjectMapper().writeValue(resp.getOutputStream(), Result.error("Database error"));
-            e.printStackTrace();
+            if(Objects.equals(e.getMessage(), "The funding application was modified by another user.")){
+                resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+                resp.setContentType("application/json");
+                new ObjectMapper().writeValue(resp.getOutputStream(), Result.error(e.getMessage()));
+            } else {
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                resp.setContentType("application/json");
+                new ObjectMapper().writeValue(resp.getOutputStream(), Result.error("Database error"));
+                e.printStackTrace();
+            }
         }
     }
 
@@ -226,10 +232,14 @@ public class FundingApplicationController extends HttpServlet {
                     Result.success(null, "Funding application: " + application.getId() + " submitted successfully"));
         }
         catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_ACCEPTED);
-            resp.setContentType("application/json");
-            new ObjectMapper().writeValue(resp.getOutputStream(), Result.error(e.getMessage()));
-            if(!Objects.equals(e.getMessage(), "Funding application already existed")){
+            if(Objects.equals(e.getMessage(), "Funding application already existed")){
+                resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+                resp.setContentType("application/json");
+                new ObjectMapper().writeValue(resp.getOutputStream(), Result.error(e.getMessage()));
+            } else {
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                resp.setContentType("application/json");
+                new ObjectMapper().writeValue(resp.getOutputStream(), Result.error(e.getMessage()));
                 e.printStackTrace();
             }
         }
@@ -257,39 +267,50 @@ public class FundingApplicationController extends HttpServlet {
         String pathInfo = req.getPathInfo(); // "funding/1/approve"
         String[] parts = pathInfo.split("/");
         String userId = new ObjectMapper().readTree(req.getInputStream()).get("userId").asText();
+        try {
+            UnitofWork.newCurrent();
 
-        UnitofWork.newCurrent();
+            // 检查路径是否合法
+            if (parts.length >= 2) {
+                // 从 StudentsMapper 获取用户 email 和密码
+                Students student = (Students) studentsMapper.find(Integer.parseInt(userId));
 
-        // 检查路径是否合法
-        if (parts.length >= 2) {
-            // 从 StudentsMapper 获取用户 email 和密码
-            Students student = (Students) studentsMapper.find(Integer.parseInt(userId));
+                if (student == null) {
+                    IOWrapper.writeValue(resp, Result.error("User not found"), HttpServletResponse.SC_BAD_REQUEST);
+                    return;
+                }
 
-            if (student == null) {
-                IOWrapper.writeValue(resp, Result.error("User not found"), HttpServletResponse.SC_BAD_REQUEST);
-                return;
+                // 检查是否为管理员
+                if (!adminMapper.isAdmin(student.getEmail(), student.getPassword())) {
+                    IOWrapper.writeValue(resp, Result.error("Operation not permitted, " + student.getEmail() + " "
+                            + student.getPassword() + " is Not FundingAdmin"), HttpServletResponse.SC_OK);
+                    return;
+                }
+
+                int id = parseInt(parts[1]); // parts[1] is "1"
+                FundingApplication application = (FundingApplication) fundingApplicationMapper.find(id);
+                application.setStatus("approved");
+                fundingApplicationMapper.update(application);
+
+                IOWrapper.writeValue(resp,
+                        Result.success(null, "Funding application: " + application.getId() + " approved"));
+            } else {
+                IOWrapper.writeValue(resp, Result.error("Invalid path"), HttpServletResponse.SC_BAD_REQUEST);
             }
 
-            // 检查是否为管理员
-            if (!adminMapper.isAdmin(student.getEmail(), student.getPassword())) {
-                IOWrapper.writeValue(resp, Result.error("Operation not permitted, " + student.getEmail() + " "
-                        + student.getPassword() + " is Not FundingAdmin"), HttpServletResponse.SC_OK);
-                return;
+            UnitofWork.getCurrent().commit();
+        }catch (Exception e){
+            if(Objects.equals(e.getMessage(), "The funding application was modified by another user.")){
+                resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+                resp.setContentType("application/json");
+                new ObjectMapper().writeValue(resp.getOutputStream(), Result.error(e.getMessage()));
+            } else {
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                resp.setContentType("application/json");
+                new ObjectMapper().writeValue(resp.getOutputStream(), Result.error("Database error"));
+                e.printStackTrace();
             }
-
-            int id = parseInt(parts[1]); // parts[1] is "1"
-            FundingApplication application = (FundingApplication) fundingApplicationMapper.find(id);
-            application.setStatus("approved");
-            fundingApplicationMapper.update(application);
-
-            IOWrapper.writeValue(resp,
-                    Result.success(null, "Funding application: " + application.getId() + " approved"));
         }
-        else {
-            IOWrapper.writeValue(resp, Result.error("Invalid path"), HttpServletResponse.SC_BAD_REQUEST);
-        }
-
-        UnitofWork.getCurrent().commit();
     }
 
     private void handleReject(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -297,39 +318,51 @@ public class FundingApplicationController extends HttpServlet {
         String[] parts = pathInfo.split("/");
         String userId = new ObjectMapper().readTree(req.getInputStream()).get("userId").asText();
         log.warn("userId: " + userId);
-        UnitofWork.newCurrent();
+        try{
+            UnitofWork.newCurrent();
 
-        // 检查路径是否合法
-        if (parts.length >= 2) {
-            // 从 StudentsMapper 获取用户 email 和密码
-            Students student = (Students) studentsMapper.find(parseInt(userId));
-            log.warn("student: " + student);
+            // 检查路径是否合法
+            if (parts.length >= 2) {
+                // 从 StudentsMapper 获取用户 email 和密码
+                Students student = (Students) studentsMapper.find(parseInt(userId));
+                log.warn("student: " + student);
 
-            if (student == null) {
-                IOWrapper.writeValue(resp, Result.error("User not found"), HttpServletResponse.SC_BAD_REQUEST);
-                return;
+                if (student == null) {
+                    IOWrapper.writeValue(resp, Result.error("User not found"), HttpServletResponse.SC_BAD_REQUEST);
+                    return;
+                }
+
+                // 检查是否为管理员
+                if (!adminMapper.isAdmin(student.getEmail(), student.getPassword())) {
+                    IOWrapper.writeValue(resp, Result.error("Operation not permitted, " + student.getEmail() + " "
+                            + student.getPassword() + " is Not FundingAdmin"), HttpServletResponse.SC_OK);
+                    return;
+                }
+
+                int id = parseInt(parts[1]); // parts[1] is "1"
+                FundingApplication application = (FundingApplication) fundingApplicationMapper.find(id);
+                application.setStatus("rejected");
+                fundingApplicationMapper.update(application);
+
+                IOWrapper.writeValue(resp,
+                        Result.success(null, "Funding application: " + application.getId() + " rejected"));
+            } else {
+                IOWrapper.writeValue(resp, Result.error("Invalid path"), HttpServletResponse.SC_BAD_REQUEST);
             }
 
-            // 检查是否为管理员
-            if (!adminMapper.isAdmin(student.getEmail(), student.getPassword())) {
-                IOWrapper.writeValue(resp, Result.error("Operation not permitted, " + student.getEmail() + " "
-                        + student.getPassword() + " is Not FundingAdmin"), HttpServletResponse.SC_OK);
-                return;
+            UnitofWork.getCurrent().commit();
+        }catch (Exception e){
+            if(Objects.equals(e.getMessage(), "The funding application was modified by another user.")){
+                resp.setStatus(HttpServletResponse.SC_ACCEPTED);
+                resp.setContentType("application/json");
+                new ObjectMapper().writeValue(resp.getOutputStream(), Result.error(e.getMessage()));
+            } else {
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                resp.setContentType("application/json");
+                new ObjectMapper().writeValue(resp.getOutputStream(), Result.error("Database error"));
+                e.printStackTrace();
             }
-
-            int id = parseInt(parts[1]); // parts[1] is "1"
-            FundingApplication application = (FundingApplication) fundingApplicationMapper.find(id);
-            application.setStatus("rejected");
-            fundingApplicationMapper.update(application);
-
-            IOWrapper.writeValue(resp,
-                    Result.success(null, "Funding application: " + application.getId() + " rejected"));
         }
-        else {
-            IOWrapper.writeValue(resp, Result.error("Invalid path"), HttpServletResponse.SC_BAD_REQUEST);
-        }
-
-        UnitofWork.getCurrent().commit();
     }
 
     // JWT 生成逻辑
