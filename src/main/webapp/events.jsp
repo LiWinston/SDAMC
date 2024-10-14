@@ -676,13 +676,13 @@
                             fetchFundingApplications(clubId, token);
                         });
                     } else {
-                        showSweetAlert('Failed to create event: ' + result.msg)
+                        showSweetAlert('Error creating funding: ' + result.msg, { icon: 'error' });
                         fetchFundingApplications(clubId, token);
                     }
                 })
                 .catch(error => {
-                    console.error('Error creating event:', error);
-                    showSweetAlert('Failed to create event: ' + error);
+                    console.error('Error creating funding:', error);
+                    showSweetAlert('Failed to create event: ' + error, { icon: 'error' });
                 });
         };
 
