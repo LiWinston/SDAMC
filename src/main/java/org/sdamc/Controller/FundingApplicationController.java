@@ -225,7 +225,7 @@ public class FundingApplicationController extends HttpServlet {
         catch (Exception e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             resp.setContentType("application/json");
-            new ObjectMapper().writeValue(resp.getOutputStream(), Result.error("Database error"));
+            new ObjectMapper().writeValue(resp.getOutputStream(), Result.error(e.getMessage()));
             e.printStackTrace();
         }
     }

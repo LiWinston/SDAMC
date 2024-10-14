@@ -42,7 +42,7 @@ VALUES
     (3, 1, 1); -- Charlie RSVPed for Photography Workshop
 
 -- Insert data into funding_applications
-INSERT INTO funding_applications (description, amount, student_id, club_id, status)
+INSERT INTO funding_applications (description, amount, student_id, club_id, status, semester, version)
 VALUES
-    ('Request for new camera equipment', 1500.00, 1, 1, 'submitted'),
-    ('Request for chess clocks', 500.00, 2, 2, 'in_review');
+    ('Request for new camera equipment', 1500.00, 1, 1, 'submitted', '2024_S2', 0),
+    ('Request for chess clocks', 500.00, 2, 2, 'in_review', '2024_S2', 0);

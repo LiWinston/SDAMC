@@ -635,6 +635,10 @@
                             fetchFundingApplications(clubId, token);
                         });
                     } else {
+                        showSweetAlert('Failed to create event: ' + result.msg)
+                        .then(() => {
+                               fetchFundingApplications(clubId, token);
+                           });
                         return Promise.reject(result.msg);  // 失败信息
                     }
                 })

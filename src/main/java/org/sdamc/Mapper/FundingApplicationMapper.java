@@ -27,7 +27,8 @@ public class FundingApplicationMapper extends DataMapper {
 
             while (rs.next()) {
                 FundingApplication application = new FundingApplication(rs.getInt("id"), rs.getString("description"),
-                        rs.getFloat("amount"), rs.getInt("student_id"), rs.getInt("club_id"), rs.getString("status"));
+                        rs.getFloat("amount"), rs.getInt("student_id"), rs.getInt("club_id"),
+                        rs.getString("status"), rs.getString("semester"), rs.getInt("version"));
                 applications.add(application);
             }
         }
@@ -45,7 +46,8 @@ public class FundingApplicationMapper extends DataMapper {
 
             while (rs.next()) {
                 FundingApplication application = new FundingApplication(rs.getInt("id"), rs.getString("description"),
-                        rs.getFloat("amount"), rs.getInt("student_id"), rs.getInt("club_id"), rs.getString("status"));
+                        rs.getFloat("amount"), rs.getInt("student_id"), rs.getInt("club_id"),
+                        rs.getString("status"), rs.getString("semester"), rs.getInt("version"));
                 applications.add(application);
             }
         }
@@ -62,7 +64,7 @@ public class FundingApplicationMapper extends DataMapper {
         }
         FundingApplication application = (FundingApplication) obj;
         String sql = "UPDATE funding_applications SET description = ?, amount = ?, student_id = ?, club_id = ?,"
-                + " status = ?::funding_status WHERE id = ?";
+                + " status = ?::funding_status, semester = '2024_S2', version = 0 WHERE id = ?";
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
             stmt.setString(1, application.getDescription());
             stmt.setFloat(2, application.getAmount());
@@ -83,8 +85,25 @@ public class FundingApplicationMapper extends DataMapper {
             throw new IllegalArgumentException("Invalid object type");
         }
         FundingApplication application = (FundingApplication) obj;
-        String sql = "INSERT INTO funding_applications (id, description, amount, student_id, club_id, status) "
-                + "VALUES (?, ?, ?, ?, ?, ?::funding_status)";
+
+        String checkSql = "SELECT COUNT(*) FROM funding_applications WHERE club_id = ? AND semester = ?";
+        try (PreparedStatement checkStmt = DatabaseUtil.getConnection().prepareStatement(checkSql)) {
+            checkStmt.setInt(1, application.getClubId());
+            checkStmt.setString(2, application.getSemester());
+
+            try (ResultSet rs = checkStmt.executeQuery()) {
+                if (rs.next() && rs.getInt(1) > 0) {
+                    // 如果记录已存在，则抛出异常或返回错误信息
+                    throw new IllegalStateException("Funding application already existed");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        String sql = "INSERT INTO funding_applications (id, description, amount, student_id, club_id, status, semester, version) "
+                + "VALUES (?, ?, ?, ?, ?, ?::funding_status, ?, ?)";
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
             stmt.setInt(1, application.getId());
             stmt.setString(2, application.getDescription());
@@ -92,6 +111,8 @@ public class FundingApplicationMapper extends DataMapper {
             stmt.setInt(4, application.getStudentId());
             stmt.setInt(5, application.getClubId());
             stmt.setString(6, application.getStatus());
+            stmt.setString(7, application.getSemester());
+            stmt.setInt(8, application.getVersion());
             stmt.executeUpdate();
         }
         catch (SQLException e) {
