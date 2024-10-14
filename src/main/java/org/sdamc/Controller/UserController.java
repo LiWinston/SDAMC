@@ -12,6 +12,7 @@ import org.sdamc.DTO.Result;
 import org.sdamc.DTO.UserDTO;
 import org.sdamc.DomainObject.Clubs;
 import org.sdamc.DomainObject.Students;
+import org.sdamc.Mapper.AdminMapper;
 import org.sdamc.Mapper.ClubMembershipsMapper;
 import org.sdamc.Mapper.StudentsMapper;
 import org.sdamc.UnitofWork;
@@ -25,14 +26,17 @@ import java.util.List;
 @WebServlet(name = "UserController", urlPatterns = { "/user/*" })
 public class UserController extends HttpServlet {
 
-    ClubMembershipsMapper clubMembershipsMapper;
+    private ClubMembershipsMapper clubMembershipsMapper;
 
     private StudentsMapper studentsMapper;
+
+    private AdminMapper adminMapper;
 
     @Override
     public void init() {
         studentsMapper = new StudentsMapper();
         clubMembershipsMapper = new ClubMembershipsMapper();
+        adminMapper = new AdminMapper();
     }
 
     @Override
@@ -166,8 +170,10 @@ public class UserController extends HttpServlet {
             if (student != null && student.getPassword().equals(password)) {
                 String token = generateJwtToken(student.getId());
                 // 登录成功时返回 Result<LoginResponse>
+                String isFacultyAdministrator = adminMapper.isAdmin(email, password) ? "FacultyAdministrator"
+                        : "Student";
                 IOWrapper.writeValue(resp, Result.success(new LoginResponse(token, student.getId(), student.getName()),
-                        "Login successful"));
+                        "Login successful as " + isFacultyAdministrator));
             }
             else {
                 // 返回 Result<T> 错误信息

@@ -93,24 +93,53 @@
         localStorage.setItem('userName', result.data.name);
         console.log(result.data.id + " : " + localStorage.getItem('token'));
 
-        // 使用 SweetAlert2 显示多选项重定向对话框
-        Swal.fire({
-            title: 'Login Successful',
+        // // 使用 SweetAlert2 显示多选项重定向对话框
+        // Swal.fire({
+        //     title: result.msg,
+        //     text: 'Where would you like to go?',
+        //     icon: 'success',
+        //     confirmButtonText: 'Events',
+        //     showCancelButton: true,
+        //     cancelButtonText: 'Dashboard',
+        //     showDenyButton: true,
+        //     denyButtonText: 'Others',
+        //     showCloseButton: true,
+        // }).then((result) => {
+        //     if (result.isConfirmed) {
+        //         window.location.href = "/events";
+        //     } else if (result.isDenied) {
+        //         window.location.href = "/Others";
+        //     } else if (result.dismiss === Swal.DismissReason.cancel) {
+        //         window.location.href = "/dashboard.jsp";
+        //     } else {
+        //         // 如果用户关闭对话框，默认重定向到事件页面
+        //         window.location.href = "/events";
+        //     }
+        // });
+
+        let options = {
+            title: result.msg,
             text: 'Where would you like to go?',
-            icon: 'success',
-            confirmButtonText: 'Events',
-            showCancelButton: true,
-            cancelButtonText: 'Dashboard',
             showDenyButton: true,
-            denyButtonText: 'Others',
-            showCloseButton: true,
-        }).then((result) => {
+            showCancelButton: true,
+            confirmButtonText: 'Show Events Ops',
+            denyButtonText: 'Others'
+        };
+
+        // 如果 msg 中包含 "FacultyAdministrator"，显示 Dashboard 选项
+        if (result.msg.includes('FacultyAdministrator')) {
+            options.cancelButtonText = 'Go to Dashboard';
+        } else {
+            options.showCancelButton = false;  // 学生不显示 Dashboard
+        }
+
+        Swal.fire(options).then((result) => {
             if (result.isConfirmed) {
                 window.location.href = "/events";
             } else if (result.isDenied) {
                 window.location.href = "/Others";
             } else if (result.dismiss === Swal.DismissReason.cancel) {
-                window.location.href = "/dashboard.jsp";
+                window.location.href = "/dashboard.jsp"; // 管理员访问 Dashboard
             } else {
                 // 如果用户关闭对话框，默认重定向到事件页面
                 window.location.href = "/events";
