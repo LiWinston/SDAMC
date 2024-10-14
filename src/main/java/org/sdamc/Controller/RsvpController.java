@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.sdamc.DTO.Result;
+import org.sdamc.DTO.RsvpDTO;
 import org.sdamc.DTO.RsvpSubmitDTO;
 import org.sdamc.DomainObject.Events;
 import org.sdamc.DomainObject.Rsvps;
@@ -86,12 +87,39 @@ public class RsvpController extends HttpServlet {
             if ("/submit".equals(pathInfo)) {
                 handleRsvpSubmit(req, resp);
             }
+            else if ("/cancel".equals(pathInfo)) {
+                handleRsvpCancel(req, resp);
+            }
             else {
                 resp.sendError(HttpServletResponse.SC_NOT_FOUND, "Invalid path");
             }
         }
         finally {
             UnitofWork.getCurrent().commit();
+        }
+    }
+
+    private void handleRsvpCancel(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        try {
+            RsvpDTO cancelDTO = IOWrapper.readValue(req, RsvpDTO.class);
+            int rsvpId = cancelDTO.getRsvpId();
+
+            Rsvps rsvp = (Rsvps) rsvpsMapper.find(rsvpId);
+            if (rsvp == null) {
+                throw new IllegalArgumentException("RSVP not found");
+            }
+
+            Events event = (Events) eventsMapper.find(rsvp.getEventId());
+            event.increaseCapacity(1); // Assuming each RSVP is for 1 ticket
+            eventsMapper.update(event);
+
+            rsvpsMapper.delete(rsvp);
+
+            IOWrapper.writeValue(resp, Result.success("RSVP cancelled successfully"));
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            IOWrapper.writeValue(resp, Result.error(e.getMessage()));
         }
     }
 

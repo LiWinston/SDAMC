@@ -1,6 +1,7 @@
 package org.sdamc.Mapper;
 
 import org.sdamc.DTO.Result;
+import org.sdamc.DTO.RsvpDTO;
 import org.sdamc.DomainObject.DomainObject;
 import org.sdamc.DomainObject.Rsvps;
 import org.sdamc.Utils.DatabaseUtil;
@@ -9,9 +10,42 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class RsvpsMapper extends DataMapper {
+
+    public List<RsvpDTO> findDetailedRsvpsByStudentId(int studentId) {
+        List<RsvpDTO> rsvps = new ArrayList<>();
+        String sql = "SELECT r.id as rsvp_id, r.student_id, r.event_id, "
+                + "e.title as event_title, e.begin_time, e.end_time, e.venue, "
+                + "s.name as attendee_name, s.email as attendee_email " + "FROM rsvps r "
+                + "JOIN events e ON r.event_id = e.id " + "JOIN students s ON r.student_id = s.id "
+                + "WHERE r.student_id = ? OR r.id IN " + "(SELECT id FROM rsvps WHERE student_id = ?)";
+        try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
+            stmt.setInt(1, studentId);
+            stmt.setInt(2, studentId);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                RsvpDTO rsvp = new RsvpDTO();
+                rsvp.setRsvpId(rs.getInt("rsvp_id"));
+                rsvp.setStudentId(rs.getInt("student_id"));
+                rsvp.setEventId(rs.getInt("event_id"));
+                rsvp.setEventTitle(rs.getString("event_title"));
+                rsvp.setBeginTime(rs.getTimestamp("begin_time"));
+                rsvp.setEndTime(rs.getTimestamp("end_time"));
+                rsvp.setVenue(rs.getString("venue"));
+                rsvp.setAttendeeName(rs.getString("attendee_name"));
+                rsvp.setAttendeeEmail(rs.getString("attendee_email"));
+                rsvps.add(rsvp);
+            }
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return rsvps;
+    }
 
     @Override
     public DomainObject find(int id) {
