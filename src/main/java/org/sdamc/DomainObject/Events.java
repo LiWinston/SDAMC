@@ -1,11 +1,11 @@
 package org.sdamc.DomainObject;
 
-import java.sql.Timestamp;
+import org.sdamc.Mapper.DataMapper;
+import org.sdamc.UnitofWork;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import org.sdamc.UnitofWork;
-import org.sdamc.Mapper.DataMapper;
+import java.sql.Timestamp;
 
 public class Events extends DomainObject {
 
@@ -28,6 +28,7 @@ public class Events extends DomainObject {
     private Timestamp endTime;
 
     public void increaseCapacity(int amount) {
+        load();
         if (amount <= 0) {
             throw new IllegalArgumentException("Amount must be positive");
         }
@@ -36,6 +37,7 @@ public class Events extends DomainObject {
     }
 
     public void decreaseCapacity(int amount) {
+        load();
         if (amount < 0) {
             throw new IllegalArgumentException("Amount must be positive");
         }

@@ -36,7 +36,7 @@ public class LockManager {
     public boolean acquireLock(String lockable, String owner, long totalTimeout) {
         Lock lock = lockMap.computeIfAbsent(lockable, k -> new ReentrantLock());
 
-        long waitTime = 100; // 初始等待时间 (100ms)
+        long waitTime = 25; // 初始等待时间 (100ms)
         long timeSpent = 0; // 已花费的时间
 
         while (timeSpent < totalTimeout) {
@@ -50,7 +50,7 @@ public class LockManager {
                     // 锁获取成功
                     System.out.println("Lock acquired by " + owner + " for " + lockable + " after " + timeSpent
                             + "ms, as a result of retryTimes: "
-                            + (int) (Math.log((double) timeSpent / 100) / Math.log(2)));
+                            + (int) (Math.log((double) timeSpent / 25) / Math.log(2)));
                     return true;
                 }
 

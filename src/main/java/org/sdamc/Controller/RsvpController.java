@@ -246,8 +246,8 @@ public class RsvpController extends HttpServlet {
 
                 String successMsg = successfulAttendees.isEmpty() ? ""
                         : "RSVP successful for: " + successfulAttendees.stream()
-                        .map(attendee -> attendee.getInputType() + ": " + attendee.getInputValue())
-                        .collect(Collectors.joining(", "));
+                            .map(attendee -> attendee.getInputType() + ": " + attendee.getInputValue())
+                            .collect(Collectors.joining(", "));
                 String errorMsg = !errorMessages.isEmpty() ? ". Failed for: " + String.join(", ", failedAttendees)
                         + ". Reasons: " + String.join("; ", errorMessages) : "";
 
