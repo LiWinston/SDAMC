@@ -15,6 +15,8 @@
             background-color: #f4f4f4;
             align-items: center;
             justify-content: center;
+            position: relative;
+            overflow: hidden;
         }
 
         .main-content {
@@ -24,9 +26,11 @@
             justify-content: center;
             text-align: center;
             padding: 20px;
-            background-color: #fff;
+            background-color: rgba(255, 255, 255, 0.65); /* 增加透明度 */
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 1;
         }
 
         .spotify-player {
@@ -46,12 +50,52 @@
             border-radius: 12px;
             margin-bottom: 20px;
         }
+
+        .rainbow-halo {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet);
+            animation: wave 10s linear infinite; /* 光谱波动画 */
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: 0;
+            opacity: 0.88; /* 调低饱和度 */
+            background-size: 200% 200%; /* 确保背景大小适合动画 */
+        }
+
+        @keyframes wave {
+            0% {
+                background-position: 0 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.3); /* 灰白色蒙板 */
+            z-index: 1;
+        }
+
+        .logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 100px;
+            z-index: 2;
+        }
     </style>
 </head>
 <body>
 
 <script>
-    // 获取 token 并检查是否过期
     function getToken() {
         const tokenData = localStorage.getItem('token');
         if (!tokenData) return null;
@@ -59,7 +103,6 @@
         const parsedToken = JSON.parse(tokenData);
         const now = new Date().getTime();
 
-        // 验证 token 是否过期
         if (now > parsedToken.expiry) {
             localStorage.removeItem('token');
             return null;
@@ -68,20 +111,15 @@
         return parsedToken.token;
     }
 
-
-    // 页面加载时检查 token，并根据 token 设置按钮跳转逻辑
     window.onload = function() {
         const token = getToken();
-        const userId = localStorage.getItem('id');
         const btnShowEvents = document.getElementById('showEventsBtn');
 
         if (!token) {
-            // 没有 token，则按钮点击跳转到登录页面
             btnShowEvents.onclick = function() {
                 window.location.href = 'login.jsp';
             };
         } else {
-            // 有 token，则按钮点击跳转到 events 页面
             btnShowEvents.onclick = function() {
                 window.location.href = '/events';
             };
@@ -89,15 +127,20 @@
     };
 </script>
 
+<!-- 墨尔本大学校徽 -->
+<img src="https://designsystem.web.unimelb.edu.au/static/img/logo-icon.svg" alt="University of Melbourne Logo" class="logo">
+
+<!-- 彩虹光晕 -->
+<div class="rainbow-halo"></div>
+<div class="overlay"></div>
+
 <!-- 主内容 -->
 <div class="main-content">
     <div class="text-content">
         <div class="artistic-text">SDAMC Event MG</div>
-        <!-- 按钮根据 token 状态跳转 -->
         <button id="showEventsBtn" class="btn btn-primary">Show events</button>
     </div>
 
-    <!-- 嵌入的 Spotify 播放器 -->
     <iframe
             src="https://open.spotify.com/embed/track/1ESotnG260HrjQcBZrlL2m?utm_source=generator"
             class="spotify-player"
