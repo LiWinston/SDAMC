@@ -15,13 +15,13 @@ public class DatabaseUtil {
     // 新的 JDBC URL
     // private static final String JDBC_URL =
     // "jdbc:postgresql://ep-icy-sea-a7vt9oiq.ap-southeast-2.aws.neon.tech/postgres1?user=postgres1_owner&password=nt4ug9SwXZUr&sslmode=require";
-    private static final String JDBC_URL = "jdbc:postgresql://dpg-crkoe03tq21c73ddtb8g-a.singapore-postgres.render.com/postgres_sdamc";
+    private static final String JDBC_URL = "jdbc:postgresql://aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres_sdamc";
 
     // 新的数据库用户名
-    private static final String JDBC_USER = "postgres_sdamc_user";
+    private static final String JDBC_USER = "postgres.auurjplocrivtrknmvuj";
 
     // 新的数据库密码
-    private static final String JDBC_PASSWORD = "0Z1WenG5FErwzFeEs0DT7N3Rpf2d4J7T";
+    private static final String JDBC_PASSWORD = "JnWA9#Nzse-mQ3@";
 
     private static ThreadLocal<Connection> connection = ThreadLocal.withInitial(() -> null);
 
