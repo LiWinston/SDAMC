@@ -140,80 +140,120 @@ public class RsvpController extends HttpServlet {
             String eventIdStr = rsvpSubmitDTO.getEventId();
 
             if (eventIdStr == null || eventIdStr.isEmpty()) {
-                throw new IllegalArgumentException("missing Event ID");
+                IOWrapper.writeValue(resp, Result.error("Missing Event ID"));
+                return;
             }
             int eventId = Integer.parseInt(eventIdStr);
 
             Events event = (Events) eventsMapper.find(eventId);
+            if (event == null) {
+                IOWrapper.writeValue(resp, Result.error("Event not found"));
+                return;
+            }
+
             int totalAttendeesToRsvp = rsvpSubmitDTO.getAttendees().size();
             if (event.getCapacity() < totalAttendeesToRsvp) {
-                throw new IllegalArgumentException("Not enough capacity for this RSVP");
+                IOWrapper.writeValue(resp, Result.error("Not enough capacity for this RSVP"));
+                return;
             }
 
             boolean lockAcquired = LockManager.getInstance().acquireLock("Event_" + eventId, "handleRsvpSubmit", 2000);
-
             if (!lockAcquired) {
-                throw new IllegalArgumentException("Could not acquire lock for event");
+                IOWrapper.writeValue(resp, Result.error("Could not acquire lock for event"));
+                return;
             }
 
             // 使用 try-finally 确保事件锁在所有情况下都能释放
             try {
+                List<Students> validStudents = new ArrayList<>();
+
                 for (RsvpSubmitDTO.Attendee attendee : rsvpSubmitDTO.getAttendees()) {
-                    boolean attendeeLockAcquired = LockManager.getInstance().acquireLock("RSVP_USER_" + attendee.getStudentId() + "_Event_" + eventId, "handleRsvpSubmit", 2000);
+                    boolean attendeeLockAcquired = LockManager.getInstance()
+                        .acquireLock("RSVP_USER_" + attendee.getInputValue() + "_Event_" + eventId, "handleRsvpSubmit",
+                                2000);
                     if (!attendeeLockAcquired) {
-                        failedAttendees.add(attendee.getName());
-                        errorMessages.add("Could not acquire lock for attendee " + attendee.getStudentId());
+                        failedAttendees.add(attendee.getInputValue());
+                        errorMessages
+                            .add("Could not acquire lock for attendee with input: " + attendee.getInputValue());
                         continue;
                     }
 
                     try {
-                        int studentId = attendee.getStudentId();
-                        Students student = (Students) studentsMapper.find(studentId);
-                        if (student == null || !student.getName().equals(attendee.getName())
-                                || !student.getEmail().equals(attendee.getEmail())) {
-                            failedAttendees.add(attendee.getName());
-                            errorMessages.add("Invalid student information for ID: " + studentId);
+                        Students student = null;
+                        // 根据 inputType 检测合法性并查找学生
+                        switch (attendee.getInputType()) {
+                            case "studentId":
+                                try {
+                                    int studentId = Integer.parseInt(attendee.getInputValue());
+                                    student = (Students) studentsMapper.findById(studentId);
+                                }
+                                catch (Exception e) {
+                                    errorMessages.add("Invalid student ID: " + attendee.getInputValue());
+                                    continue;
+                                }
+                                break;
+                            case "email":
+                                student = studentsMapper.findByEmail(attendee.getInputValue());
+                                break;
+                            case "name":
+                                student = studentsMapper.findByName(attendee.getInputValue());
+                                break;
+                            default:
+                                errorMessages.add("Invalid input type: " + attendee.getInputType());
+                                continue;
+                        }
+
+                        if (student == null) {
+                            failedAttendees.add(attendee.getInputValue());
+                            errorMessages.add("Student not found for input: " + attendee.getInputValue());
                             continue;
                         }
-                        if (rsvpsMapper.findByStudentIdAndEventId(studentId, eventId) != null) {
-                            failedAttendees.add(attendee.getName());
-                            errorMessages.add("Student " + studentId + " already RSVPed for this event");
+
+                        if (rsvpsMapper.findByStudentIdAndEventId(student.getId(), eventId) != null) {
+                            failedAttendees.add(attendee.getInputValue());
+                            errorMessages.add("Student " + student.getId() + " already RSVPed for this event");
                             continue;
                         }
-                        Rsvps.insert(studentId, eventId, 1);
+
+                        // 插入 RSVP
+                        Rsvps.insert(student.getId(), eventId, 1);
+                        validStudents.add(student);
                         successfulAttendees.add(attendee);
-                    } finally {
+                    }
+                    finally {
                         // 始终释放与 Attendee 相关的锁
-                        LockManager.getInstance().releaseLock("RSVP_USER_" + attendee.getStudentId() + "_Event_" + eventId, "handleRsvpSubmit");
+                        LockManager.getInstance()
+                            .releaseLock("RSVP_USER_" + attendee.getInputValue() + "_Event_" + eventId,
+                                    "handleRsvpSubmit");
                     }
                 }
 
                 // 更新事件容量
-                event.decreaseCapacity(successfulAttendees.size());
-                // eventsMapper.update(event);
+                event.decreaseCapacity(validStudents.size());
+                eventsMapper.update(event);
 
-                // 构建结果消息
-                if (!successfulAttendees.isEmpty() && failedAttendees.isEmpty()) {
-                    new ObjectMapper().writeValue(resp.getOutputStream(), Result.success("RSVP successful for all attendees"));
-                } else {
-                    String msg = "RSVP successful for: " + successfulAttendees.stream()
-                            .map(RsvpSubmitDTO.Attendee::getName)
-                            .collect(Collectors.joining(", "))
-                            + ". Failed for: " + failedAttendees.stream().collect(Collectors.joining(", "))
-                            + ". Reasons: " + String.join(", ", errorMessages);
+                // 构建最终消息
+                String successMsg = validStudents.isEmpty() ? ""
+                        : "RSVP successful for: " + validStudents.stream()
+                            .map(Students::getId)
+                            .map(String::valueOf)
+                            .collect(Collectors.joining(", "));
+                String errorMsg = !errorMessages.isEmpty() ? ". Failed for: " + String.join(", ", failedAttendees)
+                        + ". Reasons: " + String.join("; ", errorMessages) : "";
 
-                    new ObjectMapper().writeValue(resp.getOutputStream(), Result.error(msg));
-                }
-            } finally {
+                IOWrapper.writeValue(resp, validStudents.size() == rsvpSubmitDTO.getAttendees().size()
+                        ? Result.success(successMsg + errorMsg) : Result.error(successMsg + errorMsg));
+            }
+            finally {
                 // 始终释放事件锁
                 LockManager.getInstance().releaseLock("Event_" + eventId, "handleRsvpSubmit");
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             System.out.println("Error in handleRsvpSubmit: " + e.getMessage());
             e.printStackTrace();
-            new ObjectMapper().writeValue(resp.getOutputStream(), Result.error(e.getMessage()));
+            IOWrapper.writeValue(resp, Result.error("An unexpected error occurred: " + e.getMessage()));
         }
     }
-
 
 }

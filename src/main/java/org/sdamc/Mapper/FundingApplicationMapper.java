@@ -27,8 +27,8 @@ public class FundingApplicationMapper extends DataMapper {
 
             while (rs.next()) {
                 FundingApplication application = new FundingApplication(rs.getInt("id"), rs.getString("description"),
-                        rs.getFloat("amount"), rs.getInt("student_id"), rs.getInt("club_id"),
-                        rs.getString("status"), rs.getString("semester"), rs.getInt("version"));
+                        rs.getFloat("amount"), rs.getInt("student_id"), rs.getInt("club_id"), rs.getString("status"),
+                        rs.getString("semester"), rs.getInt("version"));
                 applications.add(application);
             }
         }
@@ -46,8 +46,8 @@ public class FundingApplicationMapper extends DataMapper {
 
             while (rs.next()) {
                 FundingApplication application = new FundingApplication(rs.getInt("id"), rs.getString("description"),
-                        rs.getFloat("amount"), rs.getInt("student_id"), rs.getInt("club_id"),
-                        rs.getString("status"), rs.getString("semester"), rs.getInt("version"));
+                        rs.getFloat("amount"), rs.getInt("student_id"), rs.getInt("club_id"), rs.getString("status"),
+                        rs.getString("semester"), rs.getInt("version"));
                 applications.add(application);
             }
         }
@@ -73,7 +73,8 @@ public class FundingApplicationMapper extends DataMapper {
                     return;
                 }
             }
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             e.printStackTrace();
             return;
         }
@@ -101,10 +102,8 @@ public class FundingApplicationMapper extends DataMapper {
             throw new IllegalArgumentException("Invalid object type");
         }
         FundingApplication application = (FundingApplication) obj;
-        String sql = "UPDATE funding_applications "
-                + "SET description = ?, amount = ?, student_id = ?, club_id = ?, "
-                + "status = ?::funding_status, semester = ?, version = version + 1 "
-                + "WHERE id = ? AND version = ?";
+        String sql = "UPDATE funding_applications " + "SET description = ?, amount = ?, student_id = ?, club_id = ?, "
+                + "status = ?::funding_status, semester = ?, version = version + 1 " + "WHERE id = ? AND version = ?";
 
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
             stmt.setString(1, application.getDescription());
@@ -112,9 +111,9 @@ public class FundingApplicationMapper extends DataMapper {
             stmt.setInt(3, application.getStudentId());
             stmt.setInt(4, application.getClubId());
             stmt.setString(5, application.getStatus());
-            stmt.setString(6, "2024_S2");  // 使用传入的学期
+            stmt.setString(6, "2024_S2"); // 使用传入的学期
             stmt.setInt(7, application.getId());
-            stmt.setInt(8, application.getVersion());  // 校验传入的 version
+            stmt.setInt(8, application.getVersion()); // 校验传入的 version
 
             int affectedRows = stmt.executeUpdate();
             try {
@@ -122,9 +121,11 @@ public class FundingApplicationMapper extends DataMapper {
                     // 如果没有任何记录更新，说明版本冲突，抛出异常或提示用户
                     throw new SQLException("The funding application was modified by another user.");
                 }
-            } catch (SQLException ignored) {
             }
-        } catch (SQLException e) {
+            catch (SQLException ignored) {
+            }
+        }
+        catch (SQLException e) {
             e.printStackTrace();
             // 可以根据业务需求进一步处理异常
         }
@@ -148,7 +149,8 @@ public class FundingApplicationMapper extends DataMapper {
                     throw new IllegalStateException("Funding application already existed");
                 }
             }
-        } catch (SQLException e) {
+        }
+        catch (SQLException e) {
             e.printStackTrace();
             return;
         }

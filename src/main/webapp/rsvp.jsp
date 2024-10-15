@@ -50,6 +50,9 @@
             padding: 20px;
             margin-bottom: 20px;
         }
+        .input-group-prepend {
+            min-width: 130px;
+        }
     </style>
 </head>
 <body>
@@ -75,14 +78,15 @@
         <div id="attendees">
             <div class="attendee">
                 <h5 class="mb-3">Attendee Information</h5>
-                <div class="form-group">
-                    <input type="number" name="studentId[]" class="form-control" placeholder="Student ID" required>
-                </div>
-                <div class="form-group">
-                    <input type="text" name="name[]" class="form-control" placeholder="Name" required>
-                </div>
-                <div class="form-group">
-                    <input type="email" name="email[]" class="form-control" placeholder="Email" required>
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <select class="custom-select" name="inputType[]">
+                            <option value="studentId">Student ID</option>
+                            <option value="email">Email</option>
+                            <option value="name">Name</option>
+                        </select>
+                    </div>
+                    <input type="text" name="inputValue[]" class="form-control" placeholder="Enter value" required>
                 </div>
             </div>
         </div>
@@ -104,14 +108,15 @@
         newAttendee.className = 'attendee mt-4';
         newAttendee.innerHTML = `
             <h5 class="mb-3">Additional Attendee</h5>
-            <div class="form-group">
-                <input type="number" name="studentId[]" class="form-control" placeholder="Student ID" required>
-            </div>
-            <div class="form-group">
-                <input type="text" name="name[]" class="form-control" placeholder="Name" required>
-            </div>
-            <div class="form-group">
-                <input type="email" name="email[]" class="form-control" placeholder="Email" required>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <select class="custom-select" name="inputType[]">
+                        <option value="studentId">Student ID</option>
+                        <option value="email">Email</option>
+                        <option value="name">Name</option>
+                    </select>
+                </div>
+                <input type="text" name="inputValue[]" class="form-control" placeholder="Enter value" required>
             </div>
         `;
         attendeesDiv.appendChild(newAttendee);
@@ -123,42 +128,26 @@
         var formData = new FormData(form);
 
         var eventId = formData.get('eventId');
-        console.log('Submitting form with eventId:', eventId);
-
         if (!eventId) {
-            console.log('EventId is missing from form, trying to get from URL');
             var urlParams = new URLSearchParams(window.location.search);
             eventId = urlParams.get('eventId');
-            console.log('EventId from URL:', eventId);
-            if (eventId) {
-                formData.set('eventId', eventId);
-            } else {
+            if (!eventId) {
                 Swal.fire('Error', 'Event ID is missing', 'error');
                 return;
             }
         }
 
-        // Print all form data
-        for (var pair of formData.entries()) {
-            console.log(pair[0]+ ', ' + pair[1]);
-        }
+        var inputTypes = formData.getAll('inputType[]');
+        var inputValues = formData.getAll('inputValue[]');
 
-        // Get all attendee-related field data
-        var studentIds = formData.getAll('studentId[]');
-        var names = formData.getAll('name[]');
-        var emails = formData.getAll('email[]');
-
-        // Construct attendee array
         var attendees = [];
-        for (var i = 0; i < studentIds.length; i++) {
+        for (var i = 0; i < inputTypes.length; i++) {
             attendees.push({
-                studentId: studentIds[i],
-                name: names[i],
-                email: emails[i]
+                inputType: inputTypes[i],
+                inputValue: inputValues[i]
             });
         }
 
-        // Construct final JSON structure
         var rsvpData = {
             eventId: eventId,
             attendees: attendees
@@ -171,14 +160,8 @@
             },
             body: JSON.stringify(rsvpData),
         })
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                console.log('Response:', data);
                 if (data.code === 1) {
                     Swal.fire({
                         title: 'Success',
@@ -191,7 +174,7 @@
                     });
                 } else {
                     Swal.fire({
-                        title: 'Partial Success',
+                        title: 'Problem occurred',
                         text: data.msg,  // 此处显示成功和失败的详细信息
                         icon: 'warning',
                         timer: Math.max(2000, data.msg.length * 100),

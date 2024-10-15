@@ -32,7 +32,7 @@ public class FundingApplication extends DomainObject {
     }
 
     public FundingApplication(int id, String description, float amount, int studentId, int clubId, String status,
-                              String semester, int version) {
+            String semester, int version) {
         this.id = id;
         this.description = description;
         this.amount = amount;
@@ -63,8 +63,8 @@ public class FundingApplication extends DomainObject {
         }
     }
 
-    public static FundingApplication insert(String description, float amount, int studentId, int clubId,
-            String status, String semester, int version) {
+    public static FundingApplication insert(String description, float amount, int studentId, int clubId, String status,
+            String semester, int version) {
         FundingApplication application = new FundingApplication(DataMapper.GetMapper(tableName).getNewId());
         application.description = description;
         application.amount = amount;

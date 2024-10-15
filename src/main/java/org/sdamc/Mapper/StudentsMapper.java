@@ -25,6 +25,48 @@ public class StudentsMapper extends DataMapper {
         return new Students(id);
     }
 
+    public DomainObject findById(int id) {
+        String sql = "SELECT id, name, email, password FROM students WHERE id = ?";
+        try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                log.info("Found student {}{}{}", rs.getInt("id"), rs.getString("name"), rs.getString("email"));
+                var st = new Students(rs.getInt("id"));
+                st.setName(rs.getString("name"));
+                st.setEmail(rs.getString("email"));
+                st.setPassword(rs.getString("password"));
+                return st;
+            }
+            return null;
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public Students findByName(String name) {
+        String sql = "SELECT id, name, email, password FROM students WHERE name = ?";
+        try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {
+            stmt.setString(1, name);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                log.info("Found student {}{}{}", rs.getInt("id"), rs.getString("name"), rs.getString("email"));
+                var st = new Students(rs.getInt("id"));
+                st.setName(rs.getString("name"));
+                st.setEmail(rs.getString("email"));
+                st.setPassword(rs.getString("password"));
+                return st;
+            }
+            return null;
+        }
+        catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public Students findByEmail(String email) {
         String sql = "SELECT id, name, email, password FROM students WHERE email = ?";
         try (PreparedStatement stmt = DatabaseUtil.getConnection().prepareStatement(sql)) {

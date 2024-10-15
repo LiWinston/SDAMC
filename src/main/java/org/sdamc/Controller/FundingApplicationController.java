@@ -171,11 +171,12 @@ public class FundingApplicationController extends HttpServlet {
             }
         }
         catch (Exception e) {
-            if(Objects.equals(e.getMessage(), "The funding application was modified by another user.")){
+            if (Objects.equals(e.getMessage(), "The funding application was modified by another user.")) {
                 resp.setStatus(HttpServletResponse.SC_ACCEPTED);
                 resp.setContentType("application/json");
                 new ObjectMapper().writeValue(resp.getOutputStream(), Result.error(e.getMessage()));
-            } else {
+            }
+            else {
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 resp.setContentType("application/json");
                 new ObjectMapper().writeValue(resp.getOutputStream(), Result.error("Database error"));
@@ -232,11 +233,12 @@ public class FundingApplicationController extends HttpServlet {
                     Result.success(null, "Funding application: " + application.getId() + " submitted successfully"));
         }
         catch (Exception e) {
-            if(Objects.equals(e.getMessage(), "Funding application already existed")){
+            if (Objects.equals(e.getMessage(), "Funding application already existed")) {
                 resp.setStatus(HttpServletResponse.SC_ACCEPTED);
                 resp.setContentType("application/json");
                 new ObjectMapper().writeValue(resp.getOutputStream(), Result.error(e.getMessage()));
-            } else {
+            }
+            else {
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 resp.setContentType("application/json");
                 new ObjectMapper().writeValue(resp.getOutputStream(), Result.error(e.getMessage()));
@@ -294,17 +296,20 @@ public class FundingApplicationController extends HttpServlet {
 
                 IOWrapper.writeValue(resp,
                         Result.success(null, "Funding application: " + application.getId() + " approved"));
-            } else {
+            }
+            else {
                 IOWrapper.writeValue(resp, Result.error("Invalid path"), HttpServletResponse.SC_BAD_REQUEST);
             }
 
             UnitofWork.getCurrent().commit();
-        }catch (Exception e){
-            if(Objects.equals(e.getMessage(), "The funding application was modified by another user.")){
+        }
+        catch (Exception e) {
+            if (Objects.equals(e.getMessage(), "The funding application was modified by another user.")) {
                 resp.setStatus(HttpServletResponse.SC_ACCEPTED);
                 resp.setContentType("application/json");
                 new ObjectMapper().writeValue(resp.getOutputStream(), Result.error(e.getMessage()));
-            } else {
+            }
+            else {
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 resp.setContentType("application/json");
                 new ObjectMapper().writeValue(resp.getOutputStream(), Result.error("Database error"));
@@ -318,7 +323,7 @@ public class FundingApplicationController extends HttpServlet {
         String[] parts = pathInfo.split("/");
         String userId = new ObjectMapper().readTree(req.getInputStream()).get("userId").asText();
         log.warn("userId: " + userId);
-        try{
+        try {
             UnitofWork.newCurrent();
 
             // 检查路径是否合法
@@ -346,17 +351,20 @@ public class FundingApplicationController extends HttpServlet {
 
                 IOWrapper.writeValue(resp,
                         Result.success(null, "Funding application: " + application.getId() + " rejected"));
-            } else {
+            }
+            else {
                 IOWrapper.writeValue(resp, Result.error("Invalid path"), HttpServletResponse.SC_BAD_REQUEST);
             }
 
             UnitofWork.getCurrent().commit();
-        }catch (Exception e){
-            if(Objects.equals(e.getMessage(), "The funding application was modified by another user.")){
+        }
+        catch (Exception e) {
+            if (Objects.equals(e.getMessage(), "The funding application was modified by another user.")) {
                 resp.setStatus(HttpServletResponse.SC_ACCEPTED);
                 resp.setContentType("application/json");
                 new ObjectMapper().writeValue(resp.getOutputStream(), Result.error(e.getMessage()));
-            } else {
+            }
+            else {
                 resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 resp.setContentType("application/json");
                 new ObjectMapper().writeValue(resp.getOutputStream(), Result.error("Database error"));

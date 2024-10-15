@@ -13,11 +13,9 @@ public class RsvpSubmitDTO {
     @Data
     public static class Attendee {
 
-        private Integer studentId;
+        private String inputType;
 
-        private String name;
-
-        private String email;
+        private String inputValue;
 
     }
 
