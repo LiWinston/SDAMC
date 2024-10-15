@@ -21,7 +21,9 @@ import org.sdamc.Utils.LockManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @WebServlet(name = "RsvpController", value = "/rsvp/*")
@@ -233,16 +235,27 @@ public class RsvpController extends HttpServlet {
                 eventsMapper.update(event);
 
                 // 构建最终消息
-                String successMsg = validStudents.isEmpty() ? ""
-                        : "RSVP successful for: " + validStudents.stream()
-                            .map(Students::getId)
-                            .map(String::valueOf)
-                            .collect(Collectors.joining(", "));
+                Map<String, List<String>> successMap = new HashMap<>();
+                for (var attendee : successfulAttendees) {
+                    String inputType = attendee.getInputType();
+                    String inputValue = attendee.getInputValue();
+
+                    // 如果 successMap 中已经存在该 inputType，则将 inputValue 添加到该类型的 List 中
+                    successMap.computeIfAbsent(inputType, k -> new ArrayList<>()).add(inputValue);
+                }
+
+                String successMsg = successfulAttendees.isEmpty() ? ""
+                        : "RSVP successful for: " + successfulAttendees.stream()
+                        .map(attendee -> attendee.getInputType() + ": " + attendee.getInputValue())
+                        .collect(Collectors.joining(", "));
                 String errorMsg = !errorMessages.isEmpty() ? ". Failed for: " + String.join(", ", failedAttendees)
                         + ". Reasons: " + String.join("; ", errorMessages) : "";
 
-                IOWrapper.writeValue(resp, validStudents.size() == rsvpSubmitDTO.getAttendees().size()
-                        ? Result.success(successMsg + errorMsg) : Result.error(successMsg + errorMsg));
+                Result<Map<String, List<String>>> result = validStudents.size() == rsvpSubmitDTO.getAttendees().size()
+                        ? Result.success(successMap, successMsg + errorMsg)
+                        : Result.error(successMap, successMsg + errorMsg);
+
+                IOWrapper.writeValue(resp, result);
             }
             finally {
                 // 始终释放事件锁

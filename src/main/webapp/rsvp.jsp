@@ -13,43 +13,52 @@
             background-color: #f8f9fa;
             font-family: 'Arial', sans-serif;
         }
+
         .container {
             background-color: white;
             border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
             padding: 30px;
             margin-top: 50px;
         }
+
         h1 {
             color: #007bff;
             font-weight: bold;
             margin-bottom: 30px;
         }
+
         .event-card {
             background-color: #f1f8ff;
             border-left: 5px solid #007bff;
         }
+
         .form-control {
             border-radius: 20px;
         }
+
         .btn {
             border-radius: 20px;
             padding: 10px 20px;
         }
+
         .btn-primary {
             background-color: #007bff;
             border-color: #007bff;
         }
+
         .btn-secondary {
             background-color: #6c757d;
             border-color: #6c757d;
         }
+
         .attendee {
             background-color: #f8f9fa;
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 20px;
         }
+
         .input-group-prepend {
             min-width: 130px;
         }
@@ -66,27 +75,32 @@
 
     <div class="card mb-4 event-card">
         <div class="card-body">
-            <h5 class="card-title"><%= event.getTitle() %></h5>
-            <p class="card-text"><%= event.getDescription() %></p>
-            <p><i class="fas fa-map-marker-alt mr-2"></i>Venue: <%= event.getVenue() %></p>
-            <p><i class="far fa-calendar-alt mr-2"></i>Date: <%= event.getBeginTime() %></p>
+            <h5 class="card-title"><%= event.getTitle() %>
+            </h5>
+            <p class="card-text"><%= event.getDescription() %>
+            </p>
+            <p><i class="fas fa-map-marker-alt mr-2"></i>Venue: <%= event.getVenue() %>
+            </p>
+            <p><i class="far fa-calendar-alt mr-2"></i>Date: <%= event.getBeginTime() %>
+            </p>
         </div>
     </div>
 
     <form id="rsvpSubmitForm">
         <input type="hidden" id="eventId" name="eventId" value="${eventId}">
         <div id="attendees">
-            <div class="attendee">
+            <div class="attendee" data-attendee-row>
                 <h5 class="mb-3">Attendee Information</h5>
                 <div class="input-group mb-3">
                     <div class="input-group-prepend">
-                        <select class="custom-select" name="inputType[]">
+                        <select class="custom-select" name="inputType[]" data-input-type>
                             <option value="studentId">Student ID</option>
                             <option value="email">Email</option>
                             <option value="name">Name</option>
                         </select>
                     </div>
-                    <input type="text" name="inputValue[]" class="form-control" placeholder="Enter value" required>
+                    <input type="text" name="inputValue[]" class="form-control" placeholder="Enter value" required
+                           data-input-value>
                 </div>
             </div>
         </div>
@@ -123,7 +137,7 @@
     }
 
     const form = document.getElementById('rsvpSubmitForm');
-    form.onsubmit = function(e) {
+    form.onsubmit = function (e) {
         e.preventDefault();
         var formData = new FormData(form);
 
@@ -162,27 +176,56 @@
         })
             .then(response => response.json())
             .then(data => {
-                if (data.code === 1) {
+                if (data.code === 1 || data.code === 0) {
+                    // Parse success message to find successfully processed attendees
+                    const successAttendees = data.data;
+                    if (successAttendees) {
+                        Object.entries(successAttendees).forEach(([inputType, inputValues]) => {
+                            inputType = inputType.trim().toLowerCase();
+                            inputValues.forEach(inputValue => {
+                                inputValue = inputValue.trim();
+                                if (inputType && inputValue) {
+                                    // 查找并移除表单中相应的 Attendee 行
+                                    const attendeeRows = document.querySelectorAll('.attendee');
+                                    attendeeRows.forEach(row => {
+                                        const typeField = row.querySelector('select[name="inputType[]"]');
+                                        const valueField = row.querySelector('input[name="inputValue[]"]');
+                                        // 标准化比较
+                                        const cleanTypeField = typeField.value.trim().toLowerCase();
+                                        const cleanValueField = valueField.value.trim();
+
+                                        if (typeField && valueField && cleanTypeField === inputType && cleanValueField === inputValue) {
+                                            row.remove(); // 移除 Attendee 行
+                                            console.log(`Attendee with ${cleanTypeField}: ${cleanValueField} removed.`);
+                                        }
+                                    });
+                                }
+                            });
+                        });
+                    }
+
                     Swal.fire({
-                        title: 'Success',
+                        title: data.code === 1 ? 'Success' : 'Problem occurred',
                         text: data.msg,
-                        icon: 'success',
-                        timer: 2000,
+                        icon: data.code === 1 ? 'success' : 'warning',
+                        timer: Math.max(2000, data.msg.length * 100),
                         showConfirmButton: false
                     }).then(() => {
-                        window.location.href = '/events';
+                        if (data.code === 1) {
+                            window.location.href = '/events';
+                        }
                     });
                 } else {
                     Swal.fire({
-                        title: 'Problem occurred',
-                        text: data.msg,  // 此处显示成功和失败的详细信息
+                        title: 'Unknown Problem occurred',
+                        text: data.msg,  // Display detailed success and failure information
                         icon: 'warning',
                         timer: Math.max(2000, data.msg.length * 100),
                         showConfirmButton: false
                     });
                 }
             })
-                .catch(error => {
+            .catch(error => {
                 console.error('Error:', error);
                 Swal.fire({
                     title: 'Error',
@@ -193,6 +236,7 @@
                 });
             });
     };
+
 </script>
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
