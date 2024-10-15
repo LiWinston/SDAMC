@@ -130,10 +130,9 @@ public class EventService {
             Map<String, String> requestBody = mapper.readValue(req.getInputStream(), Map.class);
 
             int eventId = Integer.parseInt(requestBody.get("eventId"));
-            Events event = (Events) eventsMapper.find(eventId);
 
             // 尝试获取锁，超时时间为2000毫秒
-            boolean lockAcquired = LockManager.getInstance().acquireLock("Event_" + eventId, "handlePutEvent", 2000);
+            boolean lockAcquired = LockManager.getInstance().acquireLock("Event_" + eventId, "handlePutEvent", 750);
 
             if (!lockAcquired) {
                 // 锁获取失败，返回错误响应
@@ -144,8 +143,9 @@ public class EventService {
 
             // 如果锁获取成功，继续执行以下操作
             UnitofWork.newCurrent();
-
-            if (event != null) {
+            Events event = (Events) eventsMapper.find(eventId);
+            int id = event.getId();
+            if (id == eventId) {
                 // 更新事件信息
                 requestBody.remove("eventId"); // 移除eventId，避免更新时出错
                 eventsMapper.update(event, requestBody);

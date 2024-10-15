@@ -14,6 +14,7 @@ import org.sdamc.Services.EventCascadeOpSvc;
 import org.sdamc.Services.EventService;
 import org.sdamc.Transaction.TransactionalScanner;
 import org.sdamc.Utils.IOWrapper;
+import org.sdamc.Utils.LockManager;
 
 import java.io.IOException;
 import java.util.List;
@@ -103,19 +104,33 @@ public class EventController extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        String lockable = null;
+        int userId = -1;
         try {
             ObjectMapper mapper = new ObjectMapper();
             Map<String, String> requestBody = mapper.readValue(req.getInputStream(), Map.class);
-            int userId = Integer.parseInt(requestBody.get("userId"));
+            userId = Integer.parseInt(requestBody.get("userId"));
+            if (userId == -1) {
+                resp.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid input data");
+                return;
+            }
             int eventId = Integer.parseInt(requestBody.get("eventId"));
             int clubId = Integer.parseInt(requestBody.get("clubId"));
 
+            Boolean lockAcquired = LockManager.getInstance()
+                .acquireLock("Event_" + eventId, String.valueOf(userId), 49);
+            if (!lockAcquired) {
+                resp.sendError(HttpServletResponse.SC_CONFLICT, "Failed to acquire event lock");
+                return;
+            }
+            lockable = "Event_" + eventId;
             // 调用 deleteEvent 方法
             Result<?> result = eventCascadeOpSvc.deleteEvent(eventId, userId, clubId);
 
             // 返回结果
             resp.setContentType("application/json");
             resp.setStatus(HttpServletResponse.SC_OK); // 成功状态码
+            LockManager.getInstance().releaseLock("Event_" + eventId, String.valueOf(userId));
             new ObjectMapper().writeValue(resp.getOutputStream(), result); // 返回结果
         }
         catch (NumberFormatException e) {
@@ -123,6 +138,9 @@ public class EventController extends HttpServlet {
         }
         catch (Exception e) {
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error" + e.getMessage());
+        }
+        finally {
+            LockManager.getInstance().releaseLock(lockable, String.valueOf(userId));
         }
     }
 

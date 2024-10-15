@@ -158,7 +158,7 @@
                 <input type="text" name="description" class="form-control" placeholder="Description"/>
                 <input type="text" name="venue" class="form-control" placeholder="Venue" required/>
                 <input type="number" name="capacity" class="form-control" placeholder="Capacity"/>
-                <input type="datetime-local" name="beginTime" class="form-control" placeholder="Begin Time" required/>
+                <input type="datetime-local" name="beginTime" class="form-control" placeholder="Begin Time" value="<%= java.time.LocalDateTime.now().toString().substring(0, 16) %>"/>
                 <input type="datetime-local" name="endTime" class="form-control" placeholder="End Time"/>
                 <button type="submit" class="btn btn-custom">Create</button>
             </form>
