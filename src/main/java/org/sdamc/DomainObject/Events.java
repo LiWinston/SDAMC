@@ -36,7 +36,7 @@ public class Events extends DomainObject {
     }
 
     public void decreaseCapacity(int amount) {
-        if (amount <= 0) {
+        if (amount < 0) {
             throw new IllegalArgumentException("Amount must be positive");
         }
         if (this.capacity < amount) {

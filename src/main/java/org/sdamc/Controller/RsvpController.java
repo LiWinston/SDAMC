@@ -20,7 +20,9 @@ import org.sdamc.Utils.IOWrapper;
 import org.sdamc.Utils.LockManager;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @WebServlet(name = "RsvpController", value = "/rsvp/*")
 public class RsvpController extends HttpServlet {
@@ -129,6 +131,10 @@ public class RsvpController extends HttpServlet {
     private void handleRsvpSubmit(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         resp.setContentType("application/json");
 
+        List<RsvpSubmitDTO.Attendee> successfulAttendees = new ArrayList<>();
+        List<String> failedAttendees = new ArrayList<>();
+        List<String> errorMessages = new ArrayList<>();
+
         try {
             RsvpSubmitDTO rsvpSubmitDTO = IOWrapper.readValue(req, RsvpSubmitDTO.class);
             String eventIdStr = rsvpSubmitDTO.getEventId();
@@ -155,7 +161,9 @@ public class RsvpController extends HttpServlet {
                 for (RsvpSubmitDTO.Attendee attendee : rsvpSubmitDTO.getAttendees()) {
                     boolean attendeeLockAcquired = LockManager.getInstance().acquireLock("RSVP_USER_" + attendee.getStudentId() + "_Event_" + eventId, "handleRsvpSubmit", 2000);
                     if (!attendeeLockAcquired) {
-                        throw new IllegalArgumentException("Could not acquire lock for attendee " + attendee.getStudentId());
+                        failedAttendees.add(attendee.getName());
+                        errorMessages.add("Could not acquire lock for attendee " + attendee.getStudentId());
+                        continue;
                     }
 
                     try {
@@ -163,12 +171,17 @@ public class RsvpController extends HttpServlet {
                         Students student = (Students) studentsMapper.find(studentId);
                         if (student == null || !student.getName().equals(attendee.getName())
                                 || !student.getEmail().equals(attendee.getEmail())) {
-                            throw new IllegalArgumentException("Invalid student information for ID: " + studentId);
+                            failedAttendees.add(attendee.getName());
+                            errorMessages.add("Invalid student information for ID: " + studentId);
+                            continue;
                         }
                         if (rsvpsMapper.findByStudentIdAndEventId(studentId, eventId) != null) {
-                            throw new IllegalArgumentException("Student " + studentId + " already RSVPed for this event");
+                            failedAttendees.add(attendee.getName());
+                            errorMessages.add("Student " + studentId + " already RSVPed for this event");
+                            continue;
                         }
                         Rsvps.insert(studentId, eventId, 1);
+                        successfulAttendees.add(attendee);
                     } finally {
                         // 始终释放与 Attendee 相关的锁
                         LockManager.getInstance().releaseLock("RSVP_USER_" + attendee.getStudentId() + "_Event_" + eventId, "handleRsvpSubmit");
@@ -176,11 +189,21 @@ public class RsvpController extends HttpServlet {
                 }
 
                 // 更新事件容量
-                event.decreaseCapacity(totalAttendeesToRsvp);
-//                Thread.sleep(3000); // 模拟处理时间
+                event.decreaseCapacity(successfulAttendees.size());
                 // eventsMapper.update(event);
 
-                new ObjectMapper().writeValue(resp.getOutputStream(), Result.success("RSVP successful"));
+                // 构建结果消息
+                if (!successfulAttendees.isEmpty() && failedAttendees.isEmpty()) {
+                    new ObjectMapper().writeValue(resp.getOutputStream(), Result.success("RSVP successful for all attendees"));
+                } else {
+                    String msg = "RSVP successful for: " + successfulAttendees.stream()
+                            .map(RsvpSubmitDTO.Attendee::getName)
+                            .collect(Collectors.joining(", "))
+                            + ". Failed for: " + failedAttendees.stream().collect(Collectors.joining(", "))
+                            + ". Reasons: " + String.join(", ", errorMessages);
+
+                    new ObjectMapper().writeValue(resp.getOutputStream(), Result.error(msg));
+                }
             } finally {
                 // 始终释放事件锁
                 LockManager.getInstance().releaseLock("Event_" + eventId, "handleRsvpSubmit");
@@ -191,5 +214,6 @@ public class RsvpController extends HttpServlet {
             new ObjectMapper().writeValue(resp.getOutputStream(), Result.error(e.getMessage()));
         }
     }
+
 
 }

@@ -191,15 +191,15 @@
                     });
                 } else {
                     Swal.fire({
-                        title: 'Error',
-                        text: data.msg,
-                        icon: 'error',
-                        timer: 2000,
+                        title: 'Partial Success',
+                        text: data.msg,  // 此处显示成功和失败的详细信息
+                        icon: 'warning',
+                        timer: Math.max(2000, data.msg.length * 100),
                         showConfirmButton: false
                     });
                 }
             })
-            .catch(error => {
+                .catch(error => {
                 console.error('Error:', error);
                 Swal.fire({
                     title: 'Error',
