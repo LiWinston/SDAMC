@@ -17,6 +17,7 @@ import org.sdamc.Mapper.RsvpsMapper;
 import org.sdamc.Mapper.StudentsMapper;
 import org.sdamc.UnitofWork;
 import org.sdamc.Utils.IOWrapper;
+import org.sdamc.Utils.LockManager;
 
 import java.io.IOException;
 import java.util.List;
@@ -143,30 +144,51 @@ public class RsvpController extends HttpServlet {
                 throw new IllegalArgumentException("Not enough capacity for this RSVP");
             }
 
-            for (RsvpSubmitDTO.Attendee attendee : rsvpSubmitDTO.getAttendees()) {
-                int studentId = attendee.getStudentId();
-                Students student = (Students) studentsMapper.find(studentId);
-                if (student == null || !student.getName().equals(attendee.getName())
-                        || !student.getEmail().equals(attendee.getEmail())) {
-                    throw new IllegalArgumentException("Invalid student information for ID: " + studentId);
-                }
-                if (rsvpsMapper.findByStudentIdAndEventId(studentId, eventId) != null) {
-                    throw new IllegalArgumentException("Student " + studentId + " already RSVPed for this event");
-                }
-                Rsvps.insert(studentId, eventId, 1);
+            boolean lockAcquired = LockManager.getInstance().acquireLock("Event_" + eventId, "handleRsvpSubmit", 2000);
+
+            if (!lockAcquired) {
+                throw new IllegalArgumentException("Could not acquire lock for event");
             }
 
-            // 更新事件容量
-            event.decreaseCapacity(totalAttendeesToRsvp);
-            // eventsMapper.update(event);
+            // 使用 try-finally 确保事件锁在所有情况下都能释放
+            try {
+                for (RsvpSubmitDTO.Attendee attendee : rsvpSubmitDTO.getAttendees()) {
+                    boolean attendeeLockAcquired = LockManager.getInstance().acquireLock("RSVP_USER_" + attendee.getStudentId() + "_Event_" + eventId, "handleRsvpSubmit", 2000);
+                    if (!attendeeLockAcquired) {
+                        throw new IllegalArgumentException("Could not acquire lock for attendee " + attendee.getStudentId());
+                    }
 
-            new ObjectMapper().writeValue(resp.getOutputStream(), Result.success("RSVP successful"));
-        }
-        catch (Exception e) {
+                    try {
+                        int studentId = attendee.getStudentId();
+                        Students student = (Students) studentsMapper.find(studentId);
+                        if (student == null || !student.getName().equals(attendee.getName())
+                                || !student.getEmail().equals(attendee.getEmail())) {
+                            throw new IllegalArgumentException("Invalid student information for ID: " + studentId);
+                        }
+                        if (rsvpsMapper.findByStudentIdAndEventId(studentId, eventId) != null) {
+                            throw new IllegalArgumentException("Student " + studentId + " already RSVPed for this event");
+                        }
+                        Rsvps.insert(studentId, eventId, 1);
+                    } finally {
+                        // 始终释放与 Attendee 相关的锁
+                        LockManager.getInstance().releaseLock("RSVP_USER_" + attendee.getStudentId() + "_Event_" + eventId, "handleRsvpSubmit");
+                    }
+                }
+
+                // 更新事件容量
+                event.decreaseCapacity(totalAttendeesToRsvp);
+//                Thread.sleep(3000); // 模拟处理时间
+                // eventsMapper.update(event);
+
+                new ObjectMapper().writeValue(resp.getOutputStream(), Result.success("RSVP successful"));
+            } finally {
+                // 始终释放事件锁
+                LockManager.getInstance().releaseLock("Event_" + eventId, "handleRsvpSubmit");
+            }
+        } catch (Exception e) {
             System.out.println("Error in handleRsvpSubmit: " + e.getMessage());
             e.printStackTrace();
             new ObjectMapper().writeValue(resp.getOutputStream(), Result.error(e.getMessage()));
-            throw e; // 重新抛出异常，让 doPost 方法捕获并处理
         }
     }
 
