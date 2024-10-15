@@ -110,11 +110,11 @@ public class RsvpController extends HttpServlet {
             }
 
             Events event = (Events) eventsMapper.find(rsvp.getEventId());
-            // System.out.println(event.getCapacity());
+            System.out.println(event.getCapacity());
             event.increaseCapacity(1); // Assuming each RSVP is for 1 ticket
-            // System.out.println(event.getCapacity());
+            System.out.println(event.getCapacity());
             eventsMapper.update(event);
-            // System.out.println(event.getCapacity());
+            System.out.println(event.getCapacity());
             rsvpsMapper.delete(rsvp);
 
             IOWrapper.writeValue(resp, Result.success("RSVP cancelled successfully"));
