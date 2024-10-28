@@ -165,8 +165,10 @@ public class LockManager {
 
                 if (stamp != 0L) {
                     // 记录锁的所有者和重入计数
-                    lockOwners.put(lockable, currentThread);
-                    lockCounts.putIfAbsent(lockable, new AtomicInteger(1));
+                    synchronized (this) {
+                        lockOwners.put(lockable, currentThread);
+                        lockCounts.putIfAbsent(lockable, new AtomicInteger(1));
+                    }
 
                     System.out.println(String.format("Write lock acquired for %s by %s (attempt: %dms/%dms)", lockable,
                             currentThread, timeSpent, totalTimeout));
@@ -342,7 +344,7 @@ public class LockManager {
         // 检查是否是锁的拥有者
         if (!currentThread.equals(owner)) {
             System.out
-                .println(String.format("Warning: %s attempting to release lock owned by %s", currentThread, owner));
+                    .println(String.format("Warning: %s attempting to release lock owned by %s", currentThread, owner));
             return;
         }
 
@@ -373,8 +375,10 @@ public class LockManager {
                     }
 
                     // 清理所有者信息
-                    lockOwners.remove(lockable);
-                    lockCounts.remove(lockable);
+                    synchronized (this) {
+                        lockOwners.remove(lockable);
+                        lockCounts.remove(lockable);
+                    }
 
                     System.out.println(String.format("Lock released for %s by %s", lockable, currentThread));
 
