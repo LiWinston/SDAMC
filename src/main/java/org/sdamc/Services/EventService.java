@@ -131,8 +131,8 @@ public class EventService {
 
             int eventId = Integer.parseInt(requestBody.get("eventId"));
 
-            // 尝试获取锁，超时时间为2000毫秒
-            boolean lockAcquired = LockManager.getInstance().acquireLock("Event_" + eventId, "handlePutEvent", 750);
+            // 尝试获取写锁，超时时间为750毫秒
+            boolean lockAcquired = LockManager.getInstance().acquireWriteLock("Event_" + eventId, 750);
 
             if (!lockAcquired) {
                 // 锁获取失败，返回错误响应
@@ -151,7 +151,7 @@ public class EventService {
                 eventsMapper.update(event, requestBody);
 
                 UnitofWork.getCurrent().commit();
-                LockManager.getInstance().releaseLock("Event_" + eventId, "update");
+                LockManager.getInstance().releaseLock("Event_" + eventId, true); // 释放写锁
                 resp.getWriter().write("Event updated successfully");
             }
             else {

@@ -159,7 +159,7 @@ public class RsvpController extends HttpServlet {
                 return;
             }
 
-            boolean lockAcquired = LockManager.getInstance().acquireLock("Event_" + eventId, "handleRsvpSubmit", 2000);
+            boolean lockAcquired = LockManager.getInstance().acquireWriteLock("Event_" + eventId, 2000);
             if (!lockAcquired) {
                 IOWrapper.writeValue(resp, Result.error("Could not acquire lock for event"));
                 return;
@@ -171,8 +171,7 @@ public class RsvpController extends HttpServlet {
 
                 for (RsvpSubmitDTO.Attendee attendee : rsvpSubmitDTO.getAttendees()) {
                     boolean attendeeLockAcquired = LockManager.getInstance()
-                        .acquireLock("RSVP_USER_" + attendee.getInputValue() + "_Event_" + eventId, "handleRsvpSubmit",
-                                2000);
+                        .acquireWriteLock("RSVP_USER_" + attendee.getInputValue() + "_Event_" + eventId, 2000);
                     if (!attendeeLockAcquired) {
                         failedAttendees.add(attendee.getInputValue());
                         errorMessages
@@ -225,8 +224,7 @@ public class RsvpController extends HttpServlet {
                     finally {
                         // 始终释放与 Attendee 相关的锁
                         LockManager.getInstance()
-                            .releaseLock("RSVP_USER_" + attendee.getInputValue() + "_Event_" + eventId,
-                                    "handleRsvpSubmit");
+                            .releaseLock("RSVP_USER_" + attendee.getInputValue() + "_Event_" + eventId, true);
                     }
                 }
 
@@ -259,7 +257,7 @@ public class RsvpController extends HttpServlet {
             }
             finally {
                 // 始终释放事件锁
-                LockManager.getInstance().releaseLock("Event_" + eventId, "handleRsvpSubmit");
+                LockManager.getInstance().releaseLock("Event_" + eventId, true);
             }
         }
         catch (Exception e) {

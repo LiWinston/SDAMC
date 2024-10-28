@@ -117,8 +117,7 @@ public class EventController extends HttpServlet {
             int eventId = Integer.parseInt(requestBody.get("eventId"));
             int clubId = Integer.parseInt(requestBody.get("clubId"));
 
-            Boolean lockAcquired = LockManager.getInstance()
-                .acquireLock("Event_" + eventId, String.valueOf(userId), 49);
+            boolean lockAcquired = LockManager.getInstance().acquireWriteLock(lockable, 49);
             if (!lockAcquired) {
                 resp.sendError(HttpServletResponse.SC_CONFLICT, "Failed to acquire event lock");
                 return;
@@ -130,7 +129,8 @@ public class EventController extends HttpServlet {
             // 返回结果
             resp.setContentType("application/json");
             resp.setStatus(HttpServletResponse.SC_OK); // 成功状态码
-            LockManager.getInstance().releaseLock("Event_" + eventId, String.valueOf(userId));
+            LockManager.getInstance().releaseLock("Event_" + eventId, true); // 释放写锁
+            lockable = null;
             new ObjectMapper().writeValue(resp.getOutputStream(), result); // 返回结果
         }
         catch (NumberFormatException e) {
@@ -140,7 +140,9 @@ public class EventController extends HttpServlet {
             resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal server error" + e.getMessage());
         }
         finally {
-            LockManager.getInstance().releaseLock(lockable, String.valueOf(userId));
+            if (lockable != null) {
+                LockManager.getInstance().releaseLock(lockable, true);
+            }
         }
     }
 
