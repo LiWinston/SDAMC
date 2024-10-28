@@ -8,19 +8,22 @@ import java.util.concurrent.TimeUnit;
 
 public class LockManager {
 
-    private static LockManager instance;
+    private static volatile LockManager instance;
 
     // Key: lockable, Value: Lock object
     private final ConcurrentMap<String, Lock> lockMap;
 
-    // Singleton instance creation
-    public static synchronized LockManager getInstance() {
-        if (instance == null) {
-            instance = new LockManager();
+    // Singleton instance creation with double-checked locking
+    public static LockManager getInstance() {
+        if (instance == null) { // 第一次检查，无锁定
+            synchronized (LockManager.class) {
+                if (instance == null) { // 第二次检查，确保唯一实例
+                    instance = new LockManager();
+                }
+            }
         }
         return instance;
     }
-
     private LockManager() {
         lockMap = new ConcurrentHashMap<>();
     }
