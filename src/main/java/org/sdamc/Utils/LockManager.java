@@ -1,6 +1,7 @@
 package org.sdamc.Utils;
 
 import java.lang.ref.WeakReference;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -29,6 +30,23 @@ public class LockManager {
 
     // 用于追踪锁重入次数
     private final ConcurrentMap<String, AtomicInteger> lockCounts;
+
+    /**
+     * 优化的自适应等待时间调整，使用指数退避策略
+     * - 基础等待时间采用指数增长，但有上限
+     * - 引入抖动因子避免惊群效应
+     * - 考虑系统负载动态调整等待时间
+     */
+    // 等待时间相关常量
+    private static final long MIN_WAIT_TIME = 1L;  // 最小等待时间，单位毫秒
+    private static final long MAX_WAIT_TIME = 1000L; // 最大等待时间，单位毫秒
+    private static final double BACKOFF_MULTIPLIER = 1.5; // 指数退避乘数
+    private static final double JITTER_FACTOR = 0.1; // 随机抖动因子
+
+    // 用于负载统计
+    private final AtomicInteger currentContention = new AtomicInteger(0);
+    private volatile long lastContentionReset = System.nanoTime();
+    private static final long CONTENTION_RESET_INTERVAL = TimeUnit.SECONDS.toNanos(1);
 
     private LockManager() {
         lockMap = new ConcurrentHashMap<>();
@@ -133,12 +151,17 @@ public class LockManager {
         }
 
         long timeSpent = 0;
-        long waitTime = 25; // 初始等待时间
+        long waitTime = 2; // 初始等待时间
 
         while (timeSpent < totalTimeout) {
             try {
                 long currentTimeout = Math.min(waitTime, totalTimeout - timeSpent);
+                long startAttempt = System.nanoTime();  // 记录尝试开始时间
+
                 long stamp = lock.tryWriteLock(currentTimeout, TimeUnit.MILLISECONDS);
+
+                // 更新已花费时间
+                timeSpent += TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startAttempt);
 
                 if (stamp != 0L) {
                     // 记录锁的所有者和重入计数
@@ -150,14 +173,12 @@ public class LockManager {
                     return true;
                 }
 
-                timeSpent += currentTimeout;
                 waitTime = adjustWaitTime(waitTime);
 
                 System.out.println(String.format("Write lock attempt failed for %s by %s, retrying... (%dms/%dms)",
                         lockable, currentThread, timeSpent, totalTimeout));
 
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 System.out.println(String.format("Write lock interrupted for %s by %s", lockable, currentThread));
                 return false;
@@ -165,7 +186,7 @@ public class LockManager {
         }
 
         System.out.println(String.format("Failed to acquire write lock for %s by %s after %dms", lockable,
-                currentThread, totalTimeout));
+                currentThread, timeSpent));
         return false;
     }
 
@@ -199,14 +220,17 @@ public class LockManager {
 
         while (timeSpent < totalTimeout) {
             try {
+                long startAttempt = System.nanoTime();  // 记录尝试开始时间
+
                 // 首先尝试乐观读
                 long stamp = lock.tryOptimisticRead();
                 if (stamp != 0L && lock.validate(stamp)) {
+                    timeSpent += TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startAttempt);
                     lockOwners.put(lockable, currentThread);
                     lockCounts.putIfAbsent(lockable, new AtomicInteger(1));
 
-                    System.out
-                        .println(String.format("Optimistic read lock acquired for %s by %s", lockable, currentThread));
+                    System.out.println(String.format("Optimistic read lock acquired for %s by %s (attempt: %dms/%dms)",
+                            lockable, currentThread, timeSpent, totalTimeout));
                     return true;
                 }
 
@@ -214,45 +238,98 @@ public class LockManager {
                 long currentTimeout = Math.min(waitTime, totalTimeout - timeSpent);
                 stamp = lock.tryReadLock(currentTimeout, TimeUnit.MILLISECONDS);
 
+                // 更新已花费时间
+                timeSpent += TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startAttempt);
+
                 if (stamp != 0L) {
                     lockOwners.put(lockable, currentThread);
                     lockCounts.putIfAbsent(lockable, new AtomicInteger(1));
 
-                    System.out.println(String.format("Read lock acquired for %s by %s (attempt: %dms/%dms)", lockable,
-                            currentThread, timeSpent, totalTimeout));
+                    System.out.println(String.format("Read lock acquired for %s by %s (attempt: %dms/%dms)",
+                            lockable, currentThread, timeSpent, totalTimeout));
                     return true;
                 }
 
-                timeSpent += currentTimeout;
                 waitTime = adjustWaitTime(waitTime);
 
                 System.out.println(String.format("Read lock attempt failed for %s by %s, retrying... (%dms/%dms)",
                         lockable, currentThread, timeSpent, totalTimeout));
 
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 System.out.println(String.format("Read lock interrupted for %s by %s", lockable, currentThread));
                 return false;
             }
         }
 
-        System.out.println(String.format("Failed to acquire read lock for %s by %s after %dms", lockable, currentThread,
-                totalTimeout));
+        System.out.println(String.format("Failed to acquire read lock for %s by %s after %dms", lockable,
+                currentThread, timeSpent));
         return false;
     }
 
     /**
      * 自适应等待时间调整
      */
+    private final Random random = new Random(); // 随机数生成器
+
     private long adjustWaitTime(long currentWait) {
-        // 最大等待时间1秒，最小等待时间25ms
-        if (currentWait < 1000) {
-            return Math.min(currentWait * 2, 1000);
+        // 1. 更新和获取当前系统争用程度
+        updateContention();
+        int contention = currentContention.get();
+
+        // 2. 计算基础等待时间（指数退避）
+        long baseWait = calculateBaseWait(currentWait, contention);
+
+        // 3. 应用随机抖动
+        long finalWait = applyJitter(baseWait);
+
+        // 4. 确保在合理范围内
+        return Math.min(Math.max(finalWait, MIN_WAIT_TIME), MAX_WAIT_TIME);
+    }
+
+    /**
+     * 计算基础等待时间，考虑当前争用程度
+     */
+    private long calculateBaseWait(long currentWait, int contention) {
+        // 基础指数退避
+        double multiplier = Math.pow(BACKOFF_MULTIPLIER, Math.min(contention, 5));
+        long baseWait = (long)(currentWait * multiplier);
+
+        // 根据争用程度调整
+        if (contention > 10) {
+            // 高争用情况下，增加随机性以避免惊群
+            baseWait = (long)(baseWait * (1.0 + random.nextDouble() * 0.5));
+        } else if (contention < 3) {
+            // 低争用情况下，适当减少等待时间
+            baseWait = (long)(baseWait * 0.8);
         }
-        else {
-            return Math.max(currentWait / 2, 25);
+
+        return baseWait;
+    }
+
+    /**
+     * 应用随机抖动避免惊群效应
+     */
+    private long applyJitter(long baseWait) {
+        double jitter = 1.0 + (random.nextDouble() * 2 - 1) * JITTER_FACTOR;
+        return (long)(baseWait * jitter);
+    }
+
+    /**
+     * 更新系统争用统计
+     */
+    private void updateContention() {
+        long now = System.nanoTime();
+        // 定期重置争用计数
+        if (now - lastContentionReset > CONTENTION_RESET_INTERVAL) {
+            synchronized (this) {
+                if (now - lastContentionReset > CONTENTION_RESET_INTERVAL) {
+                    currentContention.set(0);
+                    lastContentionReset = now;
+                }
+            }
         }
+        currentContention.incrementAndGet();
     }
 
     /**

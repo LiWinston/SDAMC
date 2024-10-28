@@ -132,7 +132,7 @@ public class EventService {
             int eventId = Integer.parseInt(requestBody.get("eventId"));
 
             // 尝试获取写锁，超时时间为750毫秒
-            boolean lockAcquired = LockManager.getInstance().acquireWriteLock("Event_" + eventId, 750);
+            boolean lockAcquired = LockManager.getInstance().acquireWriteLock("Event_" + eventId, 5000);
 
             if (!lockAcquired) {
                 // 锁获取失败，返回错误响应
