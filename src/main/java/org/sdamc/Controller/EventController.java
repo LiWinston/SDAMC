@@ -117,12 +117,13 @@ public class EventController extends HttpServlet {
             int eventId = Integer.parseInt(requestBody.get("eventId"));
             int clubId = Integer.parseInt(requestBody.get("clubId"));
 
+            lockable = "Event_" + eventId;
             boolean lockAcquired = LockManager.getInstance().acquireWriteLock(lockable, 49);
             if (!lockAcquired) {
                 resp.sendError(HttpServletResponse.SC_CONFLICT, "Failed to acquire event lock");
                 return;
             }
-            lockable = "Event_" + eventId;
+
             // 调用 deleteEvent 方法
             Result<?> result = eventCascadeOpSvc.deleteEvent(eventId, userId, clubId);
 
