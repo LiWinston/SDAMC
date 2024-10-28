@@ -2,6 +2,7 @@ package org.sdamc.Utils;
 
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.StampedLock;
@@ -10,7 +11,7 @@ public class LockManager {
 
     private static volatile LockManager instance;
 
-    private final ConcurrentHashMap<String, WeakReference<StampedLock>> lockMap;
+    private final ConcurrentMap<String, WeakReference<StampedLock>> lockMap;
 
     private static final int INITIAL_POOL_SIZE = 128;
     private static final int MAX_POOL_SIZE = 1024;
@@ -24,24 +25,19 @@ public class LockManager {
     private final Object resizeLock = new Object();
 
     // 用于追踪当前锁持有者
-    private final ConcurrentHashMap<String, String> lockOwners;
+    private final ConcurrentMap<String, String> lockOwners;
 
     // 用于追踪锁重入次数
-    private final ConcurrentHashMap<String, AtomicInteger> lockCounts;
+    private final ConcurrentMap<String, AtomicInteger> lockCounts;
 
-private LockManager() {
-    try {
+    private LockManager() {
         lockMap = new ConcurrentHashMap<>();
         lockOwners = new ConcurrentHashMap<>();
         lockCounts = new ConcurrentHashMap<>();
         currentPoolSize = INITIAL_POOL_SIZE;
         initializeLockPool(INITIAL_POOL_SIZE);
-        System.out.println("LockManager initialized successfully.");
-    } catch (Exception e) {
-        System.err.println("Failed to initialize LockManager: " + e.getMessage());
-        throw new RuntimeException("LockManager initialization failed", e);
     }
-}
+
     private void initializeLockPool(int size) {
         StampedLock[] newPool = new StampedLock[size];
         for (int i = 0; i < size; i++) {
@@ -124,10 +120,17 @@ private LockManager() {
             return true;
         }
 
-        // 从池中获取锁，而不是创建新的
-        StampedLock lock = getLockFromPool(lockable);
-        // 在map中保存弱引用
-        lockMap.putIfAbsent(lockable, new WeakReference<>(lock));
+        StampedLock lock = lockMap.compute(lockable, (k, v) -> {
+            if (v != null && v.get() != null) {
+                return v;
+            }
+            return new WeakReference<>(new StampedLock());
+        }).get();
+
+        if (lock == null) {
+            lock = new StampedLock();
+            lockMap.put(lockable, new WeakReference<>(lock));
+        }
 
         long timeSpent = 0;
         long waitTime = 25; // 初始等待时间
@@ -179,10 +182,17 @@ private LockManager() {
             return true;
         }
 
-        // 从池中获取锁，而不是创建新的
-        StampedLock lock = getLockFromPool(lockable);
-        // 在map中保存弱引用
-        lockMap.putIfAbsent(lockable, new WeakReference<>(lock));
+        StampedLock lock = lockMap.compute(lockable, (k, v) -> {
+            if (v != null && v.get() != null) {
+                return v;
+            }
+            return new WeakReference<>(new StampedLock());
+        }).get();
+
+        if (lock == null) {
+            lock = new StampedLock();
+            lockMap.put(lockable, new WeakReference<>(lock));
+        }
 
         long timeSpent = 0;
         long waitTime = 25;
