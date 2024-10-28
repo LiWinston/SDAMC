@@ -1,6 +1,7 @@
 package org.sdamc.Utils;
 
 import java.lang.ref.WeakReference;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -10,9 +11,21 @@ import java.util.concurrent.locks.StampedLock;
 
 public class LockManager {
 
+    private static class LockContext {
+        final StampedLock lock;
+        final Map<String, Long> threadStamps;  // 记录每个线程的stamp
+        final Map<String, Integer> reentrantCounts;  // 记录重入次数
+
+        LockContext() {
+            this.lock = new StampedLock();
+            this.threadStamps = new ConcurrentHashMap<>();
+            this.reentrantCounts = new ConcurrentHashMap<>();
+        }
+    }
+
     private static volatile LockManager instance;
 
-    private final ConcurrentMap<String, WeakReference<StampedLock>> lockMap;
+    private final ConcurrentMap<String, WeakReference<LockContext>> lockMap;
 
     private static final int INITIAL_POOL_SIZE = 128;
     private static final int MAX_POOL_SIZE = 1024;
@@ -24,12 +37,6 @@ public class LockManager {
     private volatile int currentPoolSize;
     // 用于扩容的锁
     private final Object resizeLock = new Object();
-
-    // 用于追踪当前锁持有者
-    private final ConcurrentMap<String, String> lockOwners;
-
-    // 用于追踪锁重入次数
-    private final ConcurrentMap<String, AtomicInteger> lockCounts;
 
     /**
      * 优化的自适应等待时间调整，使用指数退避策略
@@ -50,8 +57,6 @@ public class LockManager {
 
     private LockManager() {
         lockMap = new ConcurrentHashMap<>();
-        lockOwners = new ConcurrentHashMap<>();
-        lockCounts = new ConcurrentHashMap<>();
         currentPoolSize = INITIAL_POOL_SIZE;
         initializeLockPool(INITIAL_POOL_SIZE);
     }
@@ -130,48 +135,51 @@ public class LockManager {
      */
     public boolean acquireWriteLock(String lockable, long totalTimeout) {
         String currentThread = Thread.currentThread().getName();
-        String owner = lockOwners.get(lockable);
 
-        // 检查重入
-        if (currentThread.equals(owner)) {
-            lockCounts.get(lockable).incrementAndGet();
-            return true;
-        }
-
-        StampedLock lock = lockMap.compute(lockable, (k, v) -> {
+        LockContext context = lockMap.compute(lockable, (k, v) -> {
             if (v != null && v.get() != null) {
                 return v;
             }
-            return new WeakReference<>(new StampedLock());
+            return new WeakReference<>(new LockContext());
         }).get();
 
-        if (lock == null) {
-            lock = new StampedLock();
-            lockMap.put(lockable, new WeakReference<>(lock));
+        if (context == null) {
+            context = new LockContext();
+            lockMap.put(lockable, new WeakReference<>(context));
+        }
+
+        // 检查重入
+        Long existingStamp = context.threadStamps.get(currentThread);
+        if (existingStamp != null) {
+            // 验证stamp是否仍然有效
+            if (context.lock.validate(existingStamp)) {
+                context.reentrantCounts.compute(currentThread, (k, v) -> v == null ? 1 : v + 1);
+                return true;
+            } else {
+                // 如果stamp无效，清除旧的记录
+                context.threadStamps.remove(currentThread);
+                context.reentrantCounts.remove(currentThread);
+            }
         }
 
         long timeSpent = 0;
-        long waitTime = 2; // 初始等待时间
+        long waitTime = 2;
 
         while (timeSpent < totalTimeout) {
             try {
                 long currentTimeout = Math.min(waitTime, totalTimeout - timeSpent);
-                long startAttempt = System.nanoTime();  // 记录尝试开始时间
+                long startAttempt = System.nanoTime();
 
-                long stamp = lock.tryWriteLock(currentTimeout, TimeUnit.MILLISECONDS);
-
-                // 更新已花费时间
+                long stamp = context.lock.tryWriteLock(currentTimeout, TimeUnit.MILLISECONDS);
                 timeSpent += TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startAttempt);
 
                 if (stamp != 0L) {
-                    // 记录锁的所有者和重入计数
-                    synchronized (this) {
-                        lockOwners.put(lockable, currentThread);
-                        lockCounts.putIfAbsent(lockable, new AtomicInteger(1));
-                    }
+                    // 成功获取锁，记录stamp和重入计数
+                    context.threadStamps.put(currentThread, stamp);
+                    context.reentrantCounts.put(currentThread, 1);
 
-                    System.out.println(String.format("Write lock acquired for %s by %s (attempt: %dms/%dms)", lockable,
-                            currentThread, timeSpent, totalTimeout));
+                    System.out.println(String.format("Write lock acquired for %s by %s (attempt: %dms/%dms)",
+                            lockable, currentThread, timeSpent, totalTimeout));
                     return true;
                 }
 
@@ -187,87 +195,87 @@ public class LockManager {
             }
         }
 
-        System.out.println(String.format("Failed to acquire write lock for %s by %s after %dms", lockable,
-                currentThread, timeSpent));
+        System.out.println(String.format("Failed to acquire write lock for %s by %s after %dms",
+                lockable, currentThread, timeSpent));
         return false;
     }
 
-    /**
-     * 获取读锁，支持重入和所有者追踪
-     */
-    public boolean acquireReadLock(String lockable, long totalTimeout) {
-        String currentThread = Thread.currentThread().getName();
-        String owner = lockOwners.get(lockable);
-
-        // 检查重入
-        if (currentThread.equals(owner)) {
-            lockCounts.get(lockable).incrementAndGet();
-            return true;
-        }
-
-        StampedLock lock = lockMap.compute(lockable, (k, v) -> {
-            if (v != null && v.get() != null) {
-                return v;
-            }
-            return new WeakReference<>(new StampedLock());
-        }).get();
-
-        if (lock == null) {
-            lock = new StampedLock();
-            lockMap.put(lockable, new WeakReference<>(lock));
-        }
-
-        long timeSpent = 0;
-        long waitTime = 25;
-
-        while (timeSpent < totalTimeout) {
-            try {
-                long startAttempt = System.nanoTime();  // 记录尝试开始时间
-
-                // 首先尝试乐观读
-                long stamp = lock.tryOptimisticRead();
-                if (stamp != 0L && lock.validate(stamp)) {
-                    timeSpent += TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startAttempt);
-                    lockOwners.put(lockable, currentThread);
-                    lockCounts.putIfAbsent(lockable, new AtomicInteger(1));
-
-                    System.out.println(String.format("Optimistic read lock acquired for %s by %s (attempt: %dms/%dms)",
-                            lockable, currentThread, timeSpent, totalTimeout));
-                    return true;
-                }
-
-                // 乐观读失败，尝试悲观读
-                long currentTimeout = Math.min(waitTime, totalTimeout - timeSpent);
-                stamp = lock.tryReadLock(currentTimeout, TimeUnit.MILLISECONDS);
-
-                // 更新已花费时间
-                timeSpent += TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startAttempt);
-
-                if (stamp != 0L) {
-                    lockOwners.put(lockable, currentThread);
-                    lockCounts.putIfAbsent(lockable, new AtomicInteger(1));
-
-                    System.out.println(String.format("Read lock acquired for %s by %s (attempt: %dms/%dms)",
-                            lockable, currentThread, timeSpent, totalTimeout));
-                    return true;
-                }
-
-                waitTime = adjustWaitTime(waitTime);
-
-                System.out.println(String.format("Read lock attempt failed for %s by %s, retrying... (%dms/%dms)",
-                        lockable, currentThread, timeSpent, totalTimeout));
-
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                System.out.println(String.format("Read lock interrupted for %s by %s", lockable, currentThread));
-                return false;
-            }
-        }
-
-        System.out.println(String.format("Failed to acquire read lock for %s by %s after %dms", lockable,
-                currentThread, timeSpent));
-        return false;
-    }
+//    /**
+//     * 获取读锁，支持重入和所有者追踪
+//     */
+//    public boolean acquireReadLock(String lockable, long totalTimeout) {
+//        String currentThread = Thread.currentThread().getName();
+//        String owner = lockOwners.get(lockable);
+//
+//        // 检查重入
+//        if (currentThread.equals(owner)) {
+//            lockCounts.get(lockable).incrementAndGet();
+//            return true;
+//        }
+//
+//        StampedLock lock = lockMap.compute(lockable, (k, v) -> {
+//            if (v != null && v.get() != null) {
+//                return v;
+//            }
+//            return new WeakReference<>(new StampedLock());
+//        }).get();
+//
+//        if (lock == null) {
+//            lock = new StampedLock();
+//            lockMap.put(lockable, new WeakReference<>(lock));
+//        }
+//
+//        long timeSpent = 0;
+//        long waitTime = 25;
+//
+//        while (timeSpent < totalTimeout) {
+//            try {
+//                long startAttempt = System.nanoTime();  // 记录尝试开始时间
+//
+//                // 首先尝试乐观读
+//                long stamp = lock.tryOptimisticRead();
+//                if (stamp != 0L && lock.validate(stamp)) {
+//                    timeSpent += TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startAttempt);
+//                    lockOwners.put(lockable, currentThread);
+//                    lockCounts.putIfAbsent(lockable, new AtomicInteger(1));
+//
+//                    System.out.println(String.format("Optimistic read lock acquired for %s by %s (attempt: %dms/%dms)",
+//                            lockable, currentThread, timeSpent, totalTimeout));
+//                    return true;
+//                }
+//
+//                // 乐观读失败，尝试悲观读
+//                long currentTimeout = Math.min(waitTime, totalTimeout - timeSpent);
+//                stamp = lock.tryReadLock(currentTimeout, TimeUnit.MILLISECONDS);
+//
+//                // 更新已花费时间
+//                timeSpent += TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startAttempt);
+//
+//                if (stamp != 0L) {
+//                    lockOwners.put(lockable, currentThread);
+//                    lockCounts.putIfAbsent(lockable, new AtomicInteger(1));
+//
+//                    System.out.println(String.format("Read lock acquired for %s by %s (attempt: %dms/%dms)",
+//                            lockable, currentThread, timeSpent, totalTimeout));
+//                    return true;
+//                }
+//
+//                waitTime = adjustWaitTime(waitTime);
+//
+//                System.out.println(String.format("Read lock attempt failed for %s by %s, retrying... (%dms/%dms)",
+//                        lockable, currentThread, timeSpent, totalTimeout));
+//
+//            } catch (InterruptedException e) {
+//                Thread.currentThread().interrupt();
+//                System.out.println(String.format("Read lock interrupted for %s by %s", lockable, currentThread));
+//                return false;
+//            }
+//        }
+//
+//        System.out.println(String.format("Failed to acquire read lock for %s by %s after %dms", lockable,
+//                currentThread, timeSpent));
+//        return false;
+//    }
 
     /**
      * 自适应等待时间调整
@@ -339,55 +347,48 @@ public class LockManager {
      */
     public void releaseLock(String lockable, boolean isWrite) {
         String currentThread = Thread.currentThread().getName();
-        String owner = lockOwners.get(lockable);
 
-        // 检查是否是锁的拥有者
-        if (!currentThread.equals(owner)) {
-            System.out
-                    .println(String.format("Warning: %s attempting to release lock owned by %s", currentThread, owner));
+        WeakReference<LockContext> contextRef = lockMap.get(lockable);
+        if (contextRef == null || contextRef.get() == null) {
             return;
         }
 
-        AtomicInteger count = lockCounts.get(lockable);
-        if (count != null && count.decrementAndGet() > 0) {
+        LockContext context = contextRef.get();
+        Long stamp = context.threadStamps.get(currentThread);
+
+        if (stamp == null) {
+            System.out.println(String.format("Warning: %s attempting to release an unowned lock", currentThread));
+            return;
+        }
+
+        // 处理重入
+        int count = context.reentrantCounts.compute(currentThread, (k, v) -> v == null ? 0 : v - 1);
+        if (count > 0) {
             // 还有重入的锁，不实际释放
             return;
         }
 
-        WeakReference<StampedLock> lockRef = lockMap.get(lockable);
-        if (lockRef != null) {
-            StampedLock lock = lockRef.get();
-            if (lock != null) {
-                try {
-                    if (isWrite) {
-                        if (lock.isWriteLocked()) {
-                            long stamp = lock.tryWriteLock();
-                            if (stamp != 0L) {
-                                lock.unlockWrite(stamp);
-                            }
-                        }
-                    }
-                    else {
-                        long stamp = lock.tryOptimisticRead();
-                        if (stamp != 0L) {
-                            lock.unlock(stamp);
-                        }
-                    }
-
-                    // 清理所有者信息
-                    synchronized (this) {
-                        lockOwners.remove(lockable);
-                        lockCounts.remove(lockable);
-                    }
-
-                    System.out.println(String.format("Lock released for %s by %s", lockable, currentThread));
-
-                }
-                catch (Exception e) {
-                    System.out.println(String.format("Error releasing lock for %s: %s", lockable, e.getMessage()));
-                }
+        // 完全释放锁
+        try {
+            if (isWrite) {
+                context.lock.unlockWrite(stamp);
+            } else {
+                context.lock.unlock(stamp);
             }
-            lockMap.remove(lockable, lockRef);
+
+            // 清理线程相关的记录
+            context.threadStamps.remove(currentThread);
+            context.reentrantCounts.remove(currentThread);
+
+            System.out.println(String.format("Lock released for %s by %s", lockable, currentThread));
+
+        } catch (Exception e) {
+            System.out.println(String.format("Error releasing lock for %s: %s", lockable, e.getMessage()));
+        }
+
+        // 如果没有任何线程持有锁了，可以清理context
+        if (context.threadStamps.isEmpty()) {
+            lockMap.remove(lockable, contextRef);
         }
     }
 
