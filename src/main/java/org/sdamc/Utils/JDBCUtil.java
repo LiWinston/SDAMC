@@ -34,22 +34,8 @@ public class JDBCUtil {
     }
 
     // 对外提供在连接池中获取连接的方法
-    public static Connection getConnection() {
-        try {
-            // 在ThreadLocal中获取Connection、
-            Connection connection = threadLocal.get();
-            // threadLocal里没有存储Connection，也就是第一次获取
-            if (connection == null) {
-                // 在连接池中获取一个连接，存储在threadLocal里。
-                connection = dataSource.getConnection();
-                threadLocal.set(connection);
-            }
-            return connection;
-
-        }
-        catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+    public static Connection getConnection() throws SQLException {
+        return DatabaseUtil.getConnection();
     }
 
     // 对外提供回收连接的方法
@@ -67,6 +53,17 @@ public class JDBCUtil {
         }
         catch (SQLException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public static void closeConnection(Connection conn) {
+        if (conn != null) {
+            try {
+                // 使用连接池时，close操作会将连接返回池中而不是真正关闭
+                conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 

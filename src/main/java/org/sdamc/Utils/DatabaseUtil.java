@@ -1,7 +1,8 @@
 package org.sdamc.Utils;
 
+import com.alibaba.druid.pool.DruidDataSource;
+import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
 /*
@@ -10,60 +11,49 @@ import java.sql.SQLException;
 * */
 public class DatabaseUtil {
 
-    private static final String JDBC_DRIVER = "org.postgresql.Driver";
-
-    // 新的 JDBC URL
-    // private static final String JDBC_URL =
-    // "jdbc:postgresql://ep-icy-sea-a7vt9oiq.ap-southeast-2.aws.neon.tech/postgres1?user=postgres1_owner&password=nt4ug9SwXZUr&sslmode=require";
-    private static final String JDBC_URL = "jdbc:postgresql://aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres_sdamc";
-
-    // 新的数据库用户名
-    private static final String JDBC_USER = "postgres.auurjplocrivtrknmvuj";
-
-    // 新的数据库密码
-    private static final String JDBC_PASSWORD = "JnWA9#Nzse-mQ3@";
-
-    private static ThreadLocal<Connection> connection = ThreadLocal.withInitial(() -> null);
-
-    ;
-
-    DatabaseUtil() throws ClassNotFoundException {
-        // empty constructor
-        Class.forName(JDBC_DRIVER);
+    private static final DruidDataSource dataSource;
+    
+    static {
+        dataSource = new DruidDataSource();
+        // 设置数据库连接参数
+        dataSource.setDriverClassName("org.postgresql.Driver");
+        dataSource.setUrl("jdbc:postgresql://aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres_sdamc");
+        dataSource.setUsername("postgres.auurjplocrivtrknmvuj");
+        dataSource.setPassword("JnWA9#Nzse-mQ3@");
+        
+        // 配置初始化大小、最小、最大
+        dataSource.setInitialSize(5);
+        dataSource.setMinIdle(5);
+        dataSource.setMaxActive(20);
+        
+        // 配置获取连接等待超时的时间
+        dataSource.setMaxWait(60000);
+        
+        // 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+        dataSource.setTimeBetweenEvictionRunsMillis(60000);
+        
+        // 配置一个连接在池中最小生存的时间，单位是毫秒
+        dataSource.setMinEvictableIdleTimeMillis(300000);
+        
+        // 配置检测连接是否有效
+        dataSource.setValidationQuery("SELECT 1");
+        dataSource.setTestWhileIdle(true);
+        dataSource.setTestOnBorrow(false);
+        dataSource.setTestOnReturn(false);
+        
+        // 打开PSCache，并且指定每个连接上PSCache的大小
+        dataSource.setPoolPreparedStatements(true);
+        dataSource.setMaxPoolPreparedStatementPerConnectionSize(20);
     }
-
-    // For test
-    public static void connectDatabase(String url, String user, String password) {
-        try {
-            Class.forName(JDBC_DRIVER);
-            connection.set(DriverManager.getConnection(url, user, password));
-        }
-        catch (ClassNotFoundException | SQLException e) {
-            throw new RuntimeException("Failed to create database connection", e);
-        }
-    }
-
-    public static void connectDatabase() {
-        try {
-            Class.forName(JDBC_DRIVER);
-            connection.set(DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD));
-        }
-        catch (ClassNotFoundException | SQLException e) {
-            throw new RuntimeException("Failed to create database connection", e);
-        }
-    }
-
+    
     public static Connection getConnection() throws SQLException {
-        if (connection.get() == null) {
-            try {
-                Class.forName(JDBC_DRIVER);
-                connection.set(DriverManager.getConnection(JDBC_URL, JDBC_USER, JDBC_PASSWORD));
-            }
-            catch (ClassNotFoundException | SQLException e) {
-                throw new RuntimeException("Failed to create database connection", e);
-            }
-        }
-        return connection.get();
+        return dataSource.getConnection();
     }
-
+    
+    // 关闭连接池
+    public static void closeDataSource() {
+        if (dataSource != null) {
+            dataSource.close();
+        }
+    }
 }
